@@ -271,21 +271,6 @@ function App() {
         {isMenuOpen && (
           <div className="border-t border-white/10 px-4 py-4 sm:px-6 xl:hidden">
             <div className="mx-auto grid max-w-7xl gap-4">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="menu-info-card">
-                  <p className="menu-info-label">Даты</p>
-                  <p className="menu-info-value">7–8 февраля 2027</p>
-                </div>
-                <div className="menu-info-card">
-                  <p className="menu-info-label">Город</p>
-                  <p className="menu-info-value">Астана</p>
-                </div>
-                <div className="menu-info-card">
-                  <p className="menu-info-label">Формат</p>
-                  <p className="menu-info-value">Форум + Expo</p>
-                </div>
-              </div>
-
               <div className="grid gap-3 sm:grid-cols-2">
                 <a
                   href="#register"
@@ -304,7 +289,9 @@ function App() {
               </div>
 
               <div className="flex flex-col gap-3">
-              {navItems.map((item) => (
+              {navItems
+                .filter((item) => item.href !== "#events")
+                .map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
