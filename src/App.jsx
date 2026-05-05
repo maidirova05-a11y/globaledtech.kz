@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 
 const navItems = [
@@ -156,10 +155,10 @@ const programItems = [
 ];
 
 const contactItems = [
-  { label: "?????", value: "??????, ?????????" },
-  { label: "????", value: "7 - 8 ??????? 2027 ????" },
+  { label: "\u0413\u043e\u0440\u043e\u0434", value: "\u0410\u0441\u0442\u0430\u043d\u0430, \u041a\u0430\u0437\u0430\u0445\u0441\u0442\u0430\u043d" },
+  { label: "\u0414\u0430\u0442\u044b", value: "7 - 8 \u0444\u0435\u0432\u0440\u0430\u043b\u044f 2027 \u0433\u043e\u0434\u0430" },
   { label: "Email", value: "hello@globaledtech.org" },
-  { label: "???????", value: "+7 (700) 033 0229" },
+  { label: "\u0422\u0435\u043b\u0435\u0444\u043e\u043d", value: "+7 (700) 033 0229" },
 ];
 
 const reveal = {
@@ -351,18 +350,18 @@ function App() {
 
               <div className="mt-8 grid max-w-3xl gap-4 sm:grid-cols-2">
                 <div className="stat-card p-4">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">?????</p>
-                  <p className="mt-2 text-lg font-semibold text-white">??????</p>
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">{"\u0413\u043e\u0440\u043e\u0434"}</p>
+                  <p className="mt-2 text-lg font-semibold text-white">{"\u0410\u0441\u0442\u0430\u043d\u0430"}</p>
                 </div>
                 <div className="stat-card p-4">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">????</p>
-                  <p className="mt-2 text-lg font-semibold text-white">7 - 8 ??????? 2027 ????</p>
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">{"\u0414\u0430\u0442\u044b"}</p>
+                  <p className="mt-2 text-lg font-semibold text-white">{"7 - 8 \u0444\u0435\u0432\u0440\u0430\u043b\u044f 2027 \u0433\u043e\u0434\u0430"}</p>
                 </div>
               </div>
 
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <a href="#register" className="button-primary justify-center">
-                  ??????????????????
+                  {"\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c\u0441\u044f"}
                 </a>
               </div>
             </motion.div>
@@ -407,11 +406,328 @@ function App() {
         <section id="about" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
-              eyebrow="????????"
-              title="??????? ?????? ??????? ????????? ????? ? ???????? ???????????"
+              eyebrow="О событии"
+              title="Не просто форум-выставка, а живая платформа для будущего образования"
+              text="Global EdTech является ключевой площадкой для бизнес-конференций, презентаций новейших технологий, активного нетворкинга, обмена идеями и развития бизнеса в стремительно меняющемся мире образовательных технологий."
+            />
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {aboutCards.map((card, index) => (
+                <motion.article
+                  key={card.title}
+                  className="glass-panel card-hover p-6"
+                  variants={reveal}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ delay: index * 0.08 }}
+                >
+                  <div className="mb-5 h-2 w-16 rounded-full bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-yellow-400" />
+                  <h3 className="text-2xl font-semibold text-white">{card.title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-slate-300">{card.description}</p>
+                </motion.article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="events" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              eyebrow="Внутренние мероприятия"
+              title="\u0422\u0440\u0438 \u0433\u043b\u0430\u0432\u043d\u044b\u0445 \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u044f \u0432 \u0440\u0430\u043c\u043a\u0430\u0445 Global EdTech"
+              text="На площадке Global EdTech пройдут отдельные тематические мероприятия, которые расширяют программу форума и делают ее интересной для школьников, студентов, преподавателей, специалистов и технологических команд."
+            />
+
+            <div className="grid gap-6 xl:grid-cols-3">
+              {ecosystemEvents.map((event, index) => (
+                <motion.article
+                  key={event.title}
+                  className="glass-panel card-hover overflow-hidden p-6"
+                  variants={reveal}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ delay: index * 0.08 }}
+                >
+                  <div className="event-logo-wrap">
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="event-logo"
+                    />
+                  </div>
+                  <h3 className="mt-6 text-2xl font-semibold text-white">{event.title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-slate-300">{event.subtitle}</p>
+                </motion.article>
+              ))}
+            </div>
+
+
+          </div>
+        </section>
+
+        <section id="audience" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+            <motion.div
+              variants={reveal}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-fuchsia-300">
+                Целевая аудитория
+              </p>
+              <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                Для тех, кто развивает образование, технологии и новые форматы обучения
+              </h2>
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">
+                Событие объединяет профессиональное сообщество, образовательные команды,
+                молодых исследователей и технологических партнеров, которым важны
+                практические инструменты, развитие экосистемы и сильные связи внутри рынка.
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="glass-panel p-6 sm:p-8"
+              variants={reveal}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.25 }}
+            >
+              <ul className="grid gap-4 sm:grid-cols-2">
+                {audienceItems.map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-4 rounded-[16px] border border-white/10 bg-white/5 p-4"
+                  >
+                    <span className="mt-1 inline-flex h-3 w-3 rounded-full bg-cyan-400 shadow-[0_0_18px_rgba(0,194,255,0.8)]" />
+                    <span className="text-sm leading-7 text-slate-200">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+        </section>
+
+        <section id="benefits" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              eyebrow="Наши цели"
+              title="Что делает Global EdTech важным событием для экосистемы"
+              text="Форум строится вокруг практической пользы, открытого диалога и долгосрочного развития образовательной среды."
+            />
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {benefitCards.map((card, index) => (
+                <motion.article
+                  key={card.title}
+                  className="glass-panel card-hover p-6"
+                  variants={reveal}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ delay: index * 0.08 }}
+                >
+                  <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-cyan-300 shadow-[0_0_30px_rgba(0,194,255,0.18)]">
+                    <span className="icon">{card.icon}</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-white">{card.title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-slate-300">{card.description}</p>
+                </motion.article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="program" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              eyebrow="Форматы"
+              title="Программа, где идеи переходят в действие"
+              text="В основе Global EdTech — деловой формат, экспертные выступления, выставочная часть, интерактивные зоны и реальные точки для партнерства."
+            />
+            <div className="relative mx-auto max-w-4xl">
+              <div className="absolute left-5 top-0 hidden h-full w-px bg-gradient-to-b from-cyan-400 via-fuchsia-500 to-yellow-400 sm:block" />
+              <div className="space-y-6">
+                {programItems.map((item, index) => (
+                  <motion.div
+                    key={item.time}
+                    className="glass-panel relative grid gap-5 p-6 sm:grid-cols-[110px_1fr] sm:pl-14"
+                    variants={reveal}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <span className="absolute left-[13px] top-8 hidden h-4 w-4 rounded-full border-4 border-[#0B0F2A] bg-cyan-400 shadow-[0_0_22px_rgba(0,194,255,0.85)] sm:block" />
+                    <div className="text-lg font-semibold text-cyan-300">{item.time}</div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-7 text-slate-300">{item.detail}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="register" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+            <motion.div
+              variants={reveal}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-yellow-300">
+                Регистрация
+              </p>
+              <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                Станьте частью Global EdTech в Астане
+              </h2>
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">
+                Присоединяйтесь к событию 7–8 февраля 2027 года и станьте частью
+                экосистемы, где образование, технологии и сильные идеи встречаются на
+                одной площадке.
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="glass-panel p-6 sm:p-8"
+              variants={reveal}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              <form className="grid gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+                <div>
+                  <label className="field-label" htmlFor="name">
+                    {"\u0418\u043c\u044f"}
+                  </label>
+                  <input
+                    id="name"
+                    className="field-input"
+                    placeholder="\u0412\u0430\u0448\u0435 \u0438\u043c\u044f"
+                    {...register("name", { required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0438\u043c\u044f" })}
+                  />
+                  {errors.name && <p className="field-error">{errors.name.message}</p>}
+                </div>
+
+                <div>
+                  <label className="field-label" htmlFor="surname">
+                    {"\u0424\u0430\u043c\u0438\u043b\u0438\u044f"}
+                  </label>
+                  <input
+                    id="surname"
+                    className="field-input"
+                    placeholder="\u0412\u0430\u0448\u0430 \u0444\u0430\u043c\u0438\u043b\u0438\u044f"
+                    {...register("surname", { required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0444\u0430\u043c\u0438\u043b\u0438\u044e" })}
+                  />
+                  {errors.surname && <p className="field-error">{errors.surname.message}</p>}
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label className="field-label" htmlFor="email">
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      className="field-input"
+                      placeholder="you@example.com"
+                      {...register("email", {
+                        required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 email",
+                        pattern: {
+                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                          message: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u044b\u0439 email",
+                        },
+                      })}
+                    />
+                    {errors.email && <p className="field-error">{errors.email.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="field-label" htmlFor="phone">
+                      {"\u0422\u0435\u043b\u0435\u0444\u043e\u043d"}
+                    </label>
+                    <input
+                      id="phone"
+                      type="tel"
+                      className="field-input"
+                      placeholder="+7 (700) 033 0229"
+                      {...register("phone", {
+                        required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0442\u0435\u043b\u0435\u0444\u043e\u043d",
+                        minLength: {
+                          value: 8,
+                          message: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u044b\u0439 \u043d\u043e\u043c\u0435\u0440 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0430",
+                        },
+                      })}
+                    />
+                    {errors.phone && <p className="field-error">{errors.phone.message}</p>}
+                  </div>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label className="field-label" htmlFor="company">
+                      {"\u041a\u043e\u043c\u043f\u0430\u043d\u0438\u044f"}
+                    </label>
+                    <input
+                      id="company"
+                      className="field-input"
+                      placeholder="\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u0438"
+                      {...register("company", { required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u044e" })}
+                    />
+                    {errors.company && <p className="field-error">{errors.company.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="field-label" htmlFor="participationType">
+                      {"\u0424\u043e\u0440\u043c\u0430\u0442 \u0443\u0447\u0430\u0441\u0442\u0438\u044f"}
+                    </label>
+                    <select
+                      id="participationType"
+                      className="field-input"
+                      defaultValue=""
+                      {...register("participationType", {
+                        required: "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0444\u043e\u0440\u043c\u0430\u0442 \u0443\u0447\u0430\u0441\u0442\u0438\u044f",
+                      })}
+                    >
+                      <option value="" disabled>
+                        {"\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0430\u0440\u0438\u0430\u043d\u0442"}
+                      </option>
+                      <option value="delegate">{"\u0423\u0447\u0430\u0441\u0442\u043d\u0438\u043a"}</option>
+                      <option value="speaker">{"\u0421\u043f\u0438\u043a\u0435\u0440"}</option>
+                      <option value="partner">{"\u041f\u0430\u0440\u0442\u043d\u0435\u0440"}</option>
+                    </select>
+                    {errors.participationType && (
+                      <p className="field-error">{errors.participationType.message}</p>
+                    )}
+                  </div>
+                </div>
+                <button type="submit" className="button-primary mt-2 justify-center">
+                  Отправить заявку
+                </button>
+
+                {(isSubmitSuccessful || isSubmitted) && (
+                  <p className="rounded-[16px] border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
+                    Спасибо за регистрацию. Наша команда свяжется с вами в ближайшее время.
+                  </p>
+                )}
+              </form>
+            </motion.div>
+          </div>
+        </section>
+
+        <section id="contacts" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              eyebrow="Контакты"
+              title="Давайте вместе строить следующую главу в развитии образования"
               text={
                 <>
-                  <span>????????? ? ???? ?? ???????? ???????, ??????????? ? ?????????????? ? ??????</span>
+                  <span>{"\u0421\u0432\u044f\u0436\u0438\u0442\u0435\u0441\u044c \u0441 \u043d\u0430\u043c\u0438 \u043f\u043e \u0432\u043e\u043f\u0440\u043e\u0441\u0430\u043c \u0443\u0447\u0430\u0441\u0442\u0438\u044f, \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u0441\u0442\u0432\u0430 \u0438 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u0432 \u0440\u0430\u043c\u043a\u0430\u0445"}</span>
                   <span className="block">Global EdTech.</span>
                 </>
               }
