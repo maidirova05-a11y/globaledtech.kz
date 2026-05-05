@@ -1,26 +1,21 @@
 {
   "name": "globaledtech",
   "version": "1.0.0",
-  "description": "GlobalEdTech event website",
   "scripts": {
     "dev": "vite",
-    "build": "node ./node_modules/vite/bin/vite.js build",
+    "build": "vite build",
     "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "module",
   "dependencies": {
     "framer-motion": "^12.38.0",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.75.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.4",
-    "@vitejs/plugin-react": "^6.0.1",
-    "tailwindcss": "^4.2.4",
-    "vite": "^8.0.10"
+    "vite": "^5.4.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "tailwindcss": "^3.4.0"
   }
 }
