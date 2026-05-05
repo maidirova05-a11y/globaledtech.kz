@@ -156,10 +156,10 @@ const programItems = [
 ];
 
 const contactItems = [
-  { label: "\u0413\u043e\u0440\u043e\u0434", value: "\u0410\u0441\u0442\u0430\u043d\u0430, \u041a\u0430\u0437\u0430\u0445\u0441\u0442\u0430\u043d" },
-  { label: "\u0414\u0430\u0442\u044b", value: "7 - 8 \u0444\u0435\u0432\u0440\u0430\u043b\u044f 2027 \u0433\u043e\u0434\u0430" },
+  { label: "Город", value: "Астана, Казахстан" },
+  { label: "Даты", value: "7 - 8 февраля 2027 года" },
   { label: "Email", value: "hello@globaledtech.org" },
-  { label: "\u0422\u0435\u043b\u0435\u0444\u043e\u043d", value: "+7 (700) 033 0229" },
+  { label: "Телефон", value: "+7 (700) 033 0229" },
 ];
 
 const reveal = {
@@ -351,18 +351,18 @@ function App() {
 
               <div className="mt-8 grid max-w-3xl gap-4 sm:grid-cols-2">
                 <div className="stat-card p-4">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">{"\u0413\u043e\u0440\u043e\u0434"}</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{"\u0410\u0441\u0442\u0430\u043d\u0430"}</p>
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Город</p>
+                  <p className="mt-2 text-lg font-semibold text-white">Астана</p>
                 </div>
                 <div className="stat-card p-4">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">{"\u0414\u0430\u0442\u044b"}</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{"7 - 8 \u0444\u0435\u0432\u0440\u0430\u043b\u044f 2027 \u0433\u043e\u0434\u0430"}</p>
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Даты</p>
+                  <p className="mt-2 text-lg font-semibold text-white">7 - 8 февраля 2027 года</p>
                 </div>
               </div>
 
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <a href="#register" className="button-primary justify-center">
-                  {"\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c\u0441\u044f"}
+                  Зарегистрироваться
                 </a>
               </div>
             </motion.div>
@@ -435,7 +435,7 @@ function App() {
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow="Внутренние мероприятия"
-              title="\u0422\u0440\u0438 \u0433\u043b\u0430\u0432\u043d\u044b\u0445 \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u044f \u0432 \u0440\u0430\u043c\u043a\u0430\u0445 Global EdTech"
+              title="Три главных направления в рамках Global EdTech"
               text="На площадке Global EdTech пройдут отдельные тематические мероприятия, которые расширяют программу форума и делают ее интересной для школьников, студентов, преподавателей, специалистов и технологических команд."
             />
 
@@ -603,26 +603,26 @@ function App() {
               <form className="grid gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
                 <div>
                   <label className="field-label" htmlFor="name">
-                    {"\u0418\u043c\u044f"}
+                    Имя
                   </label>
                   <input
                     id="name"
                     className="field-input"
-                    placeholder="\u0412\u0430\u0448\u0435 \u0438\u043c\u044f"
-                    {...register("name", { required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0438\u043c\u044f" })}
+                    placeholder="Ваше имя"
+                    {...register("name", { required: "Укажите имя" })}
                   />
                   {errors.name && <p className="field-error">{errors.name.message}</p>}
                 </div>
 
                 <div>
                   <label className="field-label" htmlFor="surname">
-                    {"\u0424\u0430\u043c\u0438\u043b\u0438\u044f"}
+                    Фамилия
                   </label>
                   <input
                     id="surname"
                     className="field-input"
-                    placeholder="\u0412\u0430\u0448\u0430 \u0444\u0430\u043c\u0438\u043b\u0438\u044f"
-                    {...register("surname", { required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0444\u0430\u043c\u0438\u043b\u0438\u044e" })}
+                    placeholder="Ваша фамилия"
+                    {...register("surname", { required: "Укажите фамилию" })}
                   />
                   {errors.surname && <p className="field-error">{errors.surname.message}</p>}
                 </div>
@@ -638,10 +638,10 @@ function App() {
                       className="field-input"
                       placeholder="you@example.com"
                       {...register("email", {
-                        required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 email",
+                        required: "Укажите email",
                         pattern: {
                           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                          message: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u044b\u0439 email",
+                          message: "Введите корректный email",
                         },
                       })}
                     />
@@ -650,7 +650,7 @@ function App() {
 
                   <div>
                     <label className="field-label" htmlFor="phone">
-                      {"\u0422\u0435\u043b\u0435\u0444\u043e\u043d"}
+                      Телефон
                     </label>
                     <input
                       id="phone"
@@ -658,10 +658,10 @@ function App() {
                       className="field-input"
                       placeholder="+7 (700) 033 0229"
                       {...register("phone", {
-                        required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0442\u0435\u043b\u0435\u0444\u043e\u043d",
+                        required: "Укажите телефон",
                         minLength: {
                           value: 8,
-                          message: "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u044b\u0439 \u043d\u043e\u043c\u0435\u0440 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0430",
+                          message: "Введите корректный номер телефона",
                         },
                       })}
                     />
@@ -672,35 +672,35 @@ function App() {
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <label className="field-label" htmlFor="company">
-                      {"\u041a\u043e\u043c\u043f\u0430\u043d\u0438\u044f"}
+                      Компания
                     </label>
                     <input
                       id="company"
                       className="field-input"
-                      placeholder="\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u0438"
-                      {...register("company", { required: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u044e" })}
+                      placeholder="Название организации"
+                      {...register("company", { required: "Укажите компанию" })}
                     />
                     {errors.company && <p className="field-error">{errors.company.message}</p>}
                   </div>
 
                   <div>
                     <label className="field-label" htmlFor="participationType">
-                      {"\u0424\u043e\u0440\u043c\u0430\u0442 \u0443\u0447\u0430\u0441\u0442\u0438\u044f"}
+                      Формат участия
                     </label>
                     <select
                       id="participationType"
                       className="field-input"
                       defaultValue=""
                       {...register("participationType", {
-                        required: "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0444\u043e\u0440\u043c\u0430\u0442 \u0443\u0447\u0430\u0441\u0442\u0438\u044f",
+                        required: "Выберите формат участия",
                       })}
                     >
                       <option value="" disabled>
-                        {"\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0430\u0440\u0438\u0430\u043d\u0442"}
+                        Выберите вариант
                       </option>
-                      <option value="delegate">{"\u0423\u0447\u0430\u0441\u0442\u043d\u0438\u043a"}</option>
-                      <option value="speaker">{"\u0421\u043f\u0438\u043a\u0435\u0440"}</option>
-                      <option value="partner">{"\u041f\u0430\u0440\u0442\u043d\u0435\u0440"}</option>
+                      <option value="delegate">Участник</option>
+                      <option value="speaker">Спикер</option>
+                      <option value="partner">Партнер</option>
                     </select>
                     {errors.participationType && (
                       <p className="field-error">{errors.participationType.message}</p>
@@ -728,7 +728,7 @@ function App() {
               title="Давайте вместе строить следующую главу в развитии образования"
               text={
                 <>
-                  <span>{"\u0421\u0432\u044f\u0436\u0438\u0442\u0435\u0441\u044c \u0441 \u043d\u0430\u043c\u0438 \u043f\u043e \u0432\u043e\u043f\u0440\u043e\u0441\u0430\u043c \u0443\u0447\u0430\u0441\u0442\u0438\u044f, \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u0441\u0442\u0432\u0430 \u0438 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u0432 \u0440\u0430\u043c\u043a\u0430\u0445"}</span>
+                  <span>Свяжитесь с нами по вопросам участия, партнерства и сотрудничества в рамках</span>
                   <span className="block">Global EdTech.</span>
                 </>
               }
