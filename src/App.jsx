@@ -50,7 +50,7 @@ const ecosystemEvents = [
     title: "ITECx",
     subtitle:
       "Международный научный конгресс для школьников, студентов, учителей и преподавателей ВУЗов",
-    image: "/assets/itecx-logo.jpg",
+    image: "/assets/itecx-logo-main.png",
   },
 ];
 
@@ -224,7 +224,7 @@ function App() {
         <div className="grid-overlay absolute inset-0 opacity-30" />
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0B0F2A]/75 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#0B0F2A]/88 backdrop-blur-xl">
         <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <a href="#hero" className="flex min-w-0 items-center">
             <img
@@ -334,7 +334,7 @@ function App() {
         )}
       </header>
 
-      <main>
+      <main className="pt-[88px] sm:pt-[100px]">
         <section
           id="hero"
           className="relative overflow-hidden px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-24 lg:px-8 lg:pb-28 lg:pt-28"
@@ -362,15 +362,15 @@ function App() {
               </p>
 
               <div className="mt-8 grid max-w-3xl gap-4 sm:grid-cols-3">
-                <div className="glass-panel p-4">
+                <div className="stat-card p-4">
                   <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Город</p>
                   <p className="mt-2 text-lg font-semibold text-white">Астана</p>
                 </div>
-                <div className="glass-panel p-4">
+                <div className="stat-card p-4">
                   <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Даты</p>
                   <p className="mt-2 text-lg font-semibold text-white">7–8 февраля 2027</p>
                 </div>
-                <div className="glass-panel p-4">
+                <div className="stat-card p-4">
                   <p className="text-xs uppercase tracking-[0.28em] text-slate-400">
                     Ожидается
                   </p>

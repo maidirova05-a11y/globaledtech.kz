@@ -43,6 +43,13 @@ select {
   backdrop-filter: blur(20px);
 }
 
+.stat-card {
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(18px);
+}
+
 .header-logo {
   display: block;
   width: auto;
@@ -221,23 +228,29 @@ select {
 }
 
 .event-logo-wrap {
+  position: relative;
   display: flex;
-  min-height: 180px;
+  min-height: 190px;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
-    rgba(255, 255, 255, 0.04);
-  padding: 1.25rem;
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 58%, transparent 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 48px rgba(2, 8, 23, 0.24);
+  padding: 1rem;
 }
 
 .event-logo {
-  max-height: 140px;
+  position: relative;
+  z-index: 1;
+  max-height: 156px;
   width: 100%;
   object-fit: contain;
+  filter: drop-shadow(0 12px 32px rgba(2, 8, 23, 0.55));
 }
 
 .marquee {
@@ -343,6 +356,11 @@ select.field-input:invalid {
 
   .event-logo-wrap {
     min-height: 150px;
+    padding: 0.85rem;
+  }
+
+  .event-logo {
+    max-height: 132px;
   }
 
   .menu-info-value {
