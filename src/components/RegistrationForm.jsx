@@ -250,6 +250,7 @@ export default function RegistrationForm() {
   const formRef = useRef(null);
   const defaultCountry = useMemo(inferDefaultCountry, []);
   const [submitState, setSubmitState] = useState("idle");
+  const [submitError, setSubmitError] = useState("");
   const {
     register,
     control,
@@ -303,11 +304,27 @@ export default function RegistrationForm() {
 
   const onValidSubmit = async (values) => {
     setSubmitState("idle");
+    setSubmitError("");
 
     const payload = parseRegistrationPayload(values);
 
-    await new Promise((resolve) => window.setTimeout(resolve, 1200));
-    console.log("Registration submitted:", payload);
+    const response = await fetch("/api/registrations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const result = await response.json().catch(() => null);
+      setSubmitState("error");
+      setSubmitError(
+        result?.error ||
+          "Не удалось отправить заявку. Пожалуйста, попробуйте еще раз.",
+      );
+      return;
+    }
 
     setSubmitState("success");
     reset();
@@ -315,6 +332,7 @@ export default function RegistrationForm() {
 
   const onInvalidSubmit = (formErrors) => {
     setSubmitState("idle");
+    setSubmitError("");
     const firstInvalidField = fieldNames.find((fieldName) => formErrors[fieldName]);
     if (firstInvalidField) {
       scrollToField(firstInvalidField);
@@ -485,6 +503,20 @@ export default function RegistrationForm() {
             {...messageMotion}
           >
             Спасибо за регистрацию. Наша команда свяжется с вами в ближайшее время.
+          </motion.p>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {submitState === "error" && submitError ? (
+          <motion.p
+            key="error"
+            className="status-message status-message-error"
+            role="alert"
+            aria-live="assertive"
+            {...messageMotion}
+          >
+            {submitError}
           </motion.p>
         ) : null}
       </AnimatePresence>
