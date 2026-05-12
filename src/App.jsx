@@ -544,10 +544,6 @@ function App() {
                       <span className="icon">{card.icon}</span>
                     </div>
                     <div className="benefit-copy">
-                      <div className="benefit-meta">
-                        <span>0{index + 1}</span>
-                        <span>Goal</span>
-                      </div>
                       <h3 className="benefit-title">{card.title}</h3>
                       <p className="benefit-description">{card.description}</p>
                     </div>

@@ -240,20 +240,7 @@ textarea {
   flex-direction: column;
 }
 
-.benefit-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: rgba(148, 163, 184, 0.82);
-}
-
 .benefit-title {
-  margin-top: 1rem;
   max-width: 15ch;
   font-size: 1.7rem;
   font-weight: 600;
