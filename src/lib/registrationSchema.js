@@ -6,18 +6,21 @@ const namePattern = /^(?=.{2,}$)[\p{L}\p{M}]+(?:-[\p{L}\p{M}]+)*$/u;
 const emailPattern = /^(?!.*\s)[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const companyPattern = /^(?=.{2,}$)[\p{L}\p{M}\d&.\- ]+$/u;
 
-const sanitizeText = (value) =>
+const sanitizeMarkup = (value) =>
   DOMPurify.sanitize(String(value ?? ""), {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
-  })
-    .replace(/[<>`"'{}[\]\\;$%^*_=+~|]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  }).trim();
 
-const sanitizeEmail = (value) => sanitizeText(value).replace(/\s+/g, "").toLowerCase();
+const normalizeSpaces = (value) => value.replace(/\s+/g, " ").trim();
 
-const sanitizePhone = (value) => sanitizeText(value).replace(/[^\d+()\-\s]/g, "").trim();
+const sanitizeText = (value) =>
+  normalizeSpaces(sanitizeMarkup(value).replace(/[<>`"'{}[\]\\;$%^*_=+~|]/g, ""));
+
+const sanitizeEmail = (value) => sanitizeMarkup(value).replace(/\s+/g, "").toLowerCase();
+
+const sanitizePhone = (value) =>
+  normalizeSpaces(sanitizeMarkup(value).replace(/[^\d+()\-\s]/g, ""));
 
 export const sanitizeRegistrationPayload = (rawPayload) => ({
   name: sanitizeText(rawPayload?.name),
