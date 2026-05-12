@@ -1,6 +1,6 @@
 ﻿import { motion } from "framer-motion";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import RegistrationForm from "./components/RegistrationForm";
 
 const navItems = [
   { label: "О событии", href: "#about" },
@@ -50,7 +50,7 @@ const ecosystemEvents = [
     title: "ITECx",
     subtitle:
       "Международный научный конгресс для школьников, студентов, учителей и преподавателей ВУЗов",
-    image: "/assets/itecx-logo-main.png",
+    image: "/assets/itecx-logo-transparent.png",
   },
 ];
 
@@ -114,6 +114,16 @@ const benefitCards = [
       </svg>
     ),
   },
+  {
+    title: "Поддержать развитие сообщества",
+    description:
+      "Мы создаем среду для долгосрочного сотрудничества, обмена опытом и совместных проектов, которые ускоряют развитие современного образования.",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16 11c1.66 0 2.99-1.57 2.99-3.5S17.66 4 16 4s-3 1.57-3 3.5S14.34 11 16 11Zm-8 0c1.66 0 2.99-1.57 2.99-3.5S9.66 4 8 4 5 5.57 5 7.5 6.34 11 8 11Zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.98 1.97 3.45V20h6v-3.5c0-2.33-4.67-3.5-7-3.5Z" />
+      </svg>
+    ),
+  },
 ];
 
 const programItems = [
@@ -171,6 +181,26 @@ const reveal = {
   },
 };
 
+const staggerGrid = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const staggerCard = {
+  hidden: { opacity: 0, y: 28, scale: 0.98 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.55, ease: "easeOut" },
+  },
+};
+
 function SectionHeading({ eyebrow, title, text }) {
   return (
     <motion.div
@@ -193,28 +223,6 @@ function SectionHeading({ eyebrow, title, text }) {
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitSuccessful },
-    reset,
-  } = useForm({
-    defaultValues: {
-      name: "",
-      surname: "",
-      email: "",
-      phone: "",
-      company: "",
-      participationType: "",
-    },
-  });
-
-  const onSubmit = (data) => {
-    console.log("Registration submitted:", data);
-    setIsSubmitted(true);
-    reset();
-  };
 
   return (
     <div className="min-h-screen bg-[#0B0F2A] text-slate-100">
@@ -517,25 +525,36 @@ function App() {
               title="Что делает Global EdTech важным событием для экосистемы"
               text="Форум строится вокруг практической пользы, открытого диалога и долгосрочного развития образовательной среды."
             />
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <motion.div
+              className="benefits-grid"
+              variants={staggerGrid}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+            >
               {benefitCards.map((card, index) => (
                 <motion.article
                   key={card.title}
-                  className="glass-panel card-hover p-6"
-                  variants={reveal}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ delay: index * 0.08 }}
+                  className={`benefit-card benefit-card-${index + 1} glass-panel`}
+                  variants={staggerCard}
                 >
-                  <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-cyan-300 shadow-[0_0_30px_rgba(0,194,255,0.18)]">
-                    <span className="icon">{card.icon}</span>
+                  <div className="benefit-card-glow" aria-hidden="true" />
+                  <div className="benefit-card-content">
+                    <div className="benefit-icon-shell">
+                      <span className="icon">{card.icon}</span>
+                    </div>
+                    <div className="benefit-copy">
+                      <div className="benefit-meta">
+                        <span>0{index + 1}</span>
+                        <span>Goal</span>
+                      </div>
+                      <h3 className="benefit-title">{card.title}</h3>
+                      <p className="benefit-description">{card.description}</p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-white">{card.title}</h3>
-                  <p className="mt-4 text-sm leading-7 text-slate-300">{card.description}</p>
                 </motion.article>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -600,123 +619,7 @@ function App() {
               whileInView="show"
               viewport={{ once: true, amount: 0.2 }}
             >
-              <form className="grid gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
-                <div>
-                  <label className="field-label" htmlFor="name">
-                    Имя
-                  </label>
-                  <input
-                    id="name"
-                    className="field-input"
-                    placeholder="Ваше имя"
-                    {...register("name", { required: "Укажите имя" })}
-                  />
-                  {errors.name && <p className="field-error">{errors.name.message}</p>}
-                </div>
-
-                <div>
-                  <label className="field-label" htmlFor="surname">
-                    Фамилия
-                  </label>
-                  <input
-                    id="surname"
-                    className="field-input"
-                    placeholder="Ваша фамилия"
-                    {...register("surname", { required: "Укажите фамилию" })}
-                  />
-                  {errors.surname && <p className="field-error">{errors.surname.message}</p>}
-                </div>
-
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <label className="field-label" htmlFor="email">
-                      Email
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      className="field-input"
-                      placeholder="you@example.com"
-                      {...register("email", {
-                        required: "Укажите email",
-                        pattern: {
-                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                          message: "Введите корректный email",
-                        },
-                      })}
-                    />
-                    {errors.email && <p className="field-error">{errors.email.message}</p>}
-                  </div>
-
-                  <div>
-                    <label className="field-label" htmlFor="phone">
-                      Телефон
-                    </label>
-                    <input
-                      id="phone"
-                      type="tel"
-                      className="field-input"
-                      placeholder="+7 (700) 033 0229"
-                      {...register("phone", {
-                        required: "Укажите телефон",
-                        minLength: {
-                          value: 8,
-                          message: "Введите корректный номер телефона",
-                        },
-                      })}
-                    />
-                    {errors.phone && <p className="field-error">{errors.phone.message}</p>}
-                  </div>
-                </div>
-
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <label className="field-label" htmlFor="company">
-                      Компания
-                    </label>
-                    <input
-                      id="company"
-                      className="field-input"
-                      placeholder="Название организации"
-                      {...register("company", { required: "Укажите компанию" })}
-                    />
-                    {errors.company && <p className="field-error">{errors.company.message}</p>}
-                  </div>
-
-                  <div>
-                    <label className="field-label" htmlFor="participationType">
-                      Формат участия
-                    </label>
-                    <select
-                      id="participationType"
-                      className="field-input"
-                      defaultValue=""
-                      {...register("participationType", {
-                        required: "Выберите формат участия",
-                      })}
-                    >
-                      <option value="" disabled>
-                        Выберите вариант
-                      </option>
-                      <option value="delegate">Участник</option>
-                      <option value="speaker">Спикер</option>
-                      <option value="partner">Партнер</option>
-                    </select>
-                    {errors.participationType && (
-                      <p className="field-error">{errors.participationType.message}</p>
-                    )}
-                  </div>
-                </div>
-                <button type="submit" className="button-primary mt-2 justify-center">
-                  Отправить заявку
-                </button>
-
-                {(isSubmitSuccessful || isSubmitted) && (
-                  <p className="rounded-[16px] border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
-                    Спасибо за регистрацию. Наша команда свяжется с вами в ближайшее время.
-                  </p>
-                )}
-              </form>
+              <RegistrationForm />
             </motion.div>
           </div>
         </section>

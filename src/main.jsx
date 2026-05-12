@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "react-phone-number-input/style.css";
 import App from "./App";
 import "./index.css";
 

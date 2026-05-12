@@ -23,7 +23,8 @@ a {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -131,6 +132,144 @@ select {
   box-shadow: 0 28px 90px rgba(0, 194, 255, 0.12);
 }
 
+.benefits-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.benefit-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    linear-gradient(135deg, rgba(7, 17, 42, 0.84), rgba(20, 25, 57, 0.72));
+  backdrop-filter: blur(24px);
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease;
+}
+
+.benefit-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: 16px;
+  background: linear-gradient(140deg, rgba(0, 194, 255, 0.75), rgba(255, 46, 126, 0.42), rgba(255, 199, 0, 0.2));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.benefit-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(0, 194, 255, 0.24);
+  box-shadow:
+    0 22px 70px rgba(0, 194, 255, 0.12),
+    0 32px 90px rgba(2, 8, 23, 0.38);
+}
+
+.benefit-card:hover::before {
+  opacity: 1;
+}
+
+.benefit-card-glow {
+  position: absolute;
+  inset: auto auto -30% -12%;
+  height: 9rem;
+  width: 9rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(0, 194, 255, 0.24), transparent 70%);
+  filter: blur(14px);
+  opacity: 0.75;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.benefit-card:hover .benefit-card-glow {
+  transform: scale(1.12);
+  opacity: 1;
+}
+
+.benefit-card-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100%;
+  width: 100%;
+  flex-direction: column;
+  padding: 1.75rem;
+}
+
+.benefit-icon-shell {
+  display: inline-flex;
+  height: 3.75rem;
+  width: 3.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+    rgba(10, 17, 40, 0.35);
+  color: #6ee7ff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 30px rgba(0, 194, 255, 0.12);
+  backdrop-filter: blur(14px);
+}
+
+.benefit-copy {
+  margin-top: 1.3rem;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.benefit-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.82);
+}
+
+.benefit-title {
+  margin-top: 1rem;
+  max-width: 15ch;
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.16;
+  letter-spacing: -0.03em;
+  color: #f8fafc;
+}
+
+.benefit-description {
+  margin-top: 1rem;
+  flex: 1;
+  font-size: 1rem;
+  line-height: 1.95;
+  color: #cbd5e1;
+}
+
 .button-primary,
 .button-secondary {
   display: inline-flex;
@@ -162,6 +301,16 @@ select {
 .button-primary:hover,
 .button-secondary:hover {
   transform: translateY(-2px);
+}
+
+.button-primary:disabled,
+.button-primary[aria-disabled="true"] {
+  cursor: not-allowed;
+  transform: none;
+  border-color: rgba(148, 163, 184, 0.25);
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.9), rgba(100, 116, 139, 0.82));
+  box-shadow: none;
+  opacity: 0.75;
 }
 
 .button-primary:hover {
@@ -263,11 +412,16 @@ select {
   margin-bottom: 0.65rem;
   display: inline-block;
   font-size: 0.92rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #dbeafe;
 }
 
-.field-input {
+.field-group {
+  min-width: 0;
+}
+
+.field-input,
+.PhoneInput {
   width: 100%;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -281,11 +435,13 @@ select {
     background 180ms ease;
 }
 
-.field-input::placeholder {
+.field-input::placeholder,
+.PhoneInputInput::placeholder {
   color: #94a3b8;
 }
 
-.field-input:focus {
+.field-input:focus,
+.PhoneInput:focus-within {
   border-color: rgba(0, 194, 255, 0.55);
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.12);
@@ -293,6 +449,44 @@ select {
 
 select.field-input {
   color-scheme: dark;
+}
+
+.PhoneInput {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.PhoneInputCountry {
+  margin-right: 0;
+  align-items: center;
+}
+
+.PhoneInputCountrySelect {
+  cursor: pointer;
+}
+
+.PhoneInputCountryIcon {
+  width: 1.35rem;
+  height: 1rem;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.PhoneInputInput {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: white;
+  outline: none;
+  padding: 0;
+}
+
+.PhoneInputInput:-webkit-autofill,
+.field-input:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 select.field-input option {
@@ -308,6 +502,46 @@ select.field-input:invalid {
   margin-top: 0.6rem;
   font-size: 0.86rem;
   color: #fda4af;
+}
+
+.field-input-error,
+.PhoneInput.field-input-error {
+  border-color: rgba(248, 113, 113, 0.95);
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.14);
+}
+
+.field-input-success,
+.PhoneInput.field-input-success {
+  border-color: rgba(74, 222, 128, 0.8);
+  box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.12);
+}
+
+.field-input-error:focus,
+.PhoneInput.field-input-error:focus-within {
+  border-color: rgba(248, 113, 113, 0.95);
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.14);
+}
+
+.field-input-success:focus,
+.PhoneInput.field-input-success:focus-within {
+  border-color: rgba(74, 222, 128, 0.9);
+  box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.12);
+}
+
+.button-submit {
+  min-height: 3.75rem;
+}
+
+.status-message {
+  border-radius: 16px;
+  padding: 0.95rem 1rem;
+  font-size: 0.92rem;
+}
+
+.status-message-success {
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.12), rgba(6, 95, 70, 0.22));
+  color: #b7f7da;
 }
 
 @keyframes pulse {
@@ -365,5 +599,61 @@ select.field-input:invalid {
 
   .menu-info-value {
     font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .benefits-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .benefits-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .benefits-grid > .benefit-card {
+    grid-column: span 4;
+  }
+
+  .benefit-card-1 {
+    grid-column: 1 / span 4;
+  }
+
+  .benefit-card-2 {
+    grid-column: 5 / span 4;
+  }
+
+  .benefit-card-3 {
+    grid-column: 9 / span 4;
+  }
+
+  .benefit-card-4 {
+    grid-column: 3 / span 4;
+  }
+
+  .benefit-card-5 {
+    grid-column: 7 / span 4;
+  }
+
+  .benefit-card-6 {
+    grid-column: 5 / span 4;
+  }
+}
+
+@media (max-width: 767px) {
+  .benefit-card-content {
+    padding: 1.5rem;
+  }
+
+  .benefit-title {
+    max-width: none;
+    font-size: 1.45rem;
+  }
+
+  .benefit-description {
+    font-size: 0.96rem;
+    line-height: 1.8;
   }
 }
