@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import PhoneInput from "react-phone-number-input";
+import PhoneInput, { getCountryCallingCode } from "react-phone-number-input";
 import { parseRegistrationPayload, registrationSchema } from "../lib/registrationSchema";
 
 const fieldNames = [
@@ -27,6 +27,187 @@ const messageMotion = {
   exit: { opacity: 0, y: -4, height: 0 },
   transition: { duration: 0.2, ease: "easeOut" },
 };
+
+function SearchableCountrySelect({
+  value,
+  onChange,
+  onFocus,
+  onBlur,
+  options,
+  iconComponent: Icon,
+  disabled,
+  readOnly,
+  className,
+}) {
+  const containerRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filteredOptions = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    const selectableOptions = options.filter((option) => option.value);
+
+    if (!query) {
+      return selectableOptions;
+    }
+
+    return selectableOptions.filter((option) => {
+      const countryCode = option.value.toLowerCase();
+      const countryName = option.label.toLowerCase();
+      const callingCode = `+${getCountryCallingCode(option.value)}`;
+
+      return (
+        countryCode.includes(query) ||
+        countryName.includes(query) ||
+        callingCode.includes(query)
+      );
+    });
+  }, [options, search]);
+
+  const selectedOption =
+    options.find((option) => option.value === value) ??
+    options.find((option) => option.value) ??
+    null;
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event) => {
+      if (!containerRef.current?.contains(event.target)) {
+        setIsOpen(false);
+        setSearch("");
+        onBlur?.();
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        setSearch("");
+        onBlur?.();
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, onBlur]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 10);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isOpen]);
+
+  const handleToggle = () => {
+    if (disabled || readOnly) {
+      return;
+    }
+
+    setIsOpen((open) => {
+      const nextOpen = !open;
+
+      if (nextOpen) {
+        onFocus?.();
+      } else {
+        setSearch("");
+        onBlur?.();
+      }
+
+      return nextOpen;
+    });
+  };
+
+  const handleSelect = (country) => {
+    onChange(country);
+    setIsOpen(false);
+    setSearch("");
+    onBlur?.();
+  };
+
+  return (
+    <div ref={containerRef} className={`phone-country-select ${className || ""}`}>
+      <button
+        type="button"
+        className="phone-country-button"
+        onClick={handleToggle}
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label="Выбор страны телефона"
+      >
+        {selectedOption?.value ? (
+          <Icon country={selectedOption.value} label={selectedOption.label} />
+        ) : null}
+        <span className="phone-country-arrow" aria-hidden="true">
+          ▾
+        </span>
+      </button>
+
+      <AnimatePresence>
+        {isOpen ? (
+          <motion.div
+            className="phone-country-popover"
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+          >
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className="phone-country-search"
+              placeholder="Поиск страны, кода или +"
+              aria-label="Поиск страны"
+            />
+
+            <div className="phone-country-list" role="listbox" aria-label="Список стран">
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`phone-country-option ${
+                      option.value === value ? "phone-country-option-active" : ""
+                    }`}
+                    onClick={() => handleSelect(option.value)}
+                    role="option"
+                    aria-selected={option.value === value}
+                  >
+                    <span className="phone-country-option-flag">
+                      <Icon country={option.value} label={option.label} />
+                    </span>
+                    <span className="phone-country-option-label">{option.label}</span>
+                    <span className="phone-country-option-code">
+                      +{getCountryCallingCode(option.value)}
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <p className="phone-country-empty">Ничего не найдено</p>
+              )}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function inferDefaultCountry() {
   if (typeof navigator === "undefined") {
@@ -218,6 +399,7 @@ export default function RegistrationForm() {
                 withCountryCallingCode
                 defaultCountry={defaultCountry}
                 autoComplete="tel"
+                countrySelectComponent={SearchableCountrySelect}
                 countrySelectProps={{ "aria-label": "Выбор страны телефона" }}
                 placeholder="+1 202 555 0188"
                 className={getFieldClass(Boolean(errors.phone), isFieldValidated("phone"))}

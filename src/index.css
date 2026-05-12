@@ -449,6 +449,116 @@ select.field-input {
   align-items: center;
 }
 
+.phone-country-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.phone-country-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  background: transparent;
+  color: #e2e8f0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.phone-country-arrow {
+  font-size: 0.72rem;
+  color: #67e8f9;
+}
+
+.phone-country-popover {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.85rem);
+  z-index: 30;
+  width: min(20rem, calc(100vw - 3rem));
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(14, 20, 45, 0.96), rgba(20, 26, 56, 0.94));
+  box-shadow:
+    0 24px 70px rgba(2, 8, 23, 0.42),
+    0 0 0 1px rgba(0, 194, 255, 0.08);
+  backdrop-filter: blur(24px);
+}
+
+.phone-country-search {
+  width: calc(100% - 1rem);
+  margin: 0.5rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.85rem 0.95rem;
+  color: #f8fafc;
+  outline: none;
+}
+
+.phone-country-search::placeholder {
+  color: #94a3b8;
+}
+
+.phone-country-search:focus {
+  border-color: rgba(0, 194, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(0, 194, 255, 0.1);
+}
+
+.phone-country-list {
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: 0.25rem 0.5rem 0.5rem;
+}
+
+.phone-country-option {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: #e2e8f0;
+  cursor: pointer;
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.phone-country-option:hover,
+.phone-country-option-active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.phone-country-option-flag {
+  display: inline-flex;
+  align-items: center;
+}
+
+.phone-country-option-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-country-option-code {
+  color: #7dd3fc;
+  font-size: 0.92rem;
+}
+
+.phone-country-empty {
+  margin: 0;
+  padding: 1rem 0.85rem 1.1rem;
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
 .PhoneInputCountrySelect {
   cursor: pointer;
 }
