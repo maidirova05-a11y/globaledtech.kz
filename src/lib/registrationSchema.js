@@ -1,4 +1,3 @@
-import DOMPurify from "isomorphic-dompurify";
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { z } from "zod";
 
@@ -7,10 +6,13 @@ const emailPattern = /^(?!.*\s)[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const companyPattern = /^(?=.{2,}$)[\p{L}\p{M}\d&.\- ]+$/u;
 
 const sanitizeMarkup = (value) =>
-  DOMPurify.sanitize(String(value ?? ""), {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-  }).trim();
+  String(value ?? "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .trim();
 
 const normalizeSpaces = (value) => value.replace(/\s+/g, " ").trim();
 

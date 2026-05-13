@@ -1,17 +1,33 @@
-import { google } from "googleapis";
 import { parseRegistrationPayload } from "../src/lib/registrationSchema.js";
 
-const REQUIRED_ENV_VARS = [
+const SERVICE_ACCOUNT_ENV_VARS = [
   "GOOGLE_SERVICE_ACCOUNT_EMAIL",
   "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY",
   "GOOGLE_SHEETS_SPREADSHEET_ID",
 ];
 
 function getMissingEnvVars() {
-  return REQUIRED_ENV_VARS.filter((name) => !process.env[name]);
+  if (process.env.GOOGLE_SHEETS_WEB_APP_URL) {
+    return [];
+  }
+
+  return SERVICE_ACCOUNT_ENV_VARS.filter((name) => !process.env[name]);
 }
 
-function getSheetsClient() {
+function buildWebhookPayload(payload) {
+  return {
+    createdAt: new Date().toISOString(),
+    name: payload.name,
+    surname: payload.surname,
+    email: payload.email,
+    phone: payload.phone,
+    company: payload.company,
+    participationType: payload.participationType,
+  };
+}
+
+async function getSheetsClient() {
+  const { google } = await import("googleapis");
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -49,8 +65,30 @@ export default async function handler(req, res) {
   }
 
   try {
-    const payload = parseRegistrationPayload(req.body ?? {});
-    const sheets = getSheetsClient();
+    const rawBody =
+      typeof req.body === "string"
+        ? JSON.parse(req.body || "{}")
+        : (req.body ?? {});
+
+    const payload = parseRegistrationPayload(rawBody);
+
+    if (process.env.GOOGLE_SHEETS_WEB_APP_URL) {
+      const webhookResponse = await fetch(process.env.GOOGLE_SHEETS_WEB_APP_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8",
+        },
+        body: JSON.stringify(buildWebhookPayload(payload)),
+      });
+
+      if (!webhookResponse.ok) {
+        throw new Error(`Apps Script webhook failed with status ${webhookResponse.status}`);
+      }
+
+      return res.status(200).json({ ok: true });
+    }
+
+    const sheets = await getSheetsClient();
     const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
     const sheetName = process.env.GOOGLE_SHEETS_SHEET_NAME || "Registrations";
     const range = `${sheetName}!A:G`;
