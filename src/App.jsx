@@ -1326,9 +1326,6 @@ function App() {
             <a href="#register" className="transition hover:text-cyan-300">
               {t.ui.register}
             </a>
-            <a href="/admin" className="transition hover:text-cyan-300">
-              {t.ui.admin}
-            </a>
           </div>
         </div>
       </footer>
