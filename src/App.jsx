@@ -913,12 +913,12 @@ function App() {
             />
           </a>
 
-          <div className="hidden items-center gap-6 xl:flex">
+          <div className="hidden flex-1 items-center justify-center gap-5 xl:flex">
             {t.nav.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="text-sm text-slate-300 transition hover:text-cyan-300"
+                className="whitespace-nowrap text-sm text-slate-300 transition hover:text-cyan-300"
               >
                 {item.label}
               </a>
