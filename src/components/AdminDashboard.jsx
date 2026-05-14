@@ -23,6 +23,24 @@ function formatDate(value) {
   }).format(date);
 }
 
+function escapeCsvValue(value) {
+  const stringValue = String(value ?? "").replace(/"/g, '""');
+  return `"${stringValue}"`;
+}
+
+function buildExportRows(registrations) {
+  return registrations.map((item) => ({
+    createdAt: formatDate(item.createdAt),
+    name: item.name || "",
+    surname: item.surname || "",
+    email: item.email || "",
+    phone: item.phone || "",
+    company: item.company || "",
+    participationType:
+      participationTypeLabels[item.participationType] || item.participationType || "",
+  }));
+}
+
 export default function AdminDashboard() {
   const [password, setPassword] = useState(() => sessionStorage.getItem("adminPassword") || "");
   const [inputValue, setInputValue] = useState(
@@ -95,6 +113,55 @@ export default function AdminDashboard() {
     setError("");
   };
 
+  const handleExport = () => {
+    if (registrations.length === 0) {
+      setStatus("error");
+      setError("Нет данных для выгрузки.");
+      return;
+    }
+
+    const rows = buildExportRows(registrations);
+    const header = [
+      "Дата и время",
+      "Имя",
+      "Фамилия",
+      "Email",
+      "Телефон",
+      "Компания",
+      "Формат участия",
+    ];
+
+    const csvLines = [
+      header.map(escapeCsvValue).join(";"),
+      ...rows.map((row) =>
+        [
+          row.createdAt,
+          row.name,
+          row.surname,
+          row.email,
+          row.phone,
+          row.company,
+          row.participationType,
+        ]
+          .map(escapeCsvValue)
+          .join(";"),
+      ),
+    ];
+
+    const csvContent = `\uFEFF${csvLines.join("\n")}`;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const dateStamp = new Date().toISOString().slice(0, 10);
+
+    link.href = downloadUrl;
+    link.download = `global-edtech-registrations-${dateStamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+  };
+
   return (
     <div className="min-h-screen bg-[#081124] px-4 py-8 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -129,6 +196,13 @@ export default function AdminDashboard() {
               </button>
               <button
                 type="button"
+                onClick={handleExport}
+                className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-5 py-3 text-sm font-medium text-emerald-100 transition hover:bg-emerald-400/20"
+              >
+                Выгрузить в Excel
+              </button>
+              <button
+                type="button"
                 onClick={handleLogout}
                 className="rounded-full border border-white/10 px-5 py-3 text-sm text-slate-200 transition hover:border-rose-400/60 hover:text-white"
               >
@@ -142,7 +216,10 @@ export default function AdminDashboard() {
           <div className="mx-auto max-w-xl rounded-[28px] border border-white/10 bg-white/5 p-6 shadow-[0_25px_80px_rgba(8,15,42,0.45)] backdrop-blur-xl sm:p-8">
             <form className="grid gap-5" onSubmit={handleLogin}>
               <div>
-                <label className="mb-3 block text-sm font-medium text-slate-200" htmlFor="adminPassword">
+                <label
+                  className="mb-3 block text-sm font-medium text-slate-200"
+                  htmlFor="adminPassword"
+                >
                   Пароль администратора
                 </label>
                 <input
@@ -228,7 +305,9 @@ export default function AdminDashboard() {
                           <td className="px-5 py-4 align-top">{item.phone || "—"}</td>
                           <td className="px-5 py-4 align-top">{item.company || "—"}</td>
                           <td className="px-5 py-4 align-top">
-                            {participationTypeLabels[item.participationType] || item.participationType || "—"}
+                            {participationTypeLabels[item.participationType] ||
+                              item.participationType ||
+                              "—"}
                           </td>
                         </tr>
                       ))
