@@ -209,7 +209,7 @@ const translations = {
       items: [
         { label: "Город", value: "Астана, Казахстан" },
         { label: "Даты", value: "7 - 8 февраля 2027 года" },
-        { label: "Email", value: "hello@globaledtech.org" },
+        { label: "Email", value: "globaledtechkz@gmail.com" },
         { label: "Телефон", value: "+7 (700) 033 0229" },
       ],
     },
@@ -459,7 +459,7 @@ const translations = {
       items: [
         { label: "Қала", value: "Астана, Қазақстан" },
         { label: "Күндер", value: "2027 жылғы 7 - 8 ақпан" },
-        { label: "Email", value: "hello@globaledtech.org" },
+        { label: "Email", value: "globaledtechkz@gmail.com" },
         { label: "Телефон", value: "+7 (700) 033 0229" },
       ],
     },
@@ -710,7 +710,7 @@ const translations = {
       items: [
         { label: "City", value: "Astana, Kazakhstan" },
         { label: "Dates", value: "February 7 - 8, 2027" },
-        { label: "Email", value: "hello@globaledtech.org" },
+        { label: "Email", value: "globaledtechkz@gmail.com" },
         { label: "Phone", value: "+7 (700) 033 0229" },
       ],
     },
