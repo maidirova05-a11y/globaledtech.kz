@@ -49,6 +49,9 @@ export default function AdminDashboard() {
   const [registrations, setRegistrations] = useState([]);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [participationFilter, setParticipationFilter] = useState("all");
+  const [deletingId, setDeletingId] = useState("");
 
   const totalCount = registrations.length;
   const speakerCount = useMemo(
@@ -59,6 +62,28 @@ export default function AdminDashboard() {
     () => registrations.filter((item) => item.participationType === "partner").length,
     [registrations],
   );
+
+  const filteredRegistrations = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return registrations.filter((item) => {
+      const matchesFormat =
+        participationFilter === "all" || item.participationType === participationFilter;
+
+      if (!matchesFormat) {
+        return false;
+      }
+
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      const fullName = `${item.name || ""} ${item.surname || ""}`.toLowerCase();
+      const email = String(item.email || "").toLowerCase();
+
+      return fullName.includes(normalizedQuery) || email.includes(normalizedQuery);
+    });
+  }, [participationFilter, registrations, searchQuery]);
 
   const loadRegistrations = async (adminPassword) => {
     setStatus("loading");
@@ -111,16 +136,18 @@ export default function AdminDashboard() {
     setRegistrations([]);
     setStatus("idle");
     setError("");
+    setSearchQuery("");
+    setParticipationFilter("all");
   };
 
   const handleExport = () => {
-    if (registrations.length === 0) {
+    if (filteredRegistrations.length === 0) {
       setStatus("error");
       setError("Нет данных для выгрузки.");
       return;
     }
 
-    const rows = buildExportRows(registrations);
+    const rows = buildExportRows(filteredRegistrations);
     const header = [
       "Дата и время",
       "Имя",
@@ -162,6 +189,34 @@ export default function AdminDashboard() {
     URL.revokeObjectURL(downloadUrl);
   };
 
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("Удалить эту регистрацию?");
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingId(id);
+    setError("");
+
+    const response = await fetch(`/api/admin/registrations?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: {
+        "x-admin-password": password,
+      },
+    });
+
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      setError(result?.error || "Не удалось удалить регистрацию.");
+      setDeletingId("");
+      return;
+    }
+
+    setRegistrations((current) => current.filter((item) => item.id !== id));
+    setDeletingId("");
+  };
+
   return (
     <div className="min-h-screen bg-[#081124] px-4 py-8 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -174,8 +229,8 @@ export default function AdminDashboard() {
               Регистрации Global EdTech
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
-              Здесь можно смотреть все заявки, которые отправили пользователи через форму
-              регистрации на сайте.
+              Здесь можно смотреть, искать, фильтровать, удалять и выгружать заявки,
+              отправленные через форму регистрации.
             </p>
           </div>
 
@@ -263,15 +318,56 @@ export default function AdminDashboard() {
               </div>
             </div>
 
+            <div className="grid gap-4 rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl md:grid-cols-[1.2fr_0.8fr]">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-200" htmlFor="search">
+                  Поиск по имени или email
+                </label>
+                <input
+                  id="search"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Например, Aizada или user@example.com"
+                  className="w-full rounded-[18px] border border-white/10 bg-[#212847] px-4 py-4 text-white outline-none transition focus:border-cyan-400/70"
+                />
+              </div>
+
+              <div>
+                <label
+                  className="mb-2 block text-sm font-medium text-slate-200"
+                  htmlFor="participationFilter"
+                >
+                  Фильтр по формату участия
+                </label>
+                <select
+                  id="participationFilter"
+                  value={participationFilter}
+                  onChange={(event) => setParticipationFilter(event.target.value)}
+                  className="w-full rounded-[18px] border border-white/10 bg-[#212847] px-4 py-4 text-white outline-none transition focus:border-cyan-400/70"
+                >
+                  <option value="all">Все форматы</option>
+                  <option value="delegate">Участник</option>
+                  <option value="speaker">Спикер</option>
+                  <option value="partner">Партнер</option>
+                </select>
+              </div>
+            </div>
+
             <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-[0_25px_80px_rgba(8,15,42,0.45)] backdrop-blur-xl">
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
                 <h2 className="text-lg font-semibold text-white">Список регистраций</h2>
-                {status === "loading" ? (
-                  <span className="text-sm text-cyan-200">Загрузка...</span>
-                ) : null}
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-slate-300">
+                    Показано: {filteredRegistrations.length}
+                  </span>
+                  {status === "loading" ? (
+                    <span className="text-sm text-cyan-200">Загрузка...</span>
+                  ) : null}
+                </div>
               </div>
 
-              {status === "error" && error ? (
+              {error ? (
                 <div className="px-5 py-4">
                   <p className="rounded-[18px] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
                     {error}
@@ -289,11 +385,12 @@ export default function AdminDashboard() {
                       <th className="px-5 py-4 font-medium">Телефон</th>
                       <th className="px-5 py-4 font-medium">Компания</th>
                       <th className="px-5 py-4 font-medium">Формат</th>
+                      <th className="px-5 py-4 font-medium">Действия</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {registrations.length > 0 ? (
-                      registrations.map((item) => (
+                    {filteredRegistrations.length > 0 ? (
+                      filteredRegistrations.map((item) => (
                         <tr key={item.id} className="border-b border-white/5 text-sm text-slate-200">
                           <td className="px-5 py-4 align-top">{formatDate(item.createdAt)}</td>
                           <td className="px-5 py-4 align-top">
@@ -309,14 +406,24 @@ export default function AdminDashboard() {
                               item.participationType ||
                               "—"}
                           </td>
+                          <td className="px-5 py-4 align-top">
+                            <button
+                              type="button"
+                              onClick={() => void handleDelete(item.id)}
+                              disabled={deletingId === item.id}
+                              className="rounded-full border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-medium text-rose-100 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {deletingId === item.id ? "Удаляем..." : "Удалить"}
+                            </button>
+                          </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td className="px-5 py-8 text-sm text-slate-400" colSpan={6}>
+                        <td className="px-5 py-8 text-sm text-slate-400" colSpan={7}>
                           {status === "loading"
                             ? "Загружаем регистрации..."
-                            : "Пока нет сохраненных регистраций."}
+                            : "По текущему фильтру ничего не найдено."}
                         </td>
                       </tr>
                     )}

@@ -67,3 +67,36 @@ export async function listRegistrations(limit = 200) {
     })
     .filter(Boolean);
 }
+
+export async function replaceRegistrations(records) {
+  const normalizedRecords = Array.isArray(records) ? records : [];
+
+  await executeKvCommand(["DEL", REGISTRATIONS_KEY]);
+
+  if (normalizedRecords.length === 0) {
+    return;
+  }
+
+  const payload = normalizedRecords
+    .slice()
+    .reverse()
+    .map((record) => JSON.stringify(record));
+
+  await executeKvCommand(["LPUSH", REGISTRATIONS_KEY, ...payload]);
+}
+
+export async function deleteRegistrationById(id) {
+  if (!id) {
+    return false;
+  }
+
+  const registrations = await listRegistrations(1000);
+  const nextRegistrations = registrations.filter((item) => item.id !== id);
+
+  if (nextRegistrations.length === registrations.length) {
+    return false;
+  }
+
+  await replaceRegistrations(nextRegistrations);
+  return true;
+}
