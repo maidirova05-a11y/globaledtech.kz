@@ -927,11 +927,18 @@ function App() {
 
           <div className="hidden items-center gap-4 xl:flex">
             <LanguageSwitcher language={language} onChange={setLanguage} />
-            <img
-              src="/assets/azgroup-logo.png"
-              alt="AZ Group"
-              className="header-logo header-logo-partner"
-            />
+            <a
+              href="https://az-group.kz/"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="AZ Group official website"
+            >
+              <img
+                src="/assets/azgroup-logo.png"
+                alt="AZ Group"
+                className="header-logo header-logo-partner"
+              />
+            </a>
             <a href="#register" className="button-primary">
               {t.ui.register}
             </a>
@@ -985,11 +992,18 @@ function App() {
                     </a>
                   ))}
                 <div className="menu-footer">
-                  <img
-                    src="/assets/azgroup-logo.png"
-                    alt="AZ Group"
-                    className="header-logo header-logo-partner"
-                  />
+                  <a
+                    href="https://az-group.kz/"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="AZ Group official website"
+                  >
+                    <img
+                      src="/assets/azgroup-logo.png"
+                      alt="AZ Group"
+                      className="header-logo header-logo-partner"
+                    />
+                  </a>
                   <a
                     href="#contacts"
                     className="text-sm font-medium text-cyan-300 transition hover:text-cyan-200"
