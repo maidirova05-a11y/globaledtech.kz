@@ -381,6 +381,7 @@ export default function AdminDashboard() {
                     <tr className="border-b border-white/10 text-left text-sm text-slate-400">
                       <th className="px-5 py-4 font-medium">Дата</th>
                       <th className="px-5 py-4 font-medium">Имя</th>
+                      <th className="px-5 py-4 font-medium">Фамилия</th>
                       <th className="px-5 py-4 font-medium">Email</th>
                       <th className="px-5 py-4 font-medium">Телефон</th>
                       <th className="px-5 py-4 font-medium">Компания</th>
@@ -393,11 +394,10 @@ export default function AdminDashboard() {
                       filteredRegistrations.map((item) => (
                         <tr key={item.id} className="border-b border-white/5 text-sm text-slate-200">
                           <td className="px-5 py-4 align-top">{formatDate(item.createdAt)}</td>
-                          <td className="px-5 py-4 align-top">
-                            <div className="font-medium text-white">
-                              {[item.name, item.surname].filter(Boolean).join(" ")}
-                            </div>
+                          <td className="px-5 py-4 align-top font-medium text-white">
+                            {item.name || "—"}
                           </td>
+                          <td className="px-5 py-4 align-top">{item.surname || "—"}</td>
                           <td className="px-5 py-4 align-top">{item.email || "—"}</td>
                           <td className="px-5 py-4 align-top">{item.phone || "—"}</td>
                           <td className="px-5 py-4 align-top">{item.company || "—"}</td>
@@ -420,7 +420,7 @@ export default function AdminDashboard() {
                       ))
                     ) : (
                       <tr>
-                        <td className="px-5 py-8 text-sm text-slate-400" colSpan={7}>
+                        <td className="px-5 py-8 text-sm text-slate-400" colSpan={8}>
                           {status === "loading"
                             ? "Загружаем регистрации..."
                             : "По текущему фильтру ничего не найдено."}
