@@ -5,6 +5,18 @@ const namePattern = /^(?=.{2,}$)[\p{L}\p{M}]+(?:-[\p{L}\p{M}]+)*$/u;
 const emailPattern = /^(?!.*\s)[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const companyPattern = /^(?=.{2,}$)[\p{L}\p{M}\d&.\- ]+$/u;
 
+const defaultValidationMessages = {
+  nameMin: "Имя должно содержать минимум 2 символа",
+  namePattern: "Имя может содержать только буквы и дефис",
+  surnameMin: "Фамилия должна содержать минимум 2 символа",
+  surnamePattern: "Фамилия может содержать только буквы и дефис",
+  emailInvalid: "Введите корректный email",
+  phoneInvalid: "Введите корректный международный номер",
+  companyMin: "Компания должна содержать минимум 2 символа",
+  companyPattern: "Компания может содержать только буквы, цифры, пробелы, &, -, .",
+  participationRequired: "Выберите формат участия",
+};
+
 const sanitizeMarkup = (value) =>
   String(value ?? "")
     .replace(/<[^>]*>/g, " ")
@@ -33,60 +45,66 @@ export const sanitizeRegistrationPayload = (rawPayload) => ({
   participationType: sanitizeText(rawPayload?.participationType),
 });
 
-export const registrationSchema = z.object({
-  name: z
-    .string()
-    .transform(sanitizeText)
-    .pipe(
-      z
-        .string()
-        .min(2, "Имя должно содержать минимум 2 символа")
-        .regex(namePattern, "Имя может содержать только буквы и дефис"),
-    ),
-  surname: z
-    .string()
-    .transform(sanitizeText)
-    .pipe(
-      z
-        .string()
-        .min(2, "Фамилия должна содержать минимум 2 символа")
-        .regex(namePattern, "Фамилия может содержать только буквы и дефис"),
-    ),
-  email: z
-    .string()
-    .transform(sanitizeEmail)
-    .pipe(z.string().regex(emailPattern, "Введите корректный email")),
-  phone: z
-    .string()
-    .transform(sanitizePhone)
-    .superRefine((value, ctx) => {
-      if (!value || !isValidPhoneNumber(value)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Введите корректный международный номер",
-        });
-      }
-    })
-    .transform((value) => parsePhoneNumber(value)?.number ?? value),
-  company: z
-    .string()
-    .transform(sanitizeText)
-    .pipe(
-      z
-        .string()
-        .min(2, "Компания должна содержать минимум 2 символа")
-        .regex(
-          companyPattern,
-          "Компания может содержать только буквы, цифры, пробелы, &, -, .",
-        ),
-    ),
-  participationType: z.enum(["delegate", "speaker", "partner"], {
-    errorMap: () => ({ message: "Выберите формат участия" }),
-  }),
-});
+export function createRegistrationSchema(validationMessages = defaultValidationMessages) {
+  const messages = {
+    ...defaultValidationMessages,
+    ...validationMessages,
+  };
 
-export const parseRegistrationPayload = (rawPayload) =>
-  registrationSchema.parse(sanitizeRegistrationPayload(rawPayload));
+  return z.object({
+    name: z
+      .string()
+      .transform(sanitizeText)
+      .pipe(
+        z
+          .string()
+          .min(2, messages.nameMin)
+          .regex(namePattern, messages.namePattern),
+      ),
+    surname: z
+      .string()
+      .transform(sanitizeText)
+      .pipe(
+        z
+          .string()
+          .min(2, messages.surnameMin)
+          .regex(namePattern, messages.surnamePattern),
+      ),
+    email: z
+      .string()
+      .transform(sanitizeEmail)
+      .pipe(z.string().regex(emailPattern, messages.emailInvalid)),
+    phone: z
+      .string()
+      .transform(sanitizePhone)
+      .superRefine((value, ctx) => {
+        if (!value || !isValidPhoneNumber(value)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messages.phoneInvalid,
+          });
+        }
+      })
+      .transform((value) => parsePhoneNumber(value)?.number ?? value),
+    company: z
+      .string()
+      .transform(sanitizeText)
+      .pipe(
+        z
+          .string()
+          .min(2, messages.companyMin)
+          .regex(companyPattern, messages.companyPattern),
+      ),
+    participationType: z.enum(["delegate", "speaker", "partner"], {
+      errorMap: () => ({ message: messages.participationRequired }),
+    }),
+  });
+}
+
+export const registrationSchema = createRegistrationSchema();
+
+export const parseRegistrationPayload = (rawPayload, validationMessages) =>
+  createRegistrationSchema(validationMessages).parse(sanitizeRegistrationPayload(rawPayload));
 
 export const validateRegistrationOnServer = async (rawPayload) =>
   parseRegistrationPayload(rawPayload);

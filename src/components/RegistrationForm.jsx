@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import PhoneInput, { getCountryCallingCode } from "react-phone-number-input";
-import { parseRegistrationPayload, registrationSchema } from "../lib/registrationSchema";
+import { createRegistrationSchema, parseRegistrationPayload } from "../lib/registrationSchema";
 
 const fieldNames = [
   "name",
@@ -12,13 +12,6 @@ const fieldNames = [
   "phone",
   "company",
   "participationType",
-];
-
-const participationOptions = [
-  { value: "", label: "Выберите вариант" },
-  { value: "delegate", label: "Участник" },
-  { value: "speaker", label: "Спикер" },
-  { value: "partner", label: "Партнер" },
 ];
 
 const messageMotion = {
@@ -38,6 +31,7 @@ function SearchableCountrySelect({
   disabled,
   readOnly,
   className,
+  labels,
 }) {
   const containerRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -147,7 +141,7 @@ function SearchableCountrySelect({
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        aria-label="Выбор страны телефона"
+        aria-label={labels.countryAria}
       >
         {selectedOption?.value ? (
           <Icon country={selectedOption.value} label={selectedOption.label} />
@@ -172,11 +166,11 @@ function SearchableCountrySelect({
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="phone-country-search"
-              placeholder="Поиск страны, кода или +"
-              aria-label="Поиск страны"
+              placeholder={labels.searchPlaceholder}
+              aria-label={labels.searchAria}
             />
 
-            <div className="phone-country-list" role="listbox" aria-label="Список стран">
+            <div className="phone-country-list" role="listbox" aria-label={labels.listAria}>
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((option) => (
                   <button
@@ -199,7 +193,7 @@ function SearchableCountrySelect({
                   </button>
                 ))
               ) : (
-                <p className="phone-country-empty">Ничего не найдено</p>
+                <p className="phone-country-empty">{labels.empty}</p>
               )}
             </div>
           </motion.div>
@@ -246,11 +240,27 @@ function getFieldClass(hasError, isValid) {
     .join(" ");
 }
 
-export default function RegistrationForm() {
+export default function RegistrationForm({ language, translations }) {
   const formRef = useRef(null);
   const defaultCountry = useMemo(inferDefaultCountry, []);
   const [submitState, setSubmitState] = useState("idle");
   const [submitError, setSubmitError] = useState("");
+
+  const registrationSchema = useMemo(
+    () => createRegistrationSchema(translations.validation),
+    [translations.validation],
+  );
+
+  const participationOptions = useMemo(
+    () => [
+      { value: "", label: translations.fields.participationType.placeholder },
+      { value: "delegate", label: translations.participationTypes.delegate },
+      { value: "speaker", label: translations.participationTypes.speaker },
+      { value: "partner", label: translations.participationTypes.partner },
+    ],
+    [translations],
+  );
+
   const {
     register,
     control,
@@ -289,7 +299,7 @@ export default function RegistrationForm() {
     }, 300);
 
     return () => window.clearTimeout(timeoutId);
-  }, [trigger, watchedValues]);
+  }, [trigger, watchedValues, language]);
 
   const isFieldValidated = (fieldName) =>
     !errors[fieldName] &&
@@ -306,7 +316,7 @@ export default function RegistrationForm() {
     setSubmitState("idle");
     setSubmitError("");
 
-    const payload = parseRegistrationPayload(values);
+    const payload = parseRegistrationPayload(values, translations.validation);
 
     const response = await fetch("/api/registrations", {
       method: "POST",
@@ -319,10 +329,7 @@ export default function RegistrationForm() {
     if (!response.ok) {
       const result = await response.json().catch(() => null);
       setSubmitState("error");
-      setSubmitError(
-        result?.error ||
-          "Не удалось отправить заявку. Пожалуйста, попробуйте еще раз.",
-      );
+      setSubmitError(result?.error || translations.messages.submitError);
       return;
     }
 
@@ -347,16 +354,16 @@ export default function RegistrationForm() {
       className="grid gap-5"
       onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)}
       noValidate
-      aria-label="Форма регистрации на мероприятие"
+      aria-label={translations.aria.form}
     >
       <div className="field-group" data-field="name">
         <label className="field-label" htmlFor="name">
-          Имя
+          {translations.fields.name.label}
         </label>
         <input
           id="name"
           type="text"
-          placeholder="Ваше имя"
+          placeholder={translations.fields.name.placeholder}
           autoComplete="given-name"
           aria-invalid={Boolean(errors.name)}
           aria-describedby={errors.name ? "name-error" : undefined}
@@ -368,12 +375,12 @@ export default function RegistrationForm() {
 
       <div className="field-group" data-field="surname">
         <label className="field-label" htmlFor="surname">
-          Фамилия
+          {translations.fields.surname.label}
         </label>
         <input
           id="surname"
           type="text"
-          placeholder="Ваша фамилия"
+          placeholder={translations.fields.surname.placeholder}
           autoComplete="family-name"
           aria-invalid={Boolean(errors.surname)}
           aria-describedby={errors.surname ? "surname-error" : undefined}
@@ -386,13 +393,13 @@ export default function RegistrationForm() {
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="field-group" data-field="email">
           <label className="field-label" htmlFor="email">
-            Email
+            {translations.fields.email.label}
           </label>
           <input
             id="email"
             type="email"
             inputMode="email"
-            placeholder="you@example.com"
+            placeholder={translations.fields.email.placeholder}
             autoComplete="email"
             aria-invalid={Boolean(errors.email)}
             aria-describedby={errors.email ? "email-error" : undefined}
@@ -404,7 +411,7 @@ export default function RegistrationForm() {
 
         <div className="field-group" data-field="phone">
           <label className="field-label" htmlFor="phone">
-            Телефон
+            {translations.fields.phone.label}
           </label>
           <Controller
             control={control}
@@ -418,8 +425,10 @@ export default function RegistrationForm() {
                 defaultCountry={defaultCountry}
                 autoComplete="tel"
                 countrySelectComponent={SearchableCountrySelect}
-                countrySelectProps={{ "aria-label": "Выбор страны телефона" }}
-                placeholder="+1 202 555 0188"
+                countrySelectProps={{
+                  labels: translations.countryPicker,
+                }}
+                placeholder={translations.fields.phone.placeholder}
                 className={getFieldClass(Boolean(errors.phone), isFieldValidated("phone"))}
                 numberInputProps={{
                   "aria-invalid": Boolean(errors.phone),
@@ -437,12 +446,12 @@ export default function RegistrationForm() {
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="field-group" data-field="company">
           <label className="field-label" htmlFor="company">
-            Компания
+            {translations.fields.company.label}
           </label>
           <input
             id="company"
             type="text"
-            placeholder="Название организации"
+            placeholder={translations.fields.company.placeholder}
             autoComplete="organization"
             aria-invalid={Boolean(errors.company)}
             aria-describedby={errors.company ? "company-error" : undefined}
@@ -454,7 +463,7 @@ export default function RegistrationForm() {
 
         <div className="field-group" data-field="participationType">
           <label className="field-label" htmlFor="participationType">
-            Формат участия
+            {translations.fields.participationType.label}
           </label>
           <select
             id="participationType"
@@ -490,7 +499,7 @@ export default function RegistrationForm() {
         disabled={isSubmitDisabled}
         aria-disabled={isSubmitDisabled}
       >
-        {isSubmitting ? "Отправка..." : "Отправить заявку"}
+        {isSubmitting ? translations.buttons.submitting : translations.buttons.submit}
       </button>
 
       <AnimatePresence mode="wait">
@@ -502,7 +511,7 @@ export default function RegistrationForm() {
             aria-live="polite"
             {...messageMotion}
           >
-            Спасибо за регистрацию. Наша команда свяжется с вами в ближайшее время.
+            {translations.messages.submitSuccess}
           </motion.p>
         ) : null}
       </AnimatePresence>
