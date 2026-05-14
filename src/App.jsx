@@ -1,5 +1,6 @@
 ﻿import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import AdminDashboard from "./components/AdminDashboard";
 import RegistrationForm from "./components/RegistrationForm";
 
 const navItems = [
@@ -223,6 +224,31 @@ function SectionHeading({ eyebrow, title, text }) {
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdminRoute, setIsAdminRoute] = useState(() =>
+    typeof window !== "undefined" &&
+    (window.location.pathname === "/admin" || window.location.hash.startsWith("#admin")),
+  );
+
+  useEffect(() => {
+    const syncRouteState = () => {
+      setIsAdminRoute(
+        window.location.pathname === "/admin" || window.location.hash.startsWith("#admin"),
+      );
+    };
+
+    syncRouteState();
+    window.addEventListener("hashchange", syncRouteState);
+    window.addEventListener("popstate", syncRouteState);
+
+    return () => {
+      window.removeEventListener("hashchange", syncRouteState);
+      window.removeEventListener("popstate", syncRouteState);
+    };
+  }, []);
+
+  if (isAdminRoute) {
+    return <AdminDashboard />;
+  }
 
   return (
     <div className="min-h-screen bg-[#0B0F2A] text-slate-100">
@@ -661,6 +687,9 @@ function App() {
             </a>
             <a href="#register" className="transition hover:text-cyan-300">
               Регистрация
+            </a>
+            <a href="/admin" className="transition hover:text-cyan-300">
+              Админка
             </a>
           </div>
         </div>
