@@ -763,6 +763,94 @@ const translations = {
   },
 };
 
+const galleryContent = {
+  ru: {
+    eyebrow: "Фотогалерея",
+    title: "Посмотрите, как живут проекты AZ Group и Global EdTech",
+    text:
+      "От практических семинаров и олимпиад до форумов, фестивалей и международных встреч — эти кадры показывают атмосферу, людей и масштаб экосистемы, которую мы развиваем.",
+    highlights: [
+      "Форумы, фестивали и выступления",
+      "Школьные проекты и олимпиады",
+      "Партнерства, награды и сильное комьюнити",
+    ],
+    altBase: "Фотография мероприятия Global EdTech",
+    open: "Открыть фотографию",
+    close: "Закрыть",
+  },
+  kk: {
+    eyebrow: "Фотогалерея",
+    title: "AZ Group пен Global EdTech жобаларының шынайы атмосферасын көріңіз",
+    text:
+      "Практикалық семинарлардан олимпиадаларға, форумдар, фестивальдер мен халықаралық кездесулерге дейін бұл кадрлар біздің экожүйенің ауқымын, адамдарын және энергиясын көрсетеді.",
+    highlights: [
+      "Форумдар, фестивальдер және баяндамалар",
+      "Мектеп жобалары мен олимпиадалар",
+      "Серіктестік, марапаттар және мықты қауымдастық",
+    ],
+    altBase: "Global EdTech іс-шарасынан фото",
+    open: "Фотосуретті ашу",
+    close: "Жабу",
+  },
+  en: {
+    eyebrow: "Gallery",
+    title: "See the real energy behind AZ Group and Global EdTech projects",
+    text:
+      "From practical seminars and olympiads to forums, festivals, and international gatherings, these moments show the people, atmosphere, and momentum behind the ecosystem we are building.",
+    highlights: [
+      "Forums, festivals, and keynote moments",
+      "School projects and olympiad experiences",
+      "Partnerships, awards, and community impact",
+    ],
+    altBase: "Global EdTech event photo",
+    open: "Open photo",
+    close: "Close",
+  },
+};
+
+const galleryPhotos = [
+  {
+    src: "/assets/gallery/00008886.JPG",
+    className: "md:col-span-2 md:row-span-2",
+  },
+  {
+    src: "/assets/gallery/00008214.JPG",
+    className: "md:col-span-2",
+  },
+  {
+    src: "/assets/gallery/00008585.jpg",
+    className: "md:row-span-2",
+  },
+  {
+    src: "/assets/gallery/00007659.JPG",
+    className: "",
+  },
+  {
+    src: "/assets/gallery/00002466.JPG",
+    className: "md:col-span-2",
+  },
+  {
+    src: "/assets/gallery/00002366.JPG",
+    className: "",
+  },
+  {
+    src: "/assets/gallery/2V3A6160.jpg",
+    className: "md:col-span-2",
+  },
+  {
+    src: "/assets/gallery/2V3A6128.jpg",
+    className: "",
+  },
+  {
+    src: "/assets/gallery/00002625.JPG",
+    className: "md:col-span-2",
+  },
+  {
+    src: "/assets/gallery/00002419.JPG",
+    className: "",
+  },
+];
+
 const benefitIcons = [
   <svg key="icon-1" viewBox="0 0 24 24" aria-hidden="true">
     <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm6.93 9h-3.18a15.9 15.9 0 0 0-1.2-5A8.02 8.02 0 0 1 18.93 11ZM12 4.07c.84 1.01 1.85 3.17 2.23 6.93H9.77C10.15 7.24 11.16 5.08 12 4.07ZM9.45 6a15.9 15.9 0 0 0-1.2 5H5.07A8.02 8.02 0 0 1 9.45 6ZM5.07 13h3.18a15.9 15.9 0 0 0 1.2 5A8.02 8.02 0 0 1 5.07 13ZM12 19.93c-.84-1.01-1.85-3.17-2.23-6.93h4.46c-.38 3.76-1.39 5.92-2.23 6.93ZM14.55 18a15.9 15.9 0 0 0 1.2-5h3.18A8.02 8.02 0 0 1 14.55 18Z" />
@@ -854,6 +942,7 @@ function SectionHeading({ eyebrow, title, text }) {
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedGalleryPhoto, setSelectedGalleryPhoto] = useState(null);
   const [language, setLanguage] = useState(() => {
     if (typeof window === "undefined") {
       return "ru";
@@ -888,7 +977,26 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!selectedGalleryPhoto) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setSelectedGalleryPhoto(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedGalleryPhoto]);
+
   const t = useMemo(() => translations[language] || translations.ru, [language]);
+  const gallery = useMemo(() => galleryContent[language] || galleryContent.ru, [language]);
 
   if (isAdminRoute) {
     return <AdminDashboard />;
@@ -1152,6 +1260,95 @@ function App() {
           </div>
         </section>
 
+        <section id="gallery" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="grid gap-8 lg:grid-cols-[0.44fr_0.56fr] lg:items-end">
+              <motion.div
+                className="glass-panel relative overflow-hidden p-6 sm:p-8"
+                variants={reveal}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.25 }}
+              >
+                <div className="absolute inset-x-[-10%] top-[-18%] h-44 rounded-full bg-cyan-400/12 blur-3xl" />
+                <div className="absolute bottom-[-28%] right-[-10%] h-48 w-48 rounded-full bg-fuchsia-500/16 blur-3xl" />
+                <div className="relative">
+                  <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-300">
+                    {gallery.eyebrow}
+                  </p>
+                  <h2 className="mt-4 max-w-xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                    {gallery.title}
+                  </h2>
+                  <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">{gallery.text}</p>
+
+                  <div className="mt-8 grid gap-3">
+                    {gallery.highlights.map((item) => (
+                      <div
+                        key={item}
+                        className="rounded-[16px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="grid auto-rows-[180px] gap-4 sm:grid-cols-2 md:auto-rows-[200px] lg:grid-cols-3"
+                variants={reveal}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.2 }}
+              >
+                {galleryPhotos.slice(0, 6).map((photo, index) => (
+                  <button
+                    key={photo.src}
+                    type="button"
+                    onClick={() => setSelectedGalleryPhoto(photo.src)}
+                    aria-label={`${gallery.open}: ${index + 1}`}
+                    className={`group relative overflow-hidden rounded-[20px] border border-white/10 bg-white/5 text-left shadow-[0_20px_70px_rgba(2,8,23,0.38)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35 ${photo.className}`}
+                  >
+                    <img
+                      src={photo.src}
+                      alt={`${gallery.altBase} ${index + 1}`}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/70 via-[#050816]/10 to-transparent opacity-80" />
+                  </button>
+                ))}
+              </motion.div>
+            </div>
+
+            <motion.div
+              className="mt-4 grid auto-rows-[180px] gap-4 sm:grid-cols-2 md:auto-rows-[220px] lg:grid-cols-4"
+              variants={reveal}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.15 }}
+            >
+              {galleryPhotos.slice(6).map((photo, index) => (
+                <button
+                  key={photo.src}
+                  type="button"
+                  onClick={() => setSelectedGalleryPhoto(photo.src)}
+                  aria-label={`${gallery.open}: ${index + 7}`}
+                  className={`group relative overflow-hidden rounded-[20px] border border-white/10 bg-white/5 text-left shadow-[0_16px_48px_rgba(2,8,23,0.32)] transition duration-300 hover:-translate-y-1 hover:border-fuchsia-300/35 ${photo.className}`}
+                >
+                  <img
+                    src={photo.src}
+                    alt={`${gallery.altBase} ${index + 7}`}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/64 via-transparent to-transparent opacity-70" />
+                </button>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
         <section id="audience" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <motion.div
@@ -1329,6 +1526,33 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {selectedGalleryPhoto ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#020617]/88 px-4 py-6 backdrop-blur-md">
+          <button
+            type="button"
+            aria-label={gallery.close}
+            className="absolute inset-0"
+            onClick={() => setSelectedGalleryPhoto(null)}
+          />
+          <div className="relative z-10 w-full max-w-6xl">
+            <button
+              type="button"
+              onClick={() => setSelectedGalleryPhoto(null)}
+              className="absolute right-2 top-2 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-[#0B0F2A]/80 text-2xl text-white transition hover:border-cyan-300/45 hover:text-cyan-200"
+            >
+              ×
+            </button>
+            <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#081022] shadow-[0_30px_120px_rgba(2,8,23,0.65)]">
+              <img
+                src={selectedGalleryPhoto}
+                alt={gallery.altBase}
+                className="max-h-[82vh] w-full object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
