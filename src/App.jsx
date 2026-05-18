@@ -1133,17 +1133,6 @@ function HeroShowcase({ hero, forumOverview }) {
           </div>
         </div>
 
-        <div className="hero-showcase-bottom">
-          <div className="hero-showcase-stats">
-            {hero.stats.map(([value, label], index) => (
-              <div key={label} className={`hero-stat-card hero-stat-card-${index + 1}`}>
-                <p className="hero-stat-value">{value}</p>
-                <p className="hero-stat-label">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <div className="hero-showcase-controls">
           <button
             type="button"
@@ -1165,6 +1154,17 @@ function HeroShowcase({ hero, forumOverview }) {
           >
             &#8594;
           </button>
+        </div>
+      </div>
+
+      <div className="hero-showcase-bottom">
+        <div className="hero-showcase-stats">
+          {hero.stats.map(([value, label], index) => (
+            <div key={label} className={`hero-stat-card hero-stat-card-${index + 1}`}>
+              <p className="hero-stat-value">{value}</p>
+              <p className="hero-stat-label">{label}</p>
+            </div>
+          ))}
         </div>
       </div>
     </motion.div>

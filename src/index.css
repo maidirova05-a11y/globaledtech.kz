@@ -393,6 +393,8 @@ textarea {
   position: relative;
   overflow: hidden;
   padding: 1rem;
+  display: grid;
+  gap: 1rem;
 }
 
 .hero-showcase-media {
@@ -432,7 +434,6 @@ textarea {
 }
 
 .hero-showcase-top,
-.hero-showcase-bottom,
 .hero-showcase-controls {
   position: absolute;
   z-index: 2;
@@ -482,14 +483,15 @@ textarea {
   background: #67e8f9;
 }
 
-.hero-showcase-bottom {
-  inset: auto 1.25rem 1.25rem 1.25rem;
-}
-
 .hero-showcase-stats {
   display: grid;
   gap: 0.85rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hero-showcase-bottom {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-stat-card {
@@ -548,7 +550,7 @@ textarea {
 
 .hero-showcase-controls {
   right: 1.25rem;
-  bottom: 11.6rem;
+  bottom: 1.25rem;
   display: flex;
   gap: 0.65rem;
 }
@@ -1085,7 +1087,7 @@ select.field-input:invalid {
 
   .hero-showcase-controls {
     right: 1rem;
-    bottom: 18.2rem;
+    bottom: 1rem;
   }
 
   .gallery-thumbs {
