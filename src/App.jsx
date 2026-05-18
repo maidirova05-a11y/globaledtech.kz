@@ -1481,7 +1481,7 @@ function App() {
 
         <section id="gallery" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-7xl">
-            <div className="grid gap-8 lg:grid-cols-[0.44fr_0.56fr] lg:items-end">
+            <div className="grid gap-8 lg:grid-cols-[0.44fr_0.56fr] lg:items-start">
               <motion.div
                 className="glass-panel relative overflow-hidden p-6 sm:p-8"
                 variants={reveal}
