@@ -558,17 +558,6 @@ textarea {
   box-shadow: 0 16px 40px rgba(34, 211, 238, 0.14);
 }
 
-.gallery-thumb-index {
-  position: absolute;
-  left: 0.7rem;
-  bottom: 0.65rem;
-  z-index: 1;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: #f8fafc;
-}
-
 .marquee {
   display: flex;
   width: max-content;

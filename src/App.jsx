@@ -1063,7 +1063,6 @@ function GallerySlider({ gallery, onOpen }) {
               loading="lazy"
               className="gallery-thumb-image"
             />
-            <span className="gallery-thumb-index">{String(index + 1).padStart(2, "0")}</span>
           </button>
         ))}
       </div>
