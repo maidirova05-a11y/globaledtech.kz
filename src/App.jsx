@@ -810,46 +810,56 @@ const galleryContent = {
 
 const galleryPhotos = [
   {
-    src: "/assets/gallery/00008886.JPG",
-    className: "md:col-span-2 md:row-span-2",
+    src: "/assets/gallery/optimized/00008886-1600.jpg",
+    thumb: "/assets/gallery/optimized/00008886-800.jpg",
   },
   {
-    src: "/assets/gallery/00008214.JPG",
-    className: "md:col-span-2",
+    src: "/assets/gallery/optimized/00008214-1600.jpg",
+    thumb: "/assets/gallery/optimized/00008214-800.jpg",
   },
   {
-    src: "/assets/gallery/00008585.jpg",
-    className: "md:row-span-2",
+    src: "/assets/gallery/optimized/00008585-1600.jpg",
+    thumb: "/assets/gallery/optimized/00008585-800.jpg",
   },
   {
-    src: "/assets/gallery/00007659.JPG",
-    className: "",
+    src: "/assets/gallery/optimized/00007659-1600.jpg",
+    thumb: "/assets/gallery/optimized/00007659-800.jpg",
   },
   {
-    src: "/assets/gallery/00002466.JPG",
-    className: "md:col-span-2",
+    src: "/assets/gallery/optimized/00002466-1600.jpg",
+    thumb: "/assets/gallery/optimized/00002466-800.jpg",
   },
   {
-    src: "/assets/gallery/00002366.JPG",
-    className: "",
+    src: "/assets/gallery/optimized/00002366-1600.jpg",
+    thumb: "/assets/gallery/optimized/00002366-800.jpg",
   },
   {
-    src: "/assets/gallery/2V3A6160.jpg",
-    className: "md:col-span-2",
+    src: "/assets/gallery/optimized/2V3A6160-1600.jpg",
+    thumb: "/assets/gallery/optimized/2V3A6160-800.jpg",
   },
   {
-    src: "/assets/gallery/2V3A6128.jpg",
-    className: "",
+    src: "/assets/gallery/optimized/2V3A6128-1600.jpg",
+    thumb: "/assets/gallery/optimized/2V3A6128-800.jpg",
   },
   {
-    src: "/assets/gallery/00002625.JPG",
-    className: "md:col-span-2",
+    src: "/assets/gallery/optimized/00002625-1600.jpg",
+    thumb: "/assets/gallery/optimized/00002625-800.jpg",
   },
   {
-    src: "/assets/gallery/00002419.JPG",
-    className: "",
+    src: "/assets/gallery/optimized/00002419-1600.jpg",
+    thumb: "/assets/gallery/optimized/00002419-800.jpg",
   },
 ];
+
+const galleryAutoplayDelay = 4500;
+
+const getWrappedIndex = (index, total) => {
+  if (!total) {
+    return 0;
+  }
+
+  return (index + total) % total;
+};
 
 const benefitIcons = [
   <svg key="icon-1" viewBox="0 0 24 24" aria-hidden="true">
@@ -940,9 +950,130 @@ function SectionHeading({ eyebrow, title, text }) {
   );
 }
 
+function GallerySlider({ gallery, onOpen }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const totalSlides = galleryPhotos.length;
+
+  useEffect(() => {
+    if (isPaused || totalSlides < 2) {
+      return undefined;
+    }
+
+    const timerId = window.setInterval(() => {
+      setActiveIndex((currentIndex) => getWrappedIndex(currentIndex + 1, totalSlides));
+    }, galleryAutoplayDelay);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [isPaused, totalSlides]);
+
+  return (
+    <motion.div
+      className="gallery-slider"
+      variants={reveal}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.2 }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="gallery-slider-stage">
+        <div
+          className="gallery-slider-track"
+          style={{ transform: `translate3d(-${activeIndex * 100}%, 0, 0)` }}
+        >
+          {galleryPhotos.map((photo, index) => (
+            <button
+              key={photo.src}
+              type="button"
+              className="gallery-slide"
+              onClick={() => onOpen(index)}
+              aria-label={`${gallery.open}: ${index + 1}`}
+            >
+              <img
+                src={photo.src}
+                srcSet={`${photo.thumb} 800w, ${photo.src} 1600w`}
+                sizes="(max-width: 768px) 92vw, (max-width: 1280px) 56vw, 760px"
+                alt={`${gallery.altBase} ${index + 1}`}
+                loading={index === 0 ? "eager" : "lazy"}
+                fetchPriority={index === 0 ? "high" : "auto"}
+                className="gallery-slide-image"
+              />
+              <div className="gallery-slide-overlay" />
+            </button>
+          ))}
+        </div>
+
+        <div className="gallery-slider-panel">
+          <div>
+            <p className="gallery-slider-kicker">{gallery.eyebrow}</p>
+            <p className="gallery-slider-status">
+              {String(activeIndex + 1).padStart(2, "0")} / {String(totalSlides).padStart(2, "0")}
+            </p>
+          </div>
+
+          <div className="gallery-slider-actions">
+            <button
+              type="button"
+              className="gallery-slider-arrow"
+              aria-label="Previous slide"
+              onClick={() =>
+                setActiveIndex((currentIndex) => getWrappedIndex(currentIndex - 1, totalSlides))
+              }
+            >
+              &#8592;
+            </button>
+            <button
+              type="button"
+              className="gallery-slider-arrow"
+              aria-label="Next slide"
+              onClick={() =>
+                setActiveIndex((currentIndex) => getWrappedIndex(currentIndex + 1, totalSlides))
+              }
+            >
+              &#8594;
+            </button>
+          </div>
+        </div>
+
+        <div className="gallery-slider-progress" aria-hidden="true">
+          <span
+            className="gallery-slider-progress-bar"
+            style={{ width: `${((activeIndex + 1) / totalSlides) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="gallery-thumbs" role="tablist" aria-label="Gallery thumbnails">
+        {galleryPhotos.map((photo, index) => (
+          <button
+            key={photo.thumb}
+            type="button"
+            role="tab"
+            aria-selected={activeIndex === index}
+            aria-label={`${gallery.open}: ${index + 1}`}
+            className={`gallery-thumb ${activeIndex === index ? "gallery-thumb-active" : ""}`}
+            onClick={() => setActiveIndex(index)}
+          >
+            <img
+              src={photo.thumb}
+              alt={`${gallery.altBase} ${index + 1}`}
+              loading="lazy"
+              className="gallery-thumb-image"
+            />
+            <span className="gallery-thumb-index">{String(index + 1).padStart(2, "0")}</span>
+          </button>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedGalleryPhoto, setSelectedGalleryPhoto] = useState(null);
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState(null);
   const [language, setLanguage] = useState(() => {
     if (typeof window === "undefined") {
       return "ru";
@@ -978,13 +1109,25 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!selectedGalleryPhoto) {
+    if (selectedGalleryIndex === null) {
       return undefined;
     }
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        setSelectedGalleryPhoto(null);
+        setSelectedGalleryIndex(null);
+      }
+
+      if (event.key === "ArrowLeft") {
+        setSelectedGalleryIndex((currentIndex) =>
+          getWrappedIndex((currentIndex ?? 0) - 1, galleryPhotos.length),
+        );
+      }
+
+      if (event.key === "ArrowRight") {
+        setSelectedGalleryIndex((currentIndex) =>
+          getWrappedIndex((currentIndex ?? 0) + 1, galleryPhotos.length),
+        );
       }
     };
 
@@ -993,10 +1136,12 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selectedGalleryPhoto]);
+  }, [selectedGalleryIndex]);
 
   const t = useMemo(() => translations[language] || translations.ru, [language]);
   const gallery = useMemo(() => galleryContent[language] || galleryContent.ru, [language]);
+  const selectedGalleryPhoto =
+    selectedGalleryIndex === null ? null : galleryPhotos[selectedGalleryIndex] ?? null;
 
   if (isAdminRoute) {
     return <AdminDashboard />;
@@ -1294,58 +1439,8 @@ function App() {
                 </div>
               </motion.div>
 
-              <motion.div
-                className="grid auto-rows-[180px] gap-4 sm:grid-cols-2 md:auto-rows-[200px] lg:grid-cols-3"
-                variants={reveal}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.2 }}
-              >
-                {galleryPhotos.slice(0, 6).map((photo, index) => (
-                  <button
-                    key={photo.src}
-                    type="button"
-                    onClick={() => setSelectedGalleryPhoto(photo.src)}
-                    aria-label={`${gallery.open}: ${index + 1}`}
-                    className={`group relative overflow-hidden rounded-[20px] border border-white/10 bg-white/5 text-left shadow-[0_20px_70px_rgba(2,8,23,0.38)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35 ${photo.className}`}
-                  >
-                    <img
-                      src={photo.src}
-                      alt={`${gallery.altBase} ${index + 1}`}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/70 via-[#050816]/10 to-transparent opacity-80" />
-                  </button>
-                ))}
-              </motion.div>
+              <GallerySlider gallery={gallery} onOpen={setSelectedGalleryIndex} />
             </div>
-
-            <motion.div
-              className="mt-4 grid auto-rows-[180px] gap-4 sm:grid-cols-2 md:auto-rows-[220px] lg:grid-cols-4"
-              variants={reveal}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.15 }}
-            >
-              {galleryPhotos.slice(6).map((photo, index) => (
-                <button
-                  key={photo.src}
-                  type="button"
-                  onClick={() => setSelectedGalleryPhoto(photo.src)}
-                  aria-label={`${gallery.open}: ${index + 7}`}
-                  className={`group relative overflow-hidden rounded-[20px] border border-white/10 bg-white/5 text-left shadow-[0_16px_48px_rgba(2,8,23,0.32)] transition duration-300 hover:-translate-y-1 hover:border-fuchsia-300/35 ${photo.className}`}
-                >
-                  <img
-                    src={photo.src}
-                    alt={`${gallery.altBase} ${index + 7}`}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/64 via-transparent to-transparent opacity-70" />
-                </button>
-              ))}
-            </motion.div>
           </div>
         </section>
 
@@ -1533,20 +1628,46 @@ function App() {
             type="button"
             aria-label={gallery.close}
             className="absolute inset-0"
-            onClick={() => setSelectedGalleryPhoto(null)}
+            onClick={() => setSelectedGalleryIndex(null)}
           />
           <div className="relative z-10 w-full max-w-6xl">
             <button
               type="button"
-              onClick={() => setSelectedGalleryPhoto(null)}
+              onClick={() => setSelectedGalleryIndex(null)}
               className="absolute right-2 top-2 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-[#0B0F2A]/80 text-2xl text-white transition hover:border-cyan-300/45 hover:text-cyan-200"
             >
               ×
             </button>
+            <button
+              type="button"
+              aria-label="Previous photo"
+              onClick={() =>
+                setSelectedGalleryIndex((currentIndex) =>
+                  getWrappedIndex((currentIndex ?? 0) - 1, galleryPhotos.length),
+                )
+              }
+              className="absolute left-2 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-[#0B0F2A]/80 text-2xl text-white transition hover:border-cyan-300/45 hover:text-cyan-200"
+            >
+              &#8592;
+            </button>
+            <button
+              type="button"
+              aria-label="Next photo"
+              onClick={() =>
+                setSelectedGalleryIndex((currentIndex) =>
+                  getWrappedIndex((currentIndex ?? 0) + 1, galleryPhotos.length),
+                )
+              }
+              className="absolute right-2 top-1/2 z-20 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-[#0B0F2A]/80 text-2xl text-white transition hover:border-cyan-300/45 hover:text-cyan-200"
+            >
+              &#8594;
+            </button>
             <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[#081022] shadow-[0_30px_120px_rgba(2,8,23,0.65)]">
               <img
-                src={selectedGalleryPhoto}
-                alt={gallery.altBase}
+                src={selectedGalleryPhoto.src}
+                srcSet={`${selectedGalleryPhoto.thumb} 800w, ${selectedGalleryPhoto.src} 1600w`}
+                sizes="92vw"
+                alt={`${gallery.altBase} ${(selectedGalleryIndex ?? 0) + 1}`}
                 className="max-h-[82vh] w-full object-contain"
               />
             </div>
