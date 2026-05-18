@@ -862,7 +862,28 @@ const getWrappedIndex = (index, total) => {
   return (index + total) % total;
 };
 
-const heroPhotos = galleryPhotos.slice(0, 5);
+const heroPhotos = [
+  {
+    src: "/assets/hero/ALM09565-1600.jpg",
+    thumb: "/assets/hero/ALM09565-800.jpg",
+  },
+  {
+    src: "/assets/hero/ALM09818-1600.jpg",
+    thumb: "/assets/hero/ALM09818-800.jpg",
+  },
+  {
+    src: "/assets/hero/ALM09057-1600.jpg",
+    thumb: "/assets/hero/ALM09057-800.jpg",
+  },
+  {
+    src: "/assets/gallery/optimized/00008886-1600.jpg",
+    thumb: "/assets/gallery/optimized/00008886-800.jpg",
+  },
+  {
+    src: "/assets/gallery/optimized/00008214-1600.jpg",
+    thumb: "/assets/gallery/optimized/00008214-800.jpg",
+  },
+];
 
 const benefitIcons = [
   <svg key="icon-1" viewBox="0 0 24 24" aria-hidden="true">
