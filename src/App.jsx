@@ -852,6 +852,7 @@ const galleryPhotos = [
 ];
 
 const galleryAutoplayDelay = 4500;
+const heroAutoplayDelay = 5200;
 
 const getWrappedIndex = (index, total) => {
   if (!total) {
@@ -860,6 +861,8 @@ const getWrappedIndex = (index, total) => {
 
   return (index + total) % total;
 };
+
+const heroPhotos = galleryPhotos.slice(0, 5);
 
 const benefitIcons = [
   <svg key="icon-1" viewBox="0 0 24 24" aria-hidden="true">
@@ -1065,6 +1068,104 @@ function GallerySlider({ gallery, onOpen }) {
             />
           </button>
         ))}
+      </div>
+    </motion.div>
+  );
+}
+
+function HeroShowcase({ hero, forumOverview }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (isPaused || heroPhotos.length < 2) {
+      return undefined;
+    }
+
+    const timerId = window.setInterval(() => {
+      setActiveIndex((currentIndex) => getWrappedIndex(currentIndex + 1, heroPhotos.length));
+    }, heroAutoplayDelay);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [isPaused]);
+
+  return (
+    <motion.div
+      className="hero-showcase glass-panel"
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.9, delay: 0.15, ease: "easeOut" }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent" />
+      <div className="hero-orb hero-orb-cyan" />
+      <div className="hero-orb hero-orb-pink" />
+      <div className="hero-orb hero-orb-yellow" />
+
+      <div className="hero-showcase-media">
+        {heroPhotos.map((photo, index) => (
+          <img
+            key={photo.src}
+            src={photo.src}
+            srcSet={`${photo.thumb} 800w, ${photo.src} 1600w`}
+            sizes="(max-width: 768px) 92vw, 42vw"
+            alt={`Global EdTech highlight ${index + 1}`}
+            loading={index === 0 ? "eager" : "lazy"}
+            fetchPriority={index === 0 ? "high" : "auto"}
+            className={`hero-showcase-image ${activeIndex === index ? "hero-showcase-image-active" : ""}`}
+          />
+        ))}
+
+        <div className="hero-showcase-overlay" />
+
+        <div className="hero-showcase-top">
+          <p className="hero-showcase-kicker">{forumOverview}</p>
+          <div className="hero-showcase-dots" aria-hidden="true">
+            {heroPhotos.map((photo, index) => (
+              <span
+                key={photo.thumb}
+                className={`hero-showcase-dot ${activeIndex === index ? "hero-showcase-dot-active" : ""}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="hero-showcase-bottom">
+          <div className="hero-showcase-stats">
+            {hero.stats.map(([value, label], index) => (
+              <div key={label} className={`hero-stat-card hero-stat-card-${index + 1}`}>
+                <p className="hero-stat-value">{value}</p>
+                <p className="hero-stat-label">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="hero-showcase-controls">
+          <button
+            type="button"
+            className="hero-showcase-arrow"
+            aria-label="Previous slide"
+            onClick={() =>
+              setActiveIndex((currentIndex) => getWrappedIndex(currentIndex - 1, heroPhotos.length))
+            }
+          >
+            &#8592;
+          </button>
+          <button
+            type="button"
+            className="hero-showcase-arrow"
+            aria-label="Next slide"
+            onClick={() =>
+              setActiveIndex((currentIndex) => getWrappedIndex(currentIndex + 1, heroPhotos.length))
+            }
+          >
+            &#8594;
+          </button>
+        </div>
       </div>
     </motion.div>
   );
@@ -1315,35 +1416,9 @@ function App() {
               </div>
             </motion.div>
 
-            <motion.div
-              className="relative mx-auto w-full max-w-xl"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.9, delay: 0.15, ease: "easeOut" }}
-            >
-              <div className="glass-panel relative overflow-hidden p-8 sm:p-10">
-                <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent" />
-                <div className="hero-orb hero-orb-cyan" />
-                <div className="hero-orb hero-orb-pink" />
-                <div className="hero-orb hero-orb-yellow" />
-                <div className="relative z-10">
-                  <p className="text-sm uppercase tracking-[0.35em] text-cyan-300">
-                    {t.ui.forumOverview}
-                  </p>
-                  <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                    {t.hero.stats.map(([value, label]) => (
-                      <div
-                        key={label}
-                        className="rounded-[16px] border border-white/10 bg-white/5 p-5"
-                      >
-                        <p className="text-3xl font-semibold text-white">{value}</p>
-                        <p className="mt-2 text-sm text-slate-300">{label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            <div className="relative mx-auto w-full max-w-xl">
+              <HeroShowcase hero={t.hero} forumOverview={t.ui.forumOverview} />
+            </div>
           </div>
         </section>
 
