@@ -13,6 +13,12 @@ export type SuggestedQuestion = {
   prompt: string;
 };
 
+export type AssistantApiPayload = {
+  message: string;
+  locale: AILocale;
+  history: Array<Pick<AIMessage, "role" | "content">>;
+};
+
 type ResponseRule = {
   topic: string;
   patterns: string[];
@@ -148,6 +154,13 @@ export const createAssistantGreeting = (locale: AILocale): AIMessage => ({
 });
 
 export const getSuggestedQuestions = (locale: AILocale) => suggestedQuestions[locale];
+
+export const getAssistantUnavailableMessage = (locale: AILocale) =>
+  ({
+    ru: "Сейчас AI-ассистент временно недоступен. Попробуйте снова через несколько секунд или воспользуйтесь разделами сайта.",
+    kk: "Қазір AI-көмекші уақытша қолжетімсіз. Бірнеше секундтан кейін қайта көріңіз немесе сайт бөлімдерін пайдаланыңыз.",
+    en: "The AI assistant is temporarily unavailable. Please try again in a few seconds or use the website sections.",
+  })[locale];
 
 export const getAIResponse = (input: string, locale: AILocale): string => {
   const normalizedInput = normalizeText(input);

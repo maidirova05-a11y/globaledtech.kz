@@ -13,6 +13,9 @@ function AvatarModel({ isSpeaking = false }: AIAvatarProps) {
   const leftEyeRef = useRef<Mesh | null>(null);
   const rightEyeRef = useRef<Mesh | null>(null);
   const mouthRef = useRef<Mesh | null>(null);
+  const chestCoreRef = useRef<Mesh | null>(null);
+  const haloRef = useRef<Mesh | null>(null);
+  const waveRef = useRef<Mesh | null>(null);
 
   const particles = useMemo(
     () =>
@@ -52,6 +55,22 @@ function AvatarModel({ isSpeaking = false }: AIAvatarProps) {
       mouthRef.current.scale.y = speaking;
       mouthRef.current.scale.x = isSpeaking ? 1.15 : 0.85;
     }
+
+    if (chestCoreRef.current) {
+      const pulse = isSpeaking ? 1.05 + Math.abs(Math.sin(time * 7.5)) * 0.28 : 0.92 + Math.sin(time * 1.8) * 0.05;
+      chestCoreRef.current.scale.setScalar(pulse);
+    }
+
+    if (haloRef.current) {
+      haloRef.current.rotation.z += 0.004;
+      haloRef.current.material.opacity = isSpeaking ? 0.42 : 0.24;
+    }
+
+    if (waveRef.current) {
+      waveRef.current.scale.x = isSpeaking ? 1.08 + Math.abs(Math.sin(time * 9)) * 0.35 : 0.82;
+      waveRef.current.scale.y = isSpeaking ? 0.8 + Math.abs(Math.sin(time * 9)) * 0.24 : 0.42;
+      waveRef.current.material.opacity = isSpeaking ? 0.42 : 0.12;
+    }
   });
 
   return (
@@ -65,6 +84,11 @@ function AvatarModel({ isSpeaking = false }: AIAvatarProps) {
         <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.1, -0.65]}>
           <torusGeometry args={[0.72, 0.03, 16, 64]} />
           <meshBasicMaterial color="#ff2e7e" transparent opacity={0.22} />
+        </mesh>
+
+        <mesh ref={haloRef} rotation={[Math.PI / 2, 0, 0]} position={[0, 0.22, -0.2]}>
+          <torusGeometry args={[1.05, 0.022, 16, 64]} />
+          <meshBasicMaterial color="#d5ecff" transparent opacity={0.24} />
         </mesh>
 
         {particles.map((particle, index) => (
@@ -103,6 +127,16 @@ function AvatarModel({ isSpeaking = false }: AIAvatarProps) {
           <mesh position={[0, -1.05, 0.35]}>
             <planeGeometry args={[0.78, 0.18]} />
             <meshBasicMaterial color="#22d3ee" transparent opacity={0.42} />
+          </mesh>
+
+          <mesh ref={waveRef} position={[0, -1.06, 0.37]}>
+            <planeGeometry args={[0.95, 0.28]} />
+            <meshBasicMaterial color="#ff2e7e" transparent opacity={0.16} />
+          </mesh>
+
+          <mesh ref={chestCoreRef} position={[0, -1.06, 0.4]} scale={[0.36, 0.36, 0.36]}>
+            <sphereGeometry args={[0.18, 24, 24]} />
+            <meshBasicMaterial color="#67e8f9" transparent opacity={0.88} />
           </mesh>
         </group>
 

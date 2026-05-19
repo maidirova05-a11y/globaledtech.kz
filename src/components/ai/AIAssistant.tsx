@@ -3,9 +3,11 @@ import ChatWindow from "./ChatWindow";
 import FloatingButton from "./FloatingButton";
 import {
   createAssistantGreeting,
+  getAssistantUnavailableMessage,
   getAIResponse,
   getSuggestedQuestions,
   type AIMessage,
+  type AssistantApiPayload,
   type AILocale,
 } from "../../lib/ai";
 
@@ -84,7 +86,7 @@ function AIAssistant({ language }: AIAssistantProps) {
     };
   }, []);
 
-  const submitPrompt = (prompt: string) => {
+  const submitPrompt = async (prompt: string) => {
     const trimmedPrompt = prompt.trim();
 
     if (!trimmedPrompt || isTyping) {
@@ -97,17 +99,51 @@ function AIAssistant({ language }: AIAssistantProps) {
     setIsTyping(true);
     setIsSpeaking(true);
 
-    timeoutRef.current = window.setTimeout(() => {
-      const response = getAIResponse(trimmedPrompt, locale);
-      const assistantMessage = createMessage("assistant", response);
+    const historyForApi = messages.slice(-8).map((message) => ({
+      role: message.role,
+      content: message.content,
+    }));
 
+    const payload: AssistantApiPayload = {
+      message: trimmedPrompt,
+      locale,
+      history: historyForApi,
+    };
+
+    try {
+      const response = await fetch("/api/assistant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || typeof data?.message !== "string") {
+        throw new Error(data?.error || "Assistant request failed");
+      }
+
+      const assistantMessage = createMessage("assistant", data.message);
       setMessages((currentMessages) => [...currentMessages, assistantMessage]);
+    } catch (error) {
+      console.error("AI assistant request failed:", error);
+
+      const fallbackResponse = getAIResponse(trimmedPrompt, locale);
+      const fallbackMessage = createMessage(
+        "assistant",
+        `${fallbackResponse}\n\n${getAssistantUnavailableMessage(locale)}`,
+      );
+
+      setMessages((currentMessages) => [...currentMessages, fallbackMessage]);
+    } finally {
       setIsTyping(false);
 
       speakingRef.current = window.setTimeout(() => {
         setIsSpeaking(false);
-      }, 800);
-    }, 900);
+      }, 900);
+    }
   };
 
   return (
