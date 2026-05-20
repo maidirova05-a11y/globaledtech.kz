@@ -29,14 +29,14 @@ type ResponseRule = {
 };
 
 const introMessage: Record<AILocale, string> = {
-  ru: "Здравствуйте! Я AI-помощник форума Global EdTech. Помогу быстро найти информацию о выставке, регистрации, программе, партнерах и контактах.",
-  kk: "Сәлеметсіз бе! Мен Global EdTech форумының AI-көмекшісімін. Көрме, тіркелу, бағдарлама, серіктестер және байланыс туралы ақпаратты жылдам табуға көмектесемін.",
+  ru: "Здравствуйте! Я AI-ассистент форума Global EdTech. Помогу быстро найти информацию о форуме, регистрации, программе, партнерах и контактах.",
+  kk: "Сәлеметсіз бе! Мен Global EdTech форумының AI-ассистентімін. Форум, тіркелу, бағдарлама, серіктестер және байланыстар туралы ақпарат табуға көмектесемін.",
   en: "Hello! I am the AI assistant for Global EdTech. I can help you with information about the forum, registration, program, partners, and contacts.",
 };
 
 const fallbackMessage: Record<AILocale, string> = {
-  ru: "Я могу помочь с информацией о Global EdTech, регистрации, программе, локации, спикерах, партнерах и контактах. Выберите быстрый вопрос или напишите подробнее.",
-  kk: "Мен Global EdTech, тіркелу, бағдарлама, локация, спикерлер, серіктестер және байланыс туралы ақпаратпен көмектесе аламын. Дайын сұрақтардың бірін таңдаңыз немесе нақтырақ жазыңыз.",
+  ru: "Я могу помочь с информацией о Global EdTech, регистрации, программе, локации, спикерах, партнерах и контактах. Выберите быстрый вопрос или напишите запрос подробнее.",
+  kk: "Мен Global EdTech, тіркелу, бағдарлама, локация, спикерлер, серіктестер және байланыстар туралы ақпаратпен көмектесе аламын. Дайын сұрақтардың бірін таңдаңыз немесе сұрағыңызды нақтырақ жазыңыз.",
   en: "I can help with information about Global EdTech, registration, program, location, speakers, partners, and contacts. Choose a suggested question or write your request in more detail.",
 };
 
@@ -161,7 +161,7 @@ export const getSuggestedQuestions = (locale: AILocale) => suggestedQuestions[lo
 export const getAssistantUnavailableMessage = (locale: AILocale) =>
   ({
     ru: "Сейчас AI-ассистент временно недоступен. Попробуйте снова через несколько секунд или воспользуйтесь разделами сайта.",
-    kk: "Қазір AI-көмекші уақытша қолжетімсіз. Бірнеше секундтан кейін қайта көріңіз немесе сайт бөлімдерін пайдаланыңыз.",
+    kk: "Қазір AI-ассистент уақытша қолжетімсіз. Бірнеше секундтан кейін қайта көріңіз немесе сайт бөлімдерін пайдаланыңыз.",
     en: "The AI assistant is temporarily unavailable. Please try again in a few seconds or use the website sections.",
   })[locale];
 

@@ -3,7 +3,6 @@ import ChatWindow from "./ChatWindow";
 import FloatingButton from "./FloatingButton";
 import {
   createAssistantGreeting,
-  getAssistantUnavailableMessage,
   getAIResponse,
   getSuggestedQuestions,
   type AIMessage,
@@ -45,6 +44,7 @@ function AIAssistant({ language }: AIAssistantProps) {
   const [conversationId, setConversationId] = useState("");
   const timeoutRef = useRef<number | null>(null);
   const speakingRef = useRef<number | null>(null);
+  const lastOpenedAtRef = useRef(0);
 
   const suggestedQuestions = useMemo(() => getSuggestedQuestions(locale), [locale]);
 
@@ -266,17 +266,31 @@ function AIAssistant({ language }: AIAssistantProps) {
       console.error("AI assistant request failed:", error);
 
       const fallbackResponse = getAIResponse(trimmedPrompt, locale);
-      const fallbackMessage = `${fallbackResponse}\n\n${getAssistantUnavailableMessage(locale)}`;
+      setMessages((currentMessages) => {
+        const hasPlaceholder = currentMessages.some((message) => message.id === assistantMessageId);
 
-      setMessages((currentMessages) => [
-        ...currentMessages,
-        {
-          id: assistantMessageId,
-          role: "assistant",
-          content: fallbackMessage,
-          createdAt: Date.now(),
-        },
-      ]);
+        if (hasPlaceholder) {
+          return currentMessages.map((message) =>
+            message.id === assistantMessageId
+              ? {
+                  ...message,
+                  content: fallbackResponse,
+                  isStreaming: false,
+                }
+              : message,
+          );
+        }
+
+        return [
+          ...currentMessages,
+          {
+            id: assistantMessageId,
+            role: "assistant",
+            content: fallbackResponse,
+            createdAt: Date.now(),
+          },
+        ];
+      });
     } finally {
       setIsTyping(false);
 
@@ -297,12 +311,28 @@ function AIAssistant({ language }: AIAssistantProps) {
         isSpeaking={isSpeaking}
         suggestedQuestions={suggestedQuestions}
         onClose={() => setIsOpen(false)}
+        onBackdropClose={() => {
+          if (Date.now() - lastOpenedAtRef.current < 250) {
+            return;
+          }
+
+          setIsOpen(false);
+        }}
         onInputChange={setInputValue}
         onSend={submitPrompt}
       />
 
       <div className="ai-floating-root">
-        <FloatingButton isOpen={isOpen} onClick={() => setIsOpen((currentState) => !currentState)} />
+        <FloatingButton
+          isOpen={isOpen}
+          onClick={() => {
+            if (!isOpen) {
+              lastOpenedAtRef.current = Date.now();
+            }
+
+            setIsOpen((currentState) => !currentState);
+          }}
+        />
       </div>
     </>
   );

@@ -12,14 +12,15 @@ type ChatWindowProps = {
   isSpeaking: boolean;
   suggestedQuestions: SuggestedQuestion[];
   onClose: () => void;
+  onBackdropClose: () => void;
   onInputChange: (value: string) => void;
   onSend: (value: string) => void;
 };
 
 const labels = {
   ru: {
-    title: "AI-консультант",
-    subtitle: "Digital assistant форума",
+    title: "AI-ассистент",
+    subtitle: "Цифровой помощник форума",
     status: "Online",
     placeholder: "Задайте вопрос о форуме...",
     send: "Отправить",
@@ -28,8 +29,8 @@ const labels = {
     quickActions: "Быстрые вопросы",
   },
   kk: {
-    title: "AI-кеңесші",
-    subtitle: "Форумның digital assistant-ы",
+    title: "AI-ассистент",
+    subtitle: "Форумның цифрлық көмекшісі",
     status: "Online",
     placeholder: "Форум туралы сұрақ жазыңыз...",
     send: "Жіберу",
@@ -58,6 +59,7 @@ function ChatWindow({
   isSpeaking,
   suggestedQuestions,
   onClose,
+  onBackdropClose,
   onInputChange,
   onSend,
 }: ChatWindowProps) {
@@ -93,7 +95,12 @@ function ChatWindow({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <button type="button" className="ai-overlay-backdrop" aria-label={copy.close} onClick={onClose} />
+          <button
+            type="button"
+            className="ai-overlay-backdrop"
+            aria-label={copy.close}
+            onClick={onBackdropClose}
+          />
 
           <motion.section
             className="ai-chat-window"
