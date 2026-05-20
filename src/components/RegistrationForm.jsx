@@ -147,7 +147,7 @@ function SearchableCountrySelect({
           <Icon country={selectedOption.value} label={selectedOption.label} />
         ) : null}
         <span className="phone-country-arrow" aria-hidden="true">
-          ▾
+          v
         </span>
       </button>
 
