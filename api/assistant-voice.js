@@ -3,13 +3,34 @@ import { resolveLocale } from "./_lib/assistantKnowledge.js";
 
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 const voiceModel = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
-const defaultVoice = process.env.OPENAI_TTS_VOICE || "cedar";
+const fallbackVoice = process.env.OPENAI_TTS_VOICE || "cedar";
 const MAX_INPUT_LENGTH = 1200;
 
-const instructionsByLocale = {
-  ru: "Speak in Russian with a calm, confident, warm, polished AI assistant tone. Sound natural, clear, and expressive with a deep steady delivery.",
-  kk: "Speak in Kazakh with a calm, confident, warm, polished AI assistant tone. Sound natural, clear, and expressive with a deep steady delivery.",
-  en: "Speak in English with a calm, confident, warm, polished AI assistant tone. Sound natural, clear, and expressive with a deep steady delivery.",
+const voiceProfiles = {
+  assistant: {
+    voice: "cedar",
+    instructions: {
+      ru: "Speak in Russian with a calm, confident, polished AI assistant tone. Sound natural, articulate, and balanced.",
+      kk: "Speak in Kazakh with a calm, confident, polished AI assistant tone. Sound natural, articulate, and balanced.",
+      en: "Speak in English with a calm, confident, polished AI assistant tone. Sound natural, articulate, and balanced.",
+    },
+  },
+  deep: {
+    voice: "onyx",
+    instructions: {
+      ru: "Speak in Russian with a deeper, steady, cinematic assistant tone. Stay calm, clear, and authoritative without sounding aggressive.",
+      kk: "Speak in Kazakh with a deeper, steady, cinematic assistant tone. Stay calm, clear, and authoritative without sounding aggressive.",
+      en: "Speak in English with a deeper, steady, cinematic assistant tone. Stay calm, clear, and authoritative without sounding aggressive.",
+    },
+  },
+  warm: {
+    voice: "marin",
+    instructions: {
+      ru: "Speak in Russian with a warm, lively, natural assistant tone. Sound expressive, friendly, and fluid.",
+      kk: "Speak in Kazakh with a warm, lively, natural assistant tone. Sound expressive, friendly, and fluid.",
+      en: "Speak in English with a warm, lively, natural assistant tone. Sound expressive, friendly, and fluid.",
+    },
+  },
 };
 
 export default async function handler(req, res) {
@@ -32,6 +53,10 @@ export default async function handler(req, res) {
 
     const locale = resolveLocale(rawBody.locale);
     const text = typeof rawBody.text === "string" ? rawBody.text.trim() : "";
+    const variant =
+      rawBody.variant === "assistant" || rawBody.variant === "deep" || rawBody.variant === "warm"
+        ? rawBody.variant
+        : "assistant";
 
     if (!text) {
       return res.status(400).json({
@@ -39,12 +64,12 @@ export default async function handler(req, res) {
       });
     }
 
-    const input = text.slice(0, MAX_INPUT_LENGTH);
+    const profile = voiceProfiles[variant];
     const audioResponse = await openai.audio.speech.create({
       model: voiceModel,
-      voice: defaultVoice,
-      input,
-      instructions: instructionsByLocale[locale],
+      voice: process.env.OPENAI_TTS_VOICE || profile.voice || fallbackVoice,
+      input: text.slice(0, MAX_INPUT_LENGTH),
+      instructions: profile.instructions[locale],
       response_format: "mp3",
     });
 

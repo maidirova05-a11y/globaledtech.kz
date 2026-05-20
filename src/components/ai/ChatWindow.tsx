@@ -2,6 +2,7 @@ import { FormEvent, KeyboardEvent, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import AIAvatar from "./AIAvatar";
 import type { AIMessage, SuggestedQuestion, AILocale } from "../../lib/ai";
+import type { VoiceVariant } from "./AIAssistant";
 
 type ChatWindowProps = {
   isOpen: boolean;
@@ -11,11 +12,13 @@ type ChatWindowProps = {
   isTyping: boolean;
   isSpeaking: boolean;
   isVoiceEnabled: boolean;
+  voiceVariant: VoiceVariant;
   suggestedQuestions: SuggestedQuestion[];
   onClose: () => void;
   onInputChange: (value: string) => void;
   onSend: (value: string) => void;
   onVoiceToggle: () => void;
+  onVoiceVariantChange: (value: VoiceVariant) => void;
 };
 
 const labels = {
@@ -33,6 +36,10 @@ const labels = {
     voiceStateOn: "AI-озвучка включена",
     voiceStateOff: "AI-озвучка выключена",
     voiceDisclosure: "Голос синтезирован ИИ",
+    voiceStyle: "Стиль голоса",
+    voiceAssistant: "Ассистент",
+    voiceDeep: "Глубокий",
+    voiceWarm: "Живой",
   },
   kk: {
     title: "AI-ассистент",
@@ -48,6 +55,10 @@ const labels = {
     voiceStateOn: "AI-дауыс қосулы",
     voiceStateOff: "AI-дауыс өшірулі",
     voiceDisclosure: "Дауыс ИИ арқылы синтезделеді",
+    voiceStyle: "Дауыс стилі",
+    voiceAssistant: "Ассистент",
+    voiceDeep: "Терең",
+    voiceWarm: "Жанды",
   },
   en: {
     title: "AI Assistant",
@@ -63,6 +74,10 @@ const labels = {
     voiceStateOn: "AI voice on",
     voiceStateOff: "AI voice off",
     voiceDisclosure: "Voice is AI-generated",
+    voiceStyle: "Voice style",
+    voiceAssistant: "Assistant",
+    voiceDeep: "Deep",
+    voiceWarm: "Warm",
   },
 } as const;
 
@@ -74,11 +89,13 @@ function ChatWindow({
   isTyping,
   isSpeaking,
   isVoiceEnabled,
+  voiceVariant,
   suggestedQuestions,
   onClose,
   onInputChange,
   onSend,
   onVoiceToggle,
+  onVoiceVariantChange,
 }: ChatWindowProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const copy = labels[locale];
@@ -107,6 +124,12 @@ function ChatWindow({
   if (!isOpen) {
     return null;
   }
+
+  const voiceButtons: Array<{ id: VoiceVariant; label: string }> = [
+    { id: "assistant", label: copy.voiceAssistant },
+    { id: "deep", label: copy.voiceDeep },
+    { id: "warm", label: copy.voiceWarm },
+  ];
 
   const content = (
     <div className="ai-overlay">
@@ -162,7 +185,22 @@ function ChatWindow({
           <p className="mt-3 text-xs text-slate-400">
             {isVoiceEnabled ? copy.voiceStateOn : copy.voiceStateOff}
           </p>
-          <p className="mt-1 text-[11px] text-slate-500">{copy.voiceDisclosure}</p>
+          <div className="mt-3">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">{copy.voiceStyle}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {voiceButtons.map((voiceButton) => (
+                <button
+                  key={voiceButton.id}
+                  type="button"
+                  className={`ai-quick-button ${voiceVariant === voiceButton.id ? "ring-2 ring-cyan-300/60" : ""}`}
+                  onClick={() => onVoiceVariantChange(voiceButton.id)}
+                >
+                  {voiceButton.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="mt-2 text-[11px] text-slate-500">{copy.voiceDisclosure}</p>
         </div>
 
         <div ref={contentRef} className="ai-messages">

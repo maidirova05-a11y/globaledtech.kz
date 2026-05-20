@@ -14,9 +14,13 @@ type AIAssistantProps = {
   language: string;
 };
 
+export type VoiceVariant = "assistant" | "deep" | "warm";
+
 const STORAGE_KEY = "globaledtech-ai-assistant";
 const CONVERSATION_KEY = "globaledtech-ai-conversation";
 const VOICE_ENABLED_KEY = "globaledtech-ai-voice-enabled";
+const VOICE_VARIANT_KEY = "globaledtech-ai-voice-variant";
+const DEFAULT_VOICE_VARIANT: VoiceVariant = "assistant";
 
 function resolveLocale(language: string): AILocale {
   if (language === "kk" || language === "en") {
@@ -53,6 +57,7 @@ function AIAssistant({ language }: AIAssistantProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+  const [voiceVariant, setVoiceVariant] = useState<VoiceVariant>(DEFAULT_VOICE_VARIANT);
   const [conversationId, setConversationId] = useState("");
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -67,9 +72,15 @@ function AIAssistant({ language }: AIAssistantProps) {
     const savedMessages = sessionStorage.getItem(`${STORAGE_KEY}-${locale}`);
     const savedConversationId = sessionStorage.getItem(`${CONVERSATION_KEY}-${locale}`) || "";
     const savedVoicePreference = sessionStorage.getItem(VOICE_ENABLED_KEY);
+    const savedVoiceVariant = sessionStorage.getItem(VOICE_VARIANT_KEY);
 
     setConversationId(savedConversationId);
     setIsVoiceEnabled(savedVoicePreference !== "false");
+    setVoiceVariant(
+      savedVoiceVariant === "assistant" || savedVoiceVariant === "deep" || savedVoiceVariant === "warm"
+        ? savedVoiceVariant
+        : DEFAULT_VOICE_VARIANT,
+    );
 
     if (!savedMessages) {
       setMessages([createAssistantGreeting(locale)]);
@@ -112,6 +123,14 @@ function AIAssistant({ language }: AIAssistantProps) {
 
     sessionStorage.setItem(VOICE_ENABLED_KEY, String(isVoiceEnabled));
   }, [isVoiceEnabled]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    sessionStorage.setItem(VOICE_VARIANT_KEY, voiceVariant);
+  }, [voiceVariant]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -176,6 +195,7 @@ function AIAssistant({ language }: AIAssistantProps) {
         body: JSON.stringify({
           text,
           locale,
+          variant: voiceVariant,
         }),
         signal: controller.signal,
       });
@@ -373,6 +393,7 @@ function AIAssistant({ language }: AIAssistantProps) {
         isTyping={isTyping}
         isSpeaking={isSpeaking}
         isVoiceEnabled={isVoiceEnabled}
+        voiceVariant={voiceVariant}
         suggestedQuestions={suggestedQuestions}
         onClose={() => {
           stopSpeaking();
@@ -387,6 +408,10 @@ function AIAssistant({ language }: AIAssistantProps) {
           if (!nextValue) {
             stopSpeaking();
           }
+        }}
+        onVoiceVariantChange={(nextVariant) => {
+          stopSpeaking();
+          setVoiceVariant(nextVariant);
         }}
       />
 
