@@ -43,6 +43,7 @@ const labels = {
     voiceAssistant: "Ассистент",
     voiceDeep: "Глубокий",
     voiceWarm: "Живой",
+    suggestionClouds: "Быстрые вопросы",
   },
   kk: {
     title: "AI-ассистент",
@@ -63,6 +64,7 @@ const labels = {
     voiceAssistant: "Ассистент",
     voiceDeep: "Терең",
     voiceWarm: "Жанды",
+    suggestionClouds: "Жылдам сұрақтар",
   },
   en: {
     title: "AI Assistant",
@@ -83,6 +85,7 @@ const labels = {
     voiceAssistant: "Assistant",
     voiceDeep: "Deep",
     voiceWarm: "Warm",
+    suggestionClouds: "Quick prompts",
   },
 } as const;
 
@@ -206,44 +209,43 @@ function ChatWindow({
           <AIAvatar isSpeaking={isSpeaking || isTyping} />
         </div>
 
-        <div ref={contentRef} className="ai-messages">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`ai-message ${message.role === "assistant" ? "ai-message-assistant" : "ai-message-user"}`}
-            >
-              <div className="ai-message-bubble">{message.content}</div>
+        <div className="ai-chat-main">
+          <aside className="ai-suggestion-clouds" aria-label={copy.suggestionClouds}>
+            <p className="ai-suggestion-clouds-title">{copy.suggestionClouds}</p>
+            <div className="ai-suggestion-clouds-list">
+              {suggestedQuestions.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="ai-suggestion-cloud"
+                  onClick={() => onSend(item.prompt)}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
-          ))}
+          </aside>
 
-          {isTyping ? (
-            <div className="ai-message ai-message-assistant">
-              <div className="ai-message-bubble ai-typing">
-                <span className="ai-typing-dot" />
-                <span className="ai-typing-dot" />
-                <span className="ai-typing-dot" />
-                <span className="sr-only">{copy.typing}</span>
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        <div className="ai-quick-row">
-          <div className="ai-quick-row-head">
-            <p className="ai-quick-title">{copy.quickActions}</p>
-            <p className="ai-voice-disclosure">{copy.voiceDisclosure}</p>
-          </div>
-          <div className="ai-quick-grid">
-            {suggestedQuestions.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className="ai-quick-button"
-                onClick={() => onSend(item.prompt)}
+          <div ref={contentRef} className="ai-messages">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`ai-message ${message.role === "assistant" ? "ai-message-assistant" : "ai-message-user"}`}
               >
-                {item.label}
-              </button>
+                <div className="ai-message-bubble">{message.content}</div>
+              </div>
             ))}
+
+            {isTyping ? (
+              <div className="ai-message ai-message-assistant">
+                <div className="ai-message-bubble ai-typing">
+                  <span className="ai-typing-dot" />
+                  <span className="ai-typing-dot" />
+                  <span className="ai-typing-dot" />
+                  <span className="sr-only">{copy.typing}</span>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 

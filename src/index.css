@@ -1050,6 +1050,18 @@ textarea {
   padding: 0 1rem;
 }
 
+.ai-chat-main {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(120px, 136px) minmax(0, 1fr);
+  gap: 0.9rem;
+  flex: 1;
+  min-height: 0;
+  padding: 0.95rem 1rem 0.3rem;
+  align-items: stretch;
+}
+
 .ai-avatar-shell {
   height: 240px;
   width: 100%;
@@ -1061,60 +1073,63 @@ textarea {
     #091224;
 }
 
-.ai-quick-row {
+.ai-suggestion-clouds {
   position: relative;
   z-index: 1;
-  padding: 0.9rem 1rem 0.45rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.ai-quick-row-head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.6rem;
+  min-height: 0;
+  flex-direction: column;
+  align-self: stretch;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(34, 211, 238, 0.05)),
+    rgba(8, 16, 34, 0.58);
+  padding: 0.85rem 0.7rem 0.75rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-.ai-quick-title {
-  margin: 0 0 0.65rem;
-  font-size: 0.74rem;
+.ai-suggestion-clouds-title {
+  margin: 0 0 0.55rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #94a3b8;
 }
 
-.ai-quick-grid {
+.ai-suggestion-clouds-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding-right: 0.15rem;
 }
 
-.ai-voice-disclosure {
-  margin: 0;
-  font-size: 0.72rem;
-  color: #64748b;
-}
-
-.ai-quick-button {
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
+.ai-suggestion-cloud {
+  width: 100%;
+  border-radius: 18px 18px 18px 8px;
+  border: 1px solid rgba(103, 232, 249, 0.18);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(34, 211, 238, 0.08));
   color: #dbeafe;
   cursor: pointer;
-  padding: 0.65rem 0.9rem;
-  font-size: 0.78rem;
+  padding: 0.72rem 0.8rem;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  text-align: left;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
     background 180ms ease;
 }
 
-.ai-quick-button:hover {
+.ai-suggestion-cloud:hover {
   transform: translateY(-1px);
-  border-color: rgba(103, 232, 249, 0.34);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(103, 232, 249, 0.38);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(34, 211, 238, 0.12));
 }
 
 .ai-messages {
@@ -1122,11 +1137,11 @@ textarea {
   z-index: 1;
   display: flex;
   flex: 1;
-  min-height: 180px;
+  min-height: 0;
   flex-direction: column;
   gap: 0.8rem;
   overflow-y: auto;
-  padding: 0.9rem 1rem 1rem;
+  padding: 0;
   overscroll-behavior: contain;
 }
 
@@ -1700,11 +1715,17 @@ select.field-input:invalid {
     padding: 0 0.9rem;
   }
 
+  .ai-chat-main {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+    padding: 0.7rem 0.9rem 0.2rem;
+  }
+
   .ai-messages {
     min-height: 0;
     flex: 1;
     gap: 0.65rem;
-    padding: 0.8rem 0.9rem 0.9rem;
+    padding: 0;
   }
 
   .ai-message-bubble {
@@ -1714,42 +1735,38 @@ select.field-input:invalid {
     line-height: 1.55;
   }
 
-  .ai-quick-row {
-    padding: 0.72rem 0.9rem 0.4rem;
+  .ai-suggestion-clouds {
+    padding: 0.7rem 0.75rem 0.55rem;
   }
 
-  .ai-quick-row-head {
-    align-items: center;
+  .ai-suggestion-clouds-title {
+    font-size: 0.64rem;
   }
 
-  .ai-quick-title {
-    margin-bottom: 0;
-    font-size: 0.68rem;
-  }
-
-  .ai-voice-disclosure {
-    display: none;
-  }
-
-  .ai-quick-grid {
-    width: calc(100% + 0.9rem);
+  .ai-suggestion-clouds-list {
+    width: calc(100% + 0.75rem);
+    min-height: auto;
+    flex-direction: row;
     flex-wrap: nowrap;
     gap: 0.45rem;
     overflow-x: auto;
-    padding-right: 0.9rem;
-    padding-top: 0.55rem;
+    overflow-y: hidden;
+    padding-right: 0.75rem;
     scrollbar-width: none;
   }
 
-  .ai-quick-grid::-webkit-scrollbar {
+  .ai-suggestion-clouds-list::-webkit-scrollbar {
     display: none;
   }
 
-  .ai-quick-button {
+  .ai-suggestion-cloud {
     flex: 0 0 auto;
-    padding: 0.58rem 0.82rem;
-    font-size: 0.76rem;
+    width: auto;
     white-space: nowrap;
+    border-radius: 999px;
+    padding: 0.55rem 0.78rem;
+    font-size: 0.74rem;
+    scrollbar-width: none;
   }
 
   .ai-input-row {
