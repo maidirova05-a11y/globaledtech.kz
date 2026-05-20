@@ -18,6 +18,41 @@ const STORAGE_KEY = "globaledtech-ai-assistant";
 const CONVERSATION_KEY = "globaledtech-ai-conversation";
 const VOICE_ENABLED_KEY = "globaledtech-ai-voice-enabled";
 
+const VOICE_PREFERENCES: Record<AILocale, string[]> = {
+  ru: [
+    "dmitry",
+    "pavel",
+    "george",
+    "microsoft pavel",
+    "microsoft dmitry",
+    "yuri",
+    "alex",
+  ],
+  kk: [
+    "kazakh",
+    "kk-kz",
+    "dmitry",
+    "pavel",
+    "george",
+    "alex",
+  ],
+  en: [
+    "daniel",
+    "george",
+    "david",
+    "mark",
+    "aaron",
+    "alex",
+    "guy",
+  ],
+};
+
+const VOICE_SETTINGS: Record<AILocale, { rate: number; pitch: number }> = {
+  ru: { rate: 0.9, pitch: 0.86 },
+  kk: { rate: 0.9, pitch: 0.88 },
+  en: { rate: 0.92, pitch: 0.84 },
+};
+
 function resolveLocale(language: string): AILocale {
   if (language === "kk" || language === "en") {
     return language;
@@ -41,6 +76,54 @@ function createConversationId() {
   }
 
   return `conversation-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function scoreVoice(voice: SpeechSynthesisVoice, locale: AILocale, targetLang: string) {
+  const name = voice.name.toLowerCase();
+  const lang = voice.lang.toLowerCase();
+  const preferences = VOICE_PREFERENCES[locale];
+  let score = 0;
+
+  if (lang === targetLang.toLowerCase()) {
+    score += 100;
+  } else if (lang.startsWith(locale)) {
+    score += 70;
+  }
+
+  if (voice.localService) {
+    score += 12;
+  }
+
+  const preferredIndex = preferences.findIndex((token) => name.includes(token));
+  if (preferredIndex >= 0) {
+    score += 50 - preferredIndex;
+  }
+
+  if (name.includes("natural")) {
+    score += 18;
+  }
+
+  if (name.includes("neural")) {
+    score += 18;
+  }
+
+  if (name.includes("desktop")) {
+    score += 6;
+  }
+
+  if (name.includes("female") || name.includes("zira") || name.includes("hazel") || name.includes("aria")) {
+    score -= 10;
+  }
+
+  return score;
+}
+
+function pickBestVoice(voices: SpeechSynthesisVoice[], locale: AILocale, targetLang: string) {
+  const sorted = [...voices].sort(
+    (left, right) => scoreVoice(right, locale, targetLang) - scoreVoice(left, locale, targetLang),
+  );
+
+  return sorted[0];
 }
 
 function AIAssistant({ language }: AIAssistantProps) {
@@ -165,13 +248,11 @@ function AIAssistant({ language }: AIAssistantProps) {
     };
 
     utterance.lang = localeToLang[locale];
-    utterance.rate = 1;
-    utterance.pitch = 1;
+    utterance.rate = VOICE_SETTINGS[locale].rate;
+    utterance.pitch = VOICE_SETTINGS[locale].pitch;
 
     const voices = window.speechSynthesis.getVoices();
-    const matchingVoice =
-      voices.find((voice) => voice.lang.toLowerCase() === utterance.lang.toLowerCase()) ||
-      voices.find((voice) => voice.lang.toLowerCase().startsWith(locale));
+    const matchingVoice = pickBestVoice(voices, locale, utterance.lang);
 
     if (matchingVoice) {
       utterance.voice = matchingVoice;
