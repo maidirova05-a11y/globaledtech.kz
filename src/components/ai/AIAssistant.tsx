@@ -18,6 +18,14 @@ const STORAGE_KEY = "globaledtech-ai-assistant";
 const CONVERSATION_KEY = "globaledtech-ai-conversation";
 const VOICE_ENABLED_KEY = "globaledtech-ai-voice-enabled";
 
+function resolveLocale(language: string): AILocale {
+  if (language === "kk" || language === "en") {
+    return language;
+  }
+
+  return "ru";
+}
+
 function createMessage(role: "assistant" | "user", content: string): AIMessage {
   return {
     id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -27,26 +35,27 @@ function createMessage(role: "assistant" | "user", content: string): AIMessage {
   };
 }
 
-function resolveLocale(language: string): AILocale {
-  if (language === "kk" || language === "en") {
-    return language;
+function createConversationId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
   }
 
-  return "ru";
+  return `conversation-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function AIAssistant({ language }: AIAssistantProps) {
   const locale = resolveLocale(language);
+  const suggestedQuestions = useMemo(() => getSuggestedQuestions(locale), [locale]);
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [conversationId, setConversationId] = useState("");
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [conversationId, setConversationId] = useState("");
 
-  const suggestedQuestions = useMemo(() => getSuggestedQuestions(locale), [locale]);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -55,32 +64,24 @@ function AIAssistant({ language }: AIAssistantProps) {
 
     const savedMessages = sessionStorage.getItem(`${STORAGE_KEY}-${locale}`);
     const savedConversationId = sessionStorage.getItem(`${CONVERSATION_KEY}-${locale}`) || "";
+    const savedVoicePreference = sessionStorage.getItem(VOICE_ENABLED_KEY);
+
     setConversationId(savedConversationId);
+    setIsVoiceEnabled(savedVoicePreference !== "false");
 
-    if (savedMessages) {
-      try {
-        const parsed = JSON.parse(savedMessages) as AIMessage[];
-        setMessages(parsed.length ? parsed : [createAssistantGreeting(locale)]);
-        return;
-      } catch {
-        sessionStorage.removeItem(`${STORAGE_KEY}-${locale}`);
-      }
-    }
-
-    setMessages([createAssistantGreeting(locale)]);
-  }, [locale]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
+    if (!savedMessages) {
+      setMessages([createAssistantGreeting(locale)]);
       return;
     }
 
-    const savedVoicePreference = sessionStorage.getItem(VOICE_ENABLED_KEY);
-
-    if (savedVoicePreference === "false") {
-      setIsVoiceEnabled(false);
+    try {
+      const parsed = JSON.parse(savedMessages) as AIMessage[];
+      setMessages(parsed.length > 0 ? parsed : [createAssistantGreeting(locale)]);
+    } catch {
+      sessionStorage.removeItem(`${STORAGE_KEY}-${locale}`);
+      setMessages([createAssistantGreeting(locale)]);
     }
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     if (typeof window === "undefined" || messages.length === 0) {
@@ -95,12 +96,11 @@ function AIAssistant({ language }: AIAssistantProps) {
       return;
     }
 
-    if (!conversationId) {
+    if (conversationId) {
+      sessionStorage.setItem(`${CONVERSATION_KEY}-${locale}`, conversationId);
+    } else {
       sessionStorage.removeItem(`${CONVERSATION_KEY}-${locale}`);
-      return;
     }
-
-    sessionStorage.setItem(`${CONVERSATION_KEY}-${locale}`, conversationId);
   }, [conversationId, locale]);
 
   useEffect(() => {
@@ -110,6 +110,21 @@ function AIAssistant({ language }: AIAssistantProps) {
 
     sessionStorage.setItem(VOICE_ENABLED_KEY, String(isVoiceEnabled));
   }, [isVoiceEnabled]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   useEffect(() => {
     return () => {
@@ -129,7 +144,7 @@ function AIAssistant({ language }: AIAssistantProps) {
     setIsSpeaking(false);
   };
 
-  const speakAssistantMessage = (text: string) => {
+  const speakMessage = (text: string) => {
     if (
       !isVoiceEnabled ||
       typeof window === "undefined" ||
@@ -140,14 +155,16 @@ function AIAssistant({ language }: AIAssistantProps) {
       return;
     }
 
+    stopSpeaking();
+
     const utterance = new SpeechSynthesisUtterance(text.trim());
-    const languageByLocale: Record<AILocale, string> = {
+    const localeToLang: Record<AILocale, string> = {
       ru: "ru-RU",
       kk: "kk-KZ",
       en: "en-US",
     };
 
-    utterance.lang = languageByLocale[locale];
+    utterance.lang = localeToLang[locale];
     utterance.rate = 1;
     utterance.pitch = 1;
 
@@ -174,7 +191,6 @@ function AIAssistant({ language }: AIAssistantProps) {
       }
     };
 
-    stopSpeaking();
     utteranceRef.current = utterance;
     setIsSpeaking(true);
     window.speechSynthesis.speak(utterance);
@@ -187,14 +203,10 @@ function AIAssistant({ language }: AIAssistantProps) {
       return;
     }
 
-    const activeConversationId =
-      conversationId ||
-      (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-        ? crypto.randomUUID()
-        : `conversation-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+    const activeConversationId = conversationId || createConversationId();
     const userMessage = createMessage("user", trimmedPrompt);
-    const assistantMessageId = `assistant-stream-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const assistantPlaceholder: AIMessage = {
+    const assistantMessageId = `assistant-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const placeholder: AIMessage = {
       id: assistantMessageId,
       role: "assistant",
       content: "",
@@ -203,22 +215,19 @@ function AIAssistant({ language }: AIAssistantProps) {
     };
 
     setConversationId(activeConversationId);
-    setMessages((currentMessages) => [...currentMessages, userMessage]);
+    setMessages((currentMessages) => [...currentMessages, userMessage, placeholder]);
     setInputValue("");
     setIsTyping(true);
-    setIsSpeaking(true);
-
-    const historyForApi = messages.slice(-8).map((message) => ({
-      role: message.role,
-      content: message.content,
-    }));
 
     const payload: AssistantApiPayload = {
       message: trimmedPrompt,
       locale,
       conversationId: activeConversationId,
       stream: true,
-      history: historyForApi,
+      history: messages.slice(-8).map((message) => ({
+        role: message.role,
+        content: message.content,
+      })),
     };
 
     try {
@@ -238,9 +247,7 @@ function AIAssistant({ language }: AIAssistantProps) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let streamedText = "";
-      let hasAttachedAssistantMessage = false;
-      let hasReceivedDelta = false;
+      let finalText = "";
 
       while (true) {
         const { value, done } = await reader.read();
@@ -274,26 +281,12 @@ function AIAssistant({ language }: AIAssistantProps) {
           }
 
           if (eventData.type === "delta" && typeof eventData.delta === "string") {
-            if (!hasAttachedAssistantMessage) {
-              hasAttachedAssistantMessage = true;
-              setMessages((currentMessages) => [...currentMessages, assistantPlaceholder]);
-            }
-
-            if (!hasReceivedDelta) {
-              hasReceivedDelta = true;
-              setIsTyping(false);
-            }
-
-            streamedText += eventData.delta;
-
+            finalText += eventData.delta;
+            setIsTyping(false);
             setMessages((currentMessages) =>
               currentMessages.map((message) =>
                 message.id === assistantMessageId
-                  ? {
-                      ...message,
-                      content: streamedText,
-                      isStreaming: true,
-                    }
+                  ? { ...message, content: finalText, isStreaming: true }
                   : message,
               ),
             );
@@ -301,34 +294,24 @@ function AIAssistant({ language }: AIAssistantProps) {
           }
 
           if (eventData.type === "done") {
-            const finalMessage =
+            const resolvedMessage =
               typeof eventData.message === "string" && eventData.message.trim()
                 ? eventData.message
-                : streamedText;
+                : finalText;
+
+            finalText = resolvedMessage;
 
             if (typeof eventData.conversationId === "string") {
               setConversationId(eventData.conversationId);
             }
 
-            if (!hasAttachedAssistantMessage) {
-              hasAttachedAssistantMessage = true;
-              setMessages((currentMessages) => [...currentMessages, assistantPlaceholder]);
-            }
-
             setMessages((currentMessages) =>
               currentMessages.map((message) =>
                 message.id === assistantMessageId
-                  ? {
-                      ...message,
-                      content: finalMessage,
-                      isStreaming: false,
-                    }
+                  ? { ...message, content: resolvedMessage, isStreaming: false }
                   : message,
               ),
             );
-            streamedText = finalMessage;
-            speakAssistantMessage(finalMessage);
-            continue;
           }
 
           if (eventData.type === "error") {
@@ -337,39 +320,23 @@ function AIAssistant({ language }: AIAssistantProps) {
         }
       }
 
-      if (!streamedText.trim()) {
+      if (!finalText.trim()) {
         throw new Error("Assistant returned an empty response");
       }
+
+      speakMessage(finalText);
     } catch (error) {
       console.error("AI assistant request failed:", error);
 
       const fallbackResponse = getAIResponse(trimmedPrompt, locale);
-      speakAssistantMessage(fallbackResponse);
-      setMessages((currentMessages) => {
-        const hasPlaceholder = currentMessages.some((message) => message.id === assistantMessageId);
-
-        if (hasPlaceholder) {
-          return currentMessages.map((message) =>
-            message.id === assistantMessageId
-              ? {
-                  ...message,
-                  content: fallbackResponse,
-                  isStreaming: false,
-                }
-              : message,
-          );
-        }
-
-        return [
-          ...currentMessages,
-          {
-            id: assistantMessageId,
-            role: "assistant",
-            content: fallbackResponse,
-            createdAt: Date.now(),
-          },
-        ];
-      });
+      setMessages((currentMessages) =>
+        currentMessages.map((message) =>
+          message.id === assistantMessageId
+            ? { ...message, content: fallbackResponse, isStreaming: false }
+            : message,
+        ),
+      );
+      speakMessage(fallbackResponse);
     } finally {
       setIsTyping(false);
     }
@@ -401,12 +368,7 @@ function AIAssistant({ language }: AIAssistantProps) {
 
       {!isOpen ? (
         <div className="ai-floating-root">
-          <FloatingButton
-            isOpen={isOpen}
-            onClick={() => {
-              setIsOpen(true);
-            }}
-          />
+          <FloatingButton onClick={() => setIsOpen(true)} />
         </div>
       ) : null}
     </>

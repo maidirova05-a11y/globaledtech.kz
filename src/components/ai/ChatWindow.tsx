@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { FormEvent, KeyboardEvent, PointerEvent, useEffect, useRef } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef } from "react";
 import AIAvatar from "./AIAvatar";
 import type { AIMessage, SuggestedQuestion, AILocale } from "../../lib/ai";
 
@@ -30,10 +30,8 @@ const labels = {
     quickActions: "Быстрые вопросы",
     voiceOn: "Выключить голос",
     voiceOff: "Включить голос",
-    voiceLabelOn: "Голос включен",
-    voiceLabelOff: "Голос выключен",
-    voiceButton: "TTS",
-    closeButton: "X",
+    voiceStateOn: "Голос включен",
+    voiceStateOff: "Голос выключен",
   },
   kk: {
     title: "AI-ассистент",
@@ -46,10 +44,8 @@ const labels = {
     quickActions: "Жылдам сұрақтар",
     voiceOn: "Дауысты өшіру",
     voiceOff: "Дауысты қосу",
-    voiceLabelOn: "Дауыс қосулы",
-    voiceLabelOff: "Дауыс өшірулі",
-    voiceButton: "TTS",
-    closeButton: "X",
+    voiceStateOn: "Дауыс қосулы",
+    voiceStateOff: "Дауыс өшірулі",
   },
   en: {
     title: "AI Assistant",
@@ -62,10 +58,8 @@ const labels = {
     quickActions: "Suggested questions",
     voiceOn: "Mute voice",
     voiceOff: "Enable voice",
-    voiceLabelOn: "Voice on",
-    voiceLabelOff: "Voice off",
-    voiceButton: "TTS",
-    closeButton: "X",
+    voiceStateOn: "Voice on",
+    voiceStateOff: "Voice off",
   },
 } as const;
 
@@ -106,10 +100,6 @@ function ChatWindow({
     }
   };
 
-  const stopOverlayClose = (event: PointerEvent<HTMLElement>) => {
-    event.stopPropagation();
-  };
-
   return (
     <AnimatePresence>
       {isOpen ? (
@@ -126,9 +116,7 @@ function ChatWindow({
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
-            onPointerDown={stopOverlayClose}
-            onClick={stopOverlayClose}
+            transition={{ duration: 0.24, ease: "easeOut" }}
           >
             <div className="ai-chat-holo" aria-hidden="true" />
 
@@ -150,10 +138,10 @@ function ChatWindow({
                   title={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
                   onClick={onVoiceToggle}
                 >
-                  {copy.voiceButton}
+                  TTS
                 </button>
                 <button type="button" className="ai-chat-close" aria-label={copy.close} onClick={onClose}>
-                  {copy.closeButton}
+                  X
                 </button>
               </div>
             </header>
@@ -177,7 +165,7 @@ function ChatWindow({
                 ))}
               </div>
               <p className="mt-3 text-xs text-slate-400">
-                {isVoiceEnabled ? copy.voiceLabelOn : copy.voiceLabelOff}
+                {isVoiceEnabled ? copy.voiceStateOn : copy.voiceStateOff}
               </p>
             </div>
 
@@ -187,10 +175,10 @@ function ChatWindow({
                   <motion.div
                     key={message.id}
                     className={`ai-message ${message.role === "assistant" ? "ai-message-assistant" : "ai-message-user"}`}
-                    initial={{ opacity: 0, y: 14 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 6 }}
-                    transition={{ duration: 0.22, ease: "easeOut" }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
                   >
                     <div className="ai-message-bubble">{message.content}</div>
                   </motion.div>
@@ -223,7 +211,7 @@ function ChatWindow({
                 className="ai-input"
                 placeholder={copy.placeholder}
               />
-              <button type="submit" className="ai-send-button" disabled={!inputValue.trim()}>
+              <button type="submit" className="ai-send-button" disabled={!inputValue.trim() || isTyping}>
                 {copy.send}
               </button>
             </form>

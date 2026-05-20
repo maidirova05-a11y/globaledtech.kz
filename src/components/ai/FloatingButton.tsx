@@ -1,15 +1,14 @@
 import { motion } from "framer-motion";
 
 type FloatingButtonProps = {
-  isOpen: boolean;
   onClick: () => void;
 };
 
-function FloatingButton({ isOpen, onClick }: FloatingButtonProps) {
+function FloatingButton({ onClick }: FloatingButtonProps) {
   return (
     <motion.button
       type="button"
-      aria-label={isOpen ? "Close AI assistant" : "Open AI assistant"}
+      aria-label="Open AI assistant"
       className="ai-fab group"
       onClick={onClick}
       initial={{ opacity: 0, y: 20, scale: 0.92 }}
