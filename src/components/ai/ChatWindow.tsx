@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { FormEvent, KeyboardEvent, useEffect, useRef } from "react";
+import { FormEvent, KeyboardEvent, PointerEvent, useEffect, useRef } from "react";
 import AIAvatar from "./AIAvatar";
 import type { AIMessage, SuggestedQuestion, AILocale } from "../../lib/ai";
 
@@ -10,11 +10,13 @@ type ChatWindowProps = {
   inputValue: string;
   isTyping: boolean;
   isSpeaking: boolean;
+  isVoiceEnabled: boolean;
   suggestedQuestions: SuggestedQuestion[];
   onClose: () => void;
   onBackdropClose: () => void;
   onInputChange: (value: string) => void;
   onSend: (value: string) => void;
+  onVoiceToggle: () => void;
 };
 
 const labels = {
@@ -27,6 +29,10 @@ const labels = {
     close: "Закрыть чат",
     typing: "AI Assistant печатает",
     quickActions: "Быстрые вопросы",
+    voiceOn: "Выключить голос",
+    voiceOff: "Включить голос",
+    voiceLabelOn: "Голос включен",
+    voiceLabelOff: "Голос выключен",
   },
   kk: {
     title: "AI-ассистент",
@@ -37,6 +43,10 @@ const labels = {
     close: "Чатты жабу",
     typing: "AI Assistant жауап дайындап жатыр",
     quickActions: "Жылдам сұрақтар",
+    voiceOn: "Дауысты өшіру",
+    voiceOff: "Дауысты қосу",
+    voiceLabelOn: "Дауыс қосулы",
+    voiceLabelOff: "Дауыс өшірулі",
   },
   en: {
     title: "AI Assistant",
@@ -47,6 +57,10 @@ const labels = {
     close: "Close chat",
     typing: "AI Assistant is typing",
     quickActions: "Suggested questions",
+    voiceOn: "Mute voice",
+    voiceOff: "Enable voice",
+    voiceLabelOn: "Voice on",
+    voiceLabelOff: "Voice off",
   },
 } as const;
 
@@ -57,11 +71,13 @@ function ChatWindow({
   inputValue,
   isTyping,
   isSpeaking,
+  isVoiceEnabled,
   suggestedQuestions,
   onClose,
   onBackdropClose,
   onInputChange,
   onSend,
+  onVoiceToggle,
 }: ChatWindowProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const copy = labels[locale];
@@ -86,6 +102,10 @@ function ChatWindow({
     }
   };
 
+  const stopOverlayClose = (event: PointerEvent<HTMLElement>) => {
+    event.stopPropagation();
+  };
+
   return (
     <AnimatePresence>
       {isOpen ? (
@@ -108,6 +128,8 @@ function ChatWindow({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ duration: 0.28, ease: "easeOut" }}
+            onPointerDown={stopOverlayClose}
+            onClick={stopOverlayClose}
           >
             <div className="ai-chat-holo" aria-hidden="true" />
 
@@ -121,9 +143,20 @@ function ChatWindow({
                 <p className="ai-chat-subtitle">{copy.subtitle}</p>
               </div>
 
-              <button type="button" className="ai-chat-close" aria-label={copy.close} onClick={onClose}>
-                ×
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="ai-chat-close"
+                  aria-label={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
+                  title={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
+                  onClick={onVoiceToggle}
+                >
+                  {isVoiceEnabled ? "🔊" : "🔇"}
+                </button>
+                <button type="button" className="ai-chat-close" aria-label={copy.close} onClick={onClose}>
+                  ×
+                </button>
+              </div>
             </header>
 
             <div className="ai-avatar-wrap">
@@ -144,6 +177,9 @@ function ChatWindow({
                   </button>
                 ))}
               </div>
+              <p className="mt-3 text-xs text-slate-400">
+                {isVoiceEnabled ? copy.voiceLabelOn : copy.voiceLabelOff}
+              </p>
             </div>
 
             <div ref={contentRef} className="ai-messages">

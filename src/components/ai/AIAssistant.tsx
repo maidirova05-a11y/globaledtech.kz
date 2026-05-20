@@ -16,6 +16,7 @@ type AIAssistantProps = {
 
 const STORAGE_KEY = "globaledtech-ai-assistant";
 const CONVERSATION_KEY = "globaledtech-ai-conversation";
+const VOICE_ENABLED_KEY = "globaledtech-ai-voice-enabled";
 
 function createMessage(role: "assistant" | "user", content: string): AIMessage {
   return {
@@ -44,7 +45,9 @@ function AIAssistant({ language }: AIAssistantProps) {
   const [conversationId, setConversationId] = useState("");
   const timeoutRef = useRef<number | null>(null);
   const speakingRef = useRef<number | null>(null);
-  const lastOpenedAtRef = useRef(0);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+  const lastToggleAtRef = useRef(0);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const suggestedQuestions = useMemo(() => getSuggestedQuestions(locale), [locale]);
 
@@ -71,6 +74,18 @@ function AIAssistant({ language }: AIAssistantProps) {
   }, [locale]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const savedVoicePreference = sessionStorage.getItem(VOICE_ENABLED_KEY);
+
+    if (savedVoicePreference === "false") {
+      setIsVoiceEnabled(false);
+    }
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined" || messages.length === 0) {
       return;
     }
@@ -92,6 +107,14 @@ function AIAssistant({ language }: AIAssistantProps) {
   }, [conversationId, locale]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    sessionStorage.setItem(VOICE_ENABLED_KEY, String(isVoiceEnabled));
+  }, [isVoiceEnabled]);
+
+  useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current);
@@ -100,8 +123,73 @@ function AIAssistant({ language }: AIAssistantProps) {
       if (speakingRef.current) {
         window.clearTimeout(speakingRef.current);
       }
+
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
     };
   }, []);
+
+  const stopSpeaking = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    utteranceRef.current = null;
+    setIsSpeaking(false);
+  };
+
+  const speakAssistantMessage = (text: string) => {
+    if (
+      !isVoiceEnabled ||
+      typeof window === "undefined" ||
+      !("speechSynthesis" in window) ||
+      !text.trim()
+    ) {
+      setIsSpeaking(false);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text.trim());
+    const languageByLocale: Record<AILocale, string> = {
+      ru: "ru-RU",
+      kk: "kk-KZ",
+      en: "en-US",
+    };
+
+    utterance.lang = languageByLocale[locale];
+    utterance.rate = 1;
+    utterance.pitch = 1;
+
+    const voices = window.speechSynthesis.getVoices();
+    const matchingVoice =
+      voices.find((voice) => voice.lang.toLowerCase() === utterance.lang.toLowerCase()) ||
+      voices.find((voice) => voice.lang.toLowerCase().startsWith(locale));
+
+    if (matchingVoice) {
+      utterance.voice = matchingVoice;
+    }
+
+    utterance.onend = () => {
+      if (utteranceRef.current === utterance) {
+        utteranceRef.current = null;
+        setIsSpeaking(false);
+      }
+    };
+
+    utterance.onerror = () => {
+      if (utteranceRef.current === utterance) {
+        utteranceRef.current = null;
+        setIsSpeaking(false);
+      }
+    };
+
+    stopSpeaking();
+    utteranceRef.current = utterance;
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const submitPrompt = async (prompt: string) => {
     const trimmedPrompt = prompt.trim();
@@ -250,6 +338,7 @@ function AIAssistant({ language }: AIAssistantProps) {
               ),
             );
             streamedText = finalMessage;
+            speakAssistantMessage(finalMessage);
             continue;
           }
 
@@ -266,6 +355,7 @@ function AIAssistant({ language }: AIAssistantProps) {
       console.error("AI assistant request failed:", error);
 
       const fallbackResponse = getAIResponse(trimmedPrompt, locale);
+      speakAssistantMessage(fallbackResponse);
       setMessages((currentMessages) => {
         const hasPlaceholder = currentMessages.some((message) => message.id === assistantMessageId);
 
@@ -293,10 +383,6 @@ function AIAssistant({ language }: AIAssistantProps) {
       });
     } finally {
       setIsTyping(false);
-
-      speakingRef.current = window.setTimeout(() => {
-        setIsSpeaking(false);
-      }, 900);
     }
   };
 
@@ -309,10 +395,11 @@ function AIAssistant({ language }: AIAssistantProps) {
         inputValue={inputValue}
         isTyping={isTyping}
         isSpeaking={isSpeaking}
+        isVoiceEnabled={isVoiceEnabled}
         suggestedQuestions={suggestedQuestions}
         onClose={() => setIsOpen(false)}
         onBackdropClose={() => {
-          if (Date.now() - lastOpenedAtRef.current < 250) {
+          if (Date.now() - lastToggleAtRef.current < 500) {
             return;
           }
 
@@ -320,16 +407,22 @@ function AIAssistant({ language }: AIAssistantProps) {
         }}
         onInputChange={setInputValue}
         onSend={submitPrompt}
+        onVoiceToggle={() => {
+          const nextValue = !isVoiceEnabled;
+          lastToggleAtRef.current = Date.now();
+          setIsVoiceEnabled(nextValue);
+
+          if (!nextValue) {
+            stopSpeaking();
+          }
+        }}
       />
 
       <div className="ai-floating-root">
         <FloatingButton
           isOpen={isOpen}
           onClick={() => {
-            if (!isOpen) {
-              lastOpenedAtRef.current = Date.now();
-            }
-
+            lastToggleAtRef.current = Date.now();
             setIsOpen((currentState) => !currentState);
           }}
         />
