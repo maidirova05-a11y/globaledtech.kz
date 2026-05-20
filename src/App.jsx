@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
-import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AdminDashboard from "./components/AdminDashboard";
 import RegistrationForm from "./components/RegistrationForm";
-
-const AIAssistant = lazy(() => import("./components/ai/AIAssistant"));
+import AIAssistant from "./components/ai/AIAssistant";
 
 const languages = [
   { code: "ru", label: "RU" },
@@ -1719,9 +1718,7 @@ function App() {
         </div>
       </footer>
 
-      <Suspense fallback={null}>
-        <AIAssistant language={language} />
-      </Suspense>
+      <AIAssistant language={language} />
 
       {selectedGalleryPhoto ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#020617]/88 px-4 py-6 backdrop-blur-md">

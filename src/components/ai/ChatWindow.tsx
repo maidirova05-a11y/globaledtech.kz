@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from "framer-motion";
 import { FormEvent, KeyboardEvent, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import AIAvatar from "./AIAvatar";
@@ -31,8 +30,9 @@ const labels = {
     quickActions: "Быстрые вопросы",
     voiceOn: "Выключить голос",
     voiceOff: "Включить голос",
-    voiceStateOn: "Голос включен",
-    voiceStateOff: "Голос выключен",
+    voiceStateOn: "AI-озвучка включена",
+    voiceStateOff: "AI-озвучка выключена",
+    voiceDisclosure: "Голос синтезирован ИИ",
   },
   kk: {
     title: "AI-ассистент",
@@ -45,8 +45,9 @@ const labels = {
     quickActions: "Жылдам сұрақтар",
     voiceOn: "Дауысты өшіру",
     voiceOff: "Дауысты қосу",
-    voiceStateOn: "Дауыс қосулы",
-    voiceStateOff: "Дауыс өшірулі",
+    voiceStateOn: "AI-дауыс қосулы",
+    voiceStateOff: "AI-дауыс өшірулі",
+    voiceDisclosure: "Дауыс ИИ арқылы синтезделеді",
   },
   en: {
     title: "AI Assistant",
@@ -59,8 +60,9 @@ const labels = {
     quickActions: "Suggested questions",
     voiceOn: "Mute voice",
     voiceOff: "Enable voice",
-    voiceStateOn: "Voice on",
-    voiceStateOff: "Voice off",
+    voiceStateOn: "AI voice on",
+    voiceStateOff: "AI voice off",
+    voiceDisclosure: "Voice is AI-generated",
   },
 } as const;
 
@@ -102,125 +104,104 @@ function ChatWindow({
     }
   };
 
+  if (!isOpen) {
+    return null;
+  }
+
   const content = (
-    <AnimatePresence>
-      {isOpen ? (
-        <motion.div
-          className="ai-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <div className="ai-overlay-backdrop" aria-hidden="true" />
+    <div className="ai-overlay">
+      <div className="ai-overlay-backdrop" aria-hidden="true" />
 
-          <motion.section
-            className="ai-chat-window"
-            initial={{ opacity: 0, y: 24, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.98 }}
-            transition={{ duration: 0.24, ease: "easeOut" }}
-          >
-            <div className="ai-chat-holo" aria-hidden="true" />
+      <section className="ai-chat-window" role="dialog" aria-modal="true" aria-label={copy.title}>
+        <div className="ai-chat-holo" aria-hidden="true" />
 
-            <header className="ai-chat-header">
-              <div>
-                <div className="ai-chat-status">
-                  <span className="ai-chat-status-dot" />
-                  {copy.status}
-                </div>
-                <h3 className="ai-chat-title">{copy.title}</h3>
-                <p className="ai-chat-subtitle">{copy.subtitle}</p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="ai-chat-close"
-                  aria-label={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
-                  title={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
-                  onClick={onVoiceToggle}
-                >
-                  TTS
-                </button>
-                <button type="button" className="ai-chat-close" aria-label={copy.close} onClick={onClose}>
-                  X
-                </button>
-              </div>
-            </header>
-
-            <div className="ai-avatar-wrap">
-              <AIAvatar isSpeaking={isSpeaking || isTyping} />
+        <header className="ai-chat-header">
+          <div>
+            <div className="ai-chat-status">
+              <span className="ai-chat-status-dot" />
+              {copy.status}
             </div>
+            <h3 className="ai-chat-title">{copy.title}</h3>
+            <p className="ai-chat-subtitle">{copy.subtitle}</p>
+          </div>
 
-            <div className="ai-quick-row">
-              <p className="ai-quick-title">{copy.quickActions}</p>
-              <div className="ai-quick-grid">
-                {suggestedQuestions.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className="ai-quick-button"
-                    onClick={() => onSend(item.prompt)}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-3 text-xs text-slate-400">
-                {isVoiceEnabled ? copy.voiceStateOn : copy.voiceStateOff}
-              </p>
-            </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="ai-chat-close"
+              aria-label={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
+              title={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
+              onClick={onVoiceToggle}
+            >
+              TTS
+            </button>
+            <button type="button" className="ai-chat-close" aria-label={copy.close} onClick={onClose}>
+              X
+            </button>
+          </div>
+        </header>
 
-            <div ref={contentRef} className="ai-messages">
-              <AnimatePresence initial={false}>
-                {messages.map((message) => (
-                  <motion.div
-                    key={message.id}
-                    className={`ai-message ${message.role === "assistant" ? "ai-message-assistant" : "ai-message-user"}`}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 6 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                  >
-                    <div className="ai-message-bubble">{message.content}</div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+        <div className="ai-avatar-wrap">
+          <AIAvatar isSpeaking={isSpeaking || isTyping} />
+        </div>
 
-              {isTyping ? (
-                <motion.div
-                  className="ai-message ai-message-assistant"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 6 }}
-                >
-                  <div className="ai-message-bubble ai-typing">
-                    <span className="ai-typing-dot" />
-                    <span className="ai-typing-dot" />
-                    <span className="ai-typing-dot" />
-                    <span className="sr-only">{copy.typing}</span>
-                  </div>
-                </motion.div>
-              ) : null}
-            </div>
-
-            <form className="ai-input-row" onSubmit={handleSubmit}>
-              <textarea
-                value={inputValue}
-                onChange={(event) => onInputChange(event.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={1}
-                className="ai-input"
-                placeholder={copy.placeholder}
-              />
-              <button type="submit" className="ai-send-button" disabled={!inputValue.trim() || isTyping}>
-                {copy.send}
+        <div className="ai-quick-row">
+          <p className="ai-quick-title">{copy.quickActions}</p>
+          <div className="ai-quick-grid">
+            {suggestedQuestions.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="ai-quick-button"
+                onClick={() => onSend(item.prompt)}
+              >
+                {item.label}
               </button>
-            </form>
-          </motion.section>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-slate-400">
+            {isVoiceEnabled ? copy.voiceStateOn : copy.voiceStateOff}
+          </p>
+          <p className="mt-1 text-[11px] text-slate-500">{copy.voiceDisclosure}</p>
+        </div>
+
+        <div ref={contentRef} className="ai-messages">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`ai-message ${message.role === "assistant" ? "ai-message-assistant" : "ai-message-user"}`}
+            >
+              <div className="ai-message-bubble">{message.content}</div>
+            </div>
+          ))}
+
+          {isTyping ? (
+            <div className="ai-message ai-message-assistant">
+              <div className="ai-message-bubble ai-typing">
+                <span className="ai-typing-dot" />
+                <span className="ai-typing-dot" />
+                <span className="ai-typing-dot" />
+                <span className="sr-only">{copy.typing}</span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <form className="ai-input-row" onSubmit={handleSubmit}>
+          <textarea
+            value={inputValue}
+            onChange={(event) => onInputChange(event.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={1}
+            className="ai-input"
+            placeholder={copy.placeholder}
+          />
+          <button type="submit" className="ai-send-button" disabled={!inputValue.trim() || isTyping}>
+            {copy.send}
+          </button>
+        </form>
+      </section>
+    </div>
   );
 
   if (!canUsePortal) {

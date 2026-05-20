@@ -18,41 +18,6 @@ const STORAGE_KEY = "globaledtech-ai-assistant";
 const CONVERSATION_KEY = "globaledtech-ai-conversation";
 const VOICE_ENABLED_KEY = "globaledtech-ai-voice-enabled";
 
-const VOICE_PREFERENCES: Record<AILocale, string[]> = {
-  ru: [
-    "dmitry",
-    "pavel",
-    "george",
-    "microsoft pavel",
-    "microsoft dmitry",
-    "yuri",
-    "alex",
-  ],
-  kk: [
-    "kazakh",
-    "kk-kz",
-    "dmitry",
-    "pavel",
-    "george",
-    "alex",
-  ],
-  en: [
-    "daniel",
-    "george",
-    "david",
-    "mark",
-    "aaron",
-    "alex",
-    "guy",
-  ],
-};
-
-const VOICE_SETTINGS: Record<AILocale, { rate: number; pitch: number }> = {
-  ru: { rate: 0.9, pitch: 0.86 },
-  kk: { rate: 0.9, pitch: 0.88 },
-  en: { rate: 0.92, pitch: 0.84 },
-};
-
 function resolveLocale(language: string): AILocale {
   if (language === "kk" || language === "en") {
     return language;
@@ -78,54 +43,6 @@ function createConversationId() {
   return `conversation-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function scoreVoice(voice: SpeechSynthesisVoice, locale: AILocale, targetLang: string) {
-  const name = voice.name.toLowerCase();
-  const lang = voice.lang.toLowerCase();
-  const preferences = VOICE_PREFERENCES[locale];
-  let score = 0;
-
-  if (lang === targetLang.toLowerCase()) {
-    score += 100;
-  } else if (lang.startsWith(locale)) {
-    score += 70;
-  }
-
-  if (voice.localService) {
-    score += 12;
-  }
-
-  const preferredIndex = preferences.findIndex((token) => name.includes(token));
-  if (preferredIndex >= 0) {
-    score += 50 - preferredIndex;
-  }
-
-  if (name.includes("natural")) {
-    score += 18;
-  }
-
-  if (name.includes("neural")) {
-    score += 18;
-  }
-
-  if (name.includes("desktop")) {
-    score += 6;
-  }
-
-  if (name.includes("female") || name.includes("zira") || name.includes("hazel") || name.includes("aria")) {
-    score -= 10;
-  }
-
-  return score;
-}
-
-function pickBestVoice(voices: SpeechSynthesisVoice[], locale: AILocale, targetLang: string) {
-  const sorted = [...voices].sort(
-    (left, right) => scoreVoice(right, locale, targetLang) - scoreVoice(left, locale, targetLang),
-  );
-
-  return sorted[0];
-}
-
 function AIAssistant({ language }: AIAssistantProps) {
   const locale = resolveLocale(language);
   const suggestedQuestions = useMemo(() => getSuggestedQuestions(locale), [locale]);
@@ -138,7 +55,9 @@ function AIAssistant({ language }: AIAssistantProps) {
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [conversationId, setConversationId] = useState("");
 
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const voiceAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -201,6 +120,7 @@ function AIAssistant({ language }: AIAssistantProps) {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        stopSpeaking();
         setIsOpen(false);
       }
     };
@@ -211,70 +131,89 @@ function AIAssistant({ language }: AIAssistantProps) {
 
   useEffect(() => {
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+      stopSpeaking();
     };
   }, []);
 
-  const stopSpeaking = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      return;
+  const cleanupAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
     }
 
-    window.speechSynthesis.cancel();
-    utteranceRef.current = null;
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+  };
+
+  const stopSpeaking = () => {
+    voiceAbortRef.current?.abort();
+    voiceAbortRef.current = null;
+    cleanupAudio();
     setIsSpeaking(false);
   };
 
-  const speakMessage = (text: string) => {
-    if (
-      !isVoiceEnabled ||
-      typeof window === "undefined" ||
-      !("speechSynthesis" in window) ||
-      !text.trim()
-    ) {
+  const speakMessage = async (text: string) => {
+    if (!isVoiceEnabled || !text.trim()) {
       setIsSpeaking(false);
       return;
     }
 
     stopSpeaking();
 
-    const utterance = new SpeechSynthesisUtterance(text.trim());
-    const localeToLang: Record<AILocale, string> = {
-      ru: "ru-RU",
-      kk: "kk-KZ",
-      en: "en-US",
-    };
-
-    utterance.lang = localeToLang[locale];
-    utterance.rate = VOICE_SETTINGS[locale].rate;
-    utterance.pitch = VOICE_SETTINGS[locale].pitch;
-
-    const voices = window.speechSynthesis.getVoices();
-    const matchingVoice = pickBestVoice(voices, locale, utterance.lang);
-
-    if (matchingVoice) {
-      utterance.voice = matchingVoice;
-    }
-
-    utterance.onend = () => {
-      if (utteranceRef.current === utterance) {
-        utteranceRef.current = null;
-        setIsSpeaking(false);
-      }
-    };
-
-    utterance.onerror = () => {
-      if (utteranceRef.current === utterance) {
-        utteranceRef.current = null;
-        setIsSpeaking(false);
-      }
-    };
-
-    utteranceRef.current = utterance;
+    const controller = new AbortController();
+    voiceAbortRef.current = controller;
     setIsSpeaking(true);
-    window.speechSynthesis.speak(utterance);
+
+    try {
+      const response = await fetch("/api/assistant-voice", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text,
+          locale,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error("Voice request failed");
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+
+      audioRef.current = audio;
+      audioUrlRef.current = audioUrl;
+
+      audio.onended = () => {
+        cleanupAudio();
+        setIsSpeaking(false);
+      };
+
+      audio.onerror = () => {
+        cleanupAudio();
+        setIsSpeaking(false);
+      };
+
+      await audio.play();
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        console.error("AI assistant voice failed:", error);
+      }
+
+      cleanupAudio();
+      setIsSpeaking(false);
+    } finally {
+      if (voiceAbortRef.current === controller) {
+        voiceAbortRef.current = null;
+      }
+    }
   };
 
   const submitPrompt = async (prompt: string) => {
@@ -299,6 +238,7 @@ function AIAssistant({ language }: AIAssistantProps) {
     setMessages((currentMessages) => [...currentMessages, userMessage, placeholder]);
     setInputValue("");
     setIsTyping(true);
+    stopSpeaking();
 
     const payload: AssistantApiPayload = {
       message: trimmedPrompt,
@@ -405,7 +345,7 @@ function AIAssistant({ language }: AIAssistantProps) {
         throw new Error("Assistant returned an empty response");
       }
 
-      speakMessage(finalText);
+      await speakMessage(finalText);
     } catch (error) {
       console.error("AI assistant request failed:", error);
 
@@ -417,7 +357,7 @@ function AIAssistant({ language }: AIAssistantProps) {
             : message,
         ),
       );
-      speakMessage(fallbackResponse);
+      await speakMessage(fallbackResponse);
     } finally {
       setIsTyping(false);
     }
@@ -434,7 +374,10 @@ function AIAssistant({ language }: AIAssistantProps) {
         isSpeaking={isSpeaking}
         isVoiceEnabled={isVoiceEnabled}
         suggestedQuestions={suggestedQuestions}
-        onClose={() => setIsOpen(false)}
+        onClose={() => {
+          stopSpeaking();
+          setIsOpen(false);
+        }}
         onInputChange={setInputValue}
         onSend={submitPrompt}
         onVoiceToggle={() => {
