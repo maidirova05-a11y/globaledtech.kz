@@ -43,10 +43,7 @@ function AIAssistant({ language }: AIAssistantProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [conversationId, setConversationId] = useState("");
-  const timeoutRef = useRef<number | null>(null);
-  const speakingRef = useRef<number | null>(null);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
-  const lastToggleAtRef = useRef(0);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const suggestedQuestions = useMemo(() => getSuggestedQuestions(locale), [locale]);
@@ -116,14 +113,6 @@ function AIAssistant({ language }: AIAssistantProps) {
 
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        window.clearTimeout(timeoutRef.current);
-      }
-
-      if (speakingRef.current) {
-        window.clearTimeout(speakingRef.current);
-      }
-
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
@@ -398,18 +387,10 @@ function AIAssistant({ language }: AIAssistantProps) {
         isVoiceEnabled={isVoiceEnabled}
         suggestedQuestions={suggestedQuestions}
         onClose={() => setIsOpen(false)}
-        onBackdropClose={() => {
-          if (Date.now() - lastToggleAtRef.current < 500) {
-            return;
-          }
-
-          setIsOpen(false);
-        }}
         onInputChange={setInputValue}
         onSend={submitPrompt}
         onVoiceToggle={() => {
           const nextValue = !isVoiceEnabled;
-          lastToggleAtRef.current = Date.now();
           setIsVoiceEnabled(nextValue);
 
           if (!nextValue) {
@@ -418,15 +399,16 @@ function AIAssistant({ language }: AIAssistantProps) {
         }}
       />
 
-      <div className="ai-floating-root">
-        <FloatingButton
-          isOpen={isOpen}
-          onClick={() => {
-            lastToggleAtRef.current = Date.now();
-            setIsOpen((currentState) => !currentState);
-          }}
-        />
-      </div>
+      {!isOpen ? (
+        <div className="ai-floating-root">
+          <FloatingButton
+            isOpen={isOpen}
+            onClick={() => {
+              setIsOpen(true);
+            }}
+          />
+        </div>
+      ) : null}
     </>
   );
 }

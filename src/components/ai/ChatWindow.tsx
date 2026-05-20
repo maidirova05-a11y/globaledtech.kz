@@ -13,7 +13,6 @@ type ChatWindowProps = {
   isVoiceEnabled: boolean;
   suggestedQuestions: SuggestedQuestion[];
   onClose: () => void;
-  onBackdropClose: () => void;
   onInputChange: (value: string) => void;
   onSend: (value: string) => void;
   onVoiceToggle: () => void;
@@ -33,6 +32,8 @@ const labels = {
     voiceOff: "Включить голос",
     voiceLabelOn: "Голос включен",
     voiceLabelOff: "Голос выключен",
+    voiceButton: "TTS",
+    closeButton: "X",
   },
   kk: {
     title: "AI-ассистент",
@@ -47,6 +48,8 @@ const labels = {
     voiceOff: "Дауысты қосу",
     voiceLabelOn: "Дауыс қосулы",
     voiceLabelOff: "Дауыс өшірулі",
+    voiceButton: "TTS",
+    closeButton: "X",
   },
   en: {
     title: "AI Assistant",
@@ -61,6 +64,8 @@ const labels = {
     voiceOff: "Enable voice",
     voiceLabelOn: "Voice on",
     voiceLabelOff: "Voice off",
+    voiceButton: "TTS",
+    closeButton: "X",
   },
 } as const;
 
@@ -74,7 +79,6 @@ function ChatWindow({
   isVoiceEnabled,
   suggestedQuestions,
   onClose,
-  onBackdropClose,
   onInputChange,
   onSend,
   onVoiceToggle,
@@ -115,12 +119,7 @@ function ChatWindow({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <button
-            type="button"
-            className="ai-overlay-backdrop"
-            aria-label={copy.close}
-            onClick={onBackdropClose}
-          />
+          <div className="ai-overlay-backdrop" aria-hidden="true" />
 
           <motion.section
             className="ai-chat-window"
@@ -151,10 +150,10 @@ function ChatWindow({
                   title={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
                   onClick={onVoiceToggle}
                 >
-                  {isVoiceEnabled ? "🔊" : "🔇"}
+                  {copy.voiceButton}
                 </button>
                 <button type="button" className="ai-chat-close" aria-label={copy.close} onClick={onClose}>
-                  ×
+                  {copy.closeButton}
                 </button>
               </div>
             </header>
