@@ -59,6 +59,7 @@ function AIAssistant({ language }: AIAssistantProps) {
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [voiceVariant, setVoiceVariant] = useState<VoiceVariant>(DEFAULT_VOICE_VARIANT);
   const [conversationId, setConversationId] = useState("");
+  const [lastAssistantText, setLastAssistantText] = useState("");
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
@@ -149,6 +150,23 @@ function AIAssistant({ language }: AIAssistantProps) {
   }, [isOpen]);
 
   useEffect(() => {
+    if (typeof document === "undefined" || !isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    const previousTouchAction = document.body.style.touchAction;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.touchAction = previousTouchAction;
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     return () => {
       stopSpeaking();
     };
@@ -221,6 +239,7 @@ function AIAssistant({ language }: AIAssistantProps) {
         setIsSpeaking(false);
       };
 
+      audio.preload = "auto";
       await audio.play();
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
@@ -365,11 +384,13 @@ function AIAssistant({ language }: AIAssistantProps) {
         throw new Error("Assistant returned an empty response");
       }
 
+      setLastAssistantText(finalText);
       await speakMessage(finalText);
     } catch (error) {
       console.error("AI assistant request failed:", error);
 
       const fallbackResponse = getAIResponse(trimmedPrompt, locale);
+      setLastAssistantText(fallbackResponse);
       setMessages((currentMessages) =>
         currentMessages.map((message) =>
           message.id === assistantMessageId
@@ -413,6 +434,12 @@ function AIAssistant({ language }: AIAssistantProps) {
           stopSpeaking();
           setVoiceVariant(nextVariant);
         }}
+        onReplayVoice={() => {
+          if (lastAssistantText.trim()) {
+            void speakMessage(lastAssistantText);
+          }
+        }}
+        canReplayVoice={Boolean(lastAssistantText.trim())}
       />
 
       {!isOpen ? (

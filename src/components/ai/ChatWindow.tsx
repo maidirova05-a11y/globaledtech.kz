@@ -19,6 +19,8 @@ type ChatWindowProps = {
   onSend: (value: string) => void;
   onVoiceToggle: () => void;
   onVoiceVariantChange: (value: VoiceVariant) => void;
+  onReplayVoice: () => void;
+  canReplayVoice: boolean;
 };
 
 const labels = {
@@ -33,6 +35,7 @@ const labels = {
     quickActions: "Быстрые вопросы",
     voiceOn: "Выключить голос",
     voiceOff: "Включить голос",
+    replay: "Повторить озвучку",
     voiceStateOn: "AI-озвучка включена",
     voiceStateOff: "AI-озвучка выключена",
     voiceDisclosure: "Голос синтезирован ИИ",
@@ -52,6 +55,7 @@ const labels = {
     quickActions: "Жылдам сұрақтар",
     voiceOn: "Дауысты өшіру",
     voiceOff: "Дауысты қосу",
+    replay: "Дауысты қайталау",
     voiceStateOn: "AI-дауыс қосулы",
     voiceStateOff: "AI-дауыс өшірулі",
     voiceDisclosure: "Дауыс ИИ арқылы синтезделеді",
@@ -71,6 +75,7 @@ const labels = {
     quickActions: "Suggested questions",
     voiceOn: "Mute voice",
     voiceOff: "Enable voice",
+    replay: "Replay voice",
     voiceStateOn: "AI voice on",
     voiceStateOff: "AI voice off",
     voiceDisclosure: "Voice is AI-generated",
@@ -96,6 +101,8 @@ function ChatWindow({
   onSend,
   onVoiceToggle,
   onVoiceVariantChange,
+  onReplayVoice,
+  canReplayVoice,
 }: ChatWindowProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const copy = labels[locale];
@@ -139,7 +146,7 @@ function ChatWindow({
         <div className="ai-chat-holo" aria-hidden="true" />
 
         <header className="ai-chat-header">
-          <div>
+          <div className="ai-chat-header-copy">
             <div className="ai-chat-status">
               <span className="ai-chat-status-dot" />
               {copy.status}
@@ -148,15 +155,25 @@ function ChatWindow({
             <p className="ai-chat-subtitle">{copy.subtitle}</p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="ai-chat-actions">
             <button
               type="button"
-              className="ai-chat-close"
+              className="ai-chat-close ai-chat-action-label"
               aria-label={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
               title={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
               onClick={onVoiceToggle}
             >
               TTS
+            </button>
+            <button
+              type="button"
+              className="ai-chat-close ai-chat-action-label"
+              aria-label={copy.replay}
+              title={copy.replay}
+              onClick={onReplayVoice}
+              disabled={!canReplayVoice}
+            >
+              Play
             </button>
             <button type="button" className="ai-chat-close" aria-label={copy.close} onClick={onClose}>
               X
@@ -164,43 +181,29 @@ function ChatWindow({
           </div>
         </header>
 
-        <div className="ai-avatar-wrap">
-          <AIAvatar isSpeaking={isSpeaking || isTyping} />
-        </div>
-
-        <div className="ai-quick-row">
-          <p className="ai-quick-title">{copy.quickActions}</p>
-          <div className="ai-quick-grid">
-            {suggestedQuestions.map((item) => (
+        <div className="ai-voice-toolbar">
+          <div className="ai-voice-toolbar-copy">
+            <p className="ai-voice-toolbar-title">{copy.voiceStyle}</p>
+            <p className="ai-voice-toolbar-state">
+              {isVoiceEnabled ? copy.voiceStateOn : copy.voiceStateOff}
+            </p>
+          </div>
+          <div className="ai-voice-toolbar-buttons">
+            {voiceButtons.map((voiceButton) => (
               <button
-                key={item.id}
+                key={voiceButton.id}
                 type="button"
-                className="ai-quick-button"
-                onClick={() => onSend(item.prompt)}
+                className={`ai-voice-pill ${voiceVariant === voiceButton.id ? "ai-voice-pill-active" : ""}`}
+                onClick={() => onVoiceVariantChange(voiceButton.id)}
               >
-                {item.label}
+                {voiceButton.label}
               </button>
             ))}
           </div>
-          <p className="mt-3 text-xs text-slate-400">
-            {isVoiceEnabled ? copy.voiceStateOn : copy.voiceStateOff}
-          </p>
-          <div className="mt-3">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">{copy.voiceStyle}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {voiceButtons.map((voiceButton) => (
-                <button
-                  key={voiceButton.id}
-                  type="button"
-                  className={`ai-quick-button ${voiceVariant === voiceButton.id ? "ring-2 ring-cyan-300/60" : ""}`}
-                  onClick={() => onVoiceVariantChange(voiceButton.id)}
-                >
-                  {voiceButton.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <p className="mt-2 text-[11px] text-slate-500">{copy.voiceDisclosure}</p>
+        </div>
+
+        <div className="ai-avatar-wrap">
+          <AIAvatar isSpeaking={isSpeaking || isTyping} />
         </div>
 
         <div ref={contentRef} className="ai-messages">
@@ -223,6 +226,25 @@ function ChatWindow({
               </div>
             </div>
           ) : null}
+        </div>
+
+        <div className="ai-quick-row">
+          <div className="ai-quick-row-head">
+            <p className="ai-quick-title">{copy.quickActions}</p>
+            <p className="ai-voice-disclosure">{copy.voiceDisclosure}</p>
+          </div>
+          <div className="ai-quick-grid">
+            {suggestedQuestions.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="ai-quick-button"
+                onClick={() => onSend(item.prompt)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <form className="ai-input-row" onSubmit={handleSubmit}>
