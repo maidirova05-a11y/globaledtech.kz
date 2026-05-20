@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { FormEvent, KeyboardEvent, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import AIAvatar from "./AIAvatar";
 import type { AIMessage, SuggestedQuestion, AILocale } from "../../lib/ai";
 
@@ -79,6 +80,7 @@ function ChatWindow({
 }: ChatWindowProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const copy = labels[locale];
+  const canUsePortal = typeof document !== "undefined";
 
   useEffect(() => {
     if (!contentRef.current) {
@@ -100,7 +102,7 @@ function ChatWindow({
     }
   };
 
-  return (
+  const content = (
     <AnimatePresence>
       {isOpen ? (
         <motion.div
@@ -220,6 +222,12 @@ function ChatWindow({
       ) : null}
     </AnimatePresence>
   );
+
+  if (!canUsePortal) {
+    return content;
+  }
+
+  return createPortal(content, document.body);
 }
 
 export default ChatWindow;
