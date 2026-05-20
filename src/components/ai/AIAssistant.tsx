@@ -16,6 +16,7 @@ type AIAssistantProps = {
 };
 
 const STORAGE_KEY = "globaledtech-ai-assistant";
+const CONVERSATION_KEY = "globaledtech-ai-conversation";
 
 function createMessage(role: "assistant" | "user", content: string): AIMessage {
   return {
@@ -41,6 +42,7 @@ function AIAssistant({ language }: AIAssistantProps) {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [conversationId, setConversationId] = useState("");
   const timeoutRef = useRef<number | null>(null);
   const speakingRef = useRef<number | null>(null);
 
@@ -52,6 +54,8 @@ function AIAssistant({ language }: AIAssistantProps) {
     }
 
     const savedMessages = sessionStorage.getItem(`${STORAGE_KEY}-${locale}`);
+    const savedConversationId = sessionStorage.getItem(`${CONVERSATION_KEY}-${locale}`) || "";
+    setConversationId(savedConversationId);
 
     if (savedMessages) {
       try {
@@ -75,6 +79,19 @@ function AIAssistant({ language }: AIAssistantProps) {
   }, [messages, locale]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!conversationId) {
+      sessionStorage.removeItem(`${CONVERSATION_KEY}-${locale}`);
+      return;
+    }
+
+    sessionStorage.setItem(`${CONVERSATION_KEY}-${locale}`, conversationId);
+  }, [conversationId, locale]);
+
+  useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current);
@@ -93,7 +110,22 @@ function AIAssistant({ language }: AIAssistantProps) {
       return;
     }
 
+    const activeConversationId =
+      conversationId ||
+      (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `conversation-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
     const userMessage = createMessage("user", trimmedPrompt);
+    const assistantMessageId = `assistant-stream-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const assistantPlaceholder: AIMessage = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+      createdAt: Date.now(),
+      isStreaming: true,
+    };
+
+    setConversationId(activeConversationId);
     setMessages((currentMessages) => [...currentMessages, userMessage]);
     setInputValue("");
     setIsTyping(true);
@@ -107,6 +139,8 @@ function AIAssistant({ language }: AIAssistantProps) {
     const payload: AssistantApiPayload = {
       message: trimmedPrompt,
       locale,
+      conversationId: activeConversationId,
+      stream: true,
       history: historyForApi,
     };
 
@@ -119,24 +153,130 @@ function AIAssistant({ language }: AIAssistantProps) {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-
-      if (!response.ok || typeof data?.message !== "string") {
+      if (!response.ok || !response.body) {
+        const data = await response.json().catch(() => null);
         throw new Error(data?.error || "Assistant request failed");
       }
 
-      const assistantMessage = createMessage("assistant", data.message);
-      setMessages((currentMessages) => [...currentMessages, assistantMessage]);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let streamedText = "";
+      let hasAttachedAssistantMessage = false;
+      let hasReceivedDelta = false;
+
+      while (true) {
+        const { value, done } = await reader.read();
+
+        if (done) {
+          break;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split("\n\n");
+        buffer = events.pop() || "";
+
+        for (const eventBlock of events) {
+          const dataLine = eventBlock
+            .split("\n")
+            .find((line) => line.startsWith("data: "));
+
+          if (!dataLine) {
+            continue;
+          }
+
+          const eventData = JSON.parse(dataLine.slice(6)) as
+            | { type: "meta"; conversationId?: string }
+            | { type: "delta"; delta?: string }
+            | { type: "done"; message?: string; conversationId?: string }
+            | { type: "error"; error?: string };
+
+          if (eventData.type === "meta" && typeof eventData.conversationId === "string") {
+            setConversationId(eventData.conversationId);
+            continue;
+          }
+
+          if (eventData.type === "delta" && typeof eventData.delta === "string") {
+            if (!hasAttachedAssistantMessage) {
+              hasAttachedAssistantMessage = true;
+              setMessages((currentMessages) => [...currentMessages, assistantPlaceholder]);
+            }
+
+            if (!hasReceivedDelta) {
+              hasReceivedDelta = true;
+              setIsTyping(false);
+            }
+
+            streamedText += eventData.delta;
+
+            setMessages((currentMessages) =>
+              currentMessages.map((message) =>
+                message.id === assistantMessageId
+                  ? {
+                      ...message,
+                      content: streamedText,
+                      isStreaming: true,
+                    }
+                  : message,
+              ),
+            );
+            continue;
+          }
+
+          if (eventData.type === "done") {
+            const finalMessage =
+              typeof eventData.message === "string" && eventData.message.trim()
+                ? eventData.message
+                : streamedText;
+
+            if (typeof eventData.conversationId === "string") {
+              setConversationId(eventData.conversationId);
+            }
+
+            if (!hasAttachedAssistantMessage) {
+              hasAttachedAssistantMessage = true;
+              setMessages((currentMessages) => [...currentMessages, assistantPlaceholder]);
+            }
+
+            setMessages((currentMessages) =>
+              currentMessages.map((message) =>
+                message.id === assistantMessageId
+                  ? {
+                      ...message,
+                      content: finalMessage,
+                      isStreaming: false,
+                    }
+                  : message,
+              ),
+            );
+            streamedText = finalMessage;
+            continue;
+          }
+
+          if (eventData.type === "error") {
+            throw new Error(eventData.error || "Assistant stream failed");
+          }
+        }
+      }
+
+      if (!streamedText.trim()) {
+        throw new Error("Assistant returned an empty response");
+      }
     } catch (error) {
       console.error("AI assistant request failed:", error);
 
       const fallbackResponse = getAIResponse(trimmedPrompt, locale);
-      const fallbackMessage = createMessage(
-        "assistant",
-        `${fallbackResponse}\n\n${getAssistantUnavailableMessage(locale)}`,
-      );
+      const fallbackMessage = `${fallbackResponse}\n\n${getAssistantUnavailableMessage(locale)}`;
 
-      setMessages((currentMessages) => [...currentMessages, fallbackMessage]);
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          id: assistantMessageId,
+          role: "assistant",
+          content: fallbackMessage,
+          createdAt: Date.now(),
+        },
+      ]);
     } finally {
       setIsTyping(false);
 

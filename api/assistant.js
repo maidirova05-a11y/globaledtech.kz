@@ -1,5 +1,7 @@
 import OpenAI from "openai";
+import { randomUUID } from "node:crypto";
 import { buildAssistantInstructions, resolveLocale } from "./_lib/assistantKnowledge.js";
+import { getConversation, saveConversation } from "./_lib/assistantStore.js";
 
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 const defaultModel = process.env.OPENAI_MODEL || "gpt-4.1-mini";
@@ -39,6 +41,30 @@ function extractText(response) {
   return "";
 }
 
+function sendSse(res, payload) {
+  res.write(`data: ${JSON.stringify(payload)}\n\n`);
+}
+
+async function buildInput({ locale, message, history, conversationId }) {
+  const storedHistory = await getConversation(conversationId, locale);
+  const effectiveHistory = storedHistory.length > 0 ? storedHistory : history;
+
+  return [
+    {
+      role: "system",
+      content: buildAssistantInstructions(locale),
+    },
+    ...effectiveHistory.map((item) => ({
+      role: item.role,
+      content: item.content,
+    })),
+    {
+      role: "user",
+      content: message,
+    },
+  ];
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -60,6 +86,11 @@ export default async function handler(req, res) {
     const message = typeof rawBody.message === "string" ? rawBody.message.trim() : "";
     const locale = resolveLocale(rawBody.locale);
     const history = normalizeHistory(rawBody.history);
+    const conversationId =
+      typeof rawBody.conversationId === "string" && rawBody.conversationId.trim()
+        ? rawBody.conversationId.trim()
+        : randomUUID();
+    const shouldStream = rawBody.stream !== false;
 
     if (!message) {
       return res.status(400).json({
@@ -67,23 +98,95 @@ export default async function handler(req, res) {
       });
     }
 
+    const input = await buildInput({
+      locale,
+      message,
+      history,
+      conversationId,
+    });
+
+    if (shouldStream) {
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+      });
+
+      if (typeof res.flushHeaders === "function") {
+        res.flushHeaders();
+      }
+
+      sendSse(res, {
+        type: "meta",
+        conversationId,
+        model: defaultModel,
+      });
+
+      let accumulatedText = "";
+
+      try {
+        const stream = await openai.responses.create({
+          model: defaultModel,
+          max_output_tokens: 320,
+          stream: true,
+          input,
+        });
+
+        for await (const event of stream) {
+          if (event.type === "response.output_text.delta" && typeof event.delta === "string") {
+            accumulatedText += event.delta;
+            sendSse(res, {
+              type: "delta",
+              delta: event.delta,
+            });
+          }
+        }
+
+        const finalMessage = accumulatedText.trim();
+
+        if (!finalMessage) {
+          throw new Error("Empty response from OpenAI");
+        }
+
+        const historyWithoutSystem = input
+          .filter((item) => item.role !== "system")
+          .map((item) => ({
+            role: item.role,
+            content: item.content,
+          }));
+
+        await saveConversation(conversationId, locale, [
+          ...historyWithoutSystem,
+          {
+            role: "assistant",
+            content: finalMessage,
+          },
+        ]);
+
+        sendSse(res, {
+          type: "done",
+          conversationId,
+          message: finalMessage,
+          model: defaultModel,
+        });
+        res.end();
+        return;
+      } catch (error) {
+        console.error("AI assistant streaming error:", error);
+
+        sendSse(res, {
+          type: "error",
+          error: "Failed to stream assistant response",
+        });
+        res.end();
+        return;
+      }
+    }
+
     const response = await openai.responses.create({
       model: defaultModel,
       max_output_tokens: 260,
-      input: [
-        {
-          role: "system",
-          content: buildAssistantInstructions(locale),
-        },
-        ...history.map((item) => ({
-          role: item.role,
-          content: item.content,
-        })),
-        {
-          role: "user",
-          content: message,
-        },
-      ],
+      input,
     });
 
     const text = extractText(response);
@@ -94,9 +197,25 @@ export default async function handler(req, res) {
       });
     }
 
+    const historyWithoutSystem = input
+      .filter((item) => item.role !== "system")
+      .map((item) => ({
+        role: item.role,
+        content: item.content,
+      }));
+
+    await saveConversation(conversationId, locale, [
+      ...historyWithoutSystem,
+      {
+        role: "assistant",
+        content: text,
+      },
+    ]);
+
     return res.status(200).json({
       ok: true,
       message: text,
+      conversationId,
       model: defaultModel,
     });
   } catch (error) {

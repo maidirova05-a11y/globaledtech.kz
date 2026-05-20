@@ -5,6 +5,7 @@ export type AIMessage = {
   role: "assistant" | "user";
   content: string;
   createdAt: number;
+  isStreaming?: boolean;
 };
 
 export type SuggestedQuestion = {
@@ -16,6 +17,8 @@ export type SuggestedQuestion = {
 export type AssistantApiPayload = {
   message: string;
   locale: AILocale;
+  conversationId?: string;
+  stream?: boolean;
   history: Array<Pick<AIMessage, "role" | "content">>;
 };
 

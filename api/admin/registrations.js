@@ -1,32 +1,13 @@
+import { isAdminAuthConfigured, isAdminAuthorized } from "../_lib/adminSession.js";
 import { deleteRegistrationById, listRegistrations } from "../_lib/registrationsStore.js";
 
-function isAuthorized(req) {
-  const expectedPassword = process.env.ADMIN_PASSWORD;
-  const providedPassword = req.headers["x-admin-password"];
-
-  if (!expectedPassword) {
-    return {
-      ok: false,
-      status: 500,
-      error: "Admin password is not configured",
-    };
-  }
-
-  if (!providedPassword || providedPassword !== expectedPassword) {
-    return {
-      ok: false,
-      status: 401,
-      error: "Unauthorized",
-    };
-  }
-
-  return { ok: true };
-}
-
 export default async function handler(req, res) {
-  const auth = isAuthorized(req);
-  if (!auth.ok) {
-    return res.status(auth.status).json({ error: auth.error });
+  if (!isAdminAuthConfigured()) {
+    return res.status(500).json({ error: "Admin password is not configured" });
+  }
+
+  if (!isAdminAuthorized(req)) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   if (req.method === "GET") {
