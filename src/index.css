@@ -966,6 +966,11 @@ textarea {
   font-size: 1.35rem;
 }
 
+.ai-action-icon {
+  height: 1.2rem;
+  width: 1.2rem;
+}
+
 .ai-chat-close:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -1055,6 +1060,12 @@ textarea {
   padding: 0 1rem;
 }
 
+.ai-avatar-shell-placeholder {
+  background:
+    radial-gradient(circle at top, rgba(0, 194, 255, 0.12), transparent 30%),
+    #091224;
+}
+
 .ai-chat-main {
   position: relative;
   z-index: 1;
@@ -1066,6 +1077,10 @@ textarea {
   overflow: hidden;
   padding: 0.95rem 1rem 0.3rem;
   align-items: stretch;
+}
+
+.ai-chat-main-single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .ai-avatar-shell {

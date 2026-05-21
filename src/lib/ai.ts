@@ -8,12 +8,6 @@ export type AIMessage = {
   isStreaming?: boolean;
 };
 
-export type SuggestedQuestion = {
-  id: string;
-  label: string;
-  prompt: string;
-};
-
 export type AssistantApiPayload = {
   message: string;
   locale: AILocale;
@@ -23,124 +17,92 @@ export type AssistantApiPayload = {
 };
 
 type ResponseRule = {
-  topic: string;
   patterns: string[];
   response: Record<AILocale, string>;
 };
 
+const REGISTRATION_URL = "https://globaledtech-kz.vercel.app/#register";
+const CONTACT_EMAIL = "globaledtechkz@gmail.com";
+const CONTACT_PHONE = "+7 (700) 033 0229";
+
 const introMessage: Record<AILocale, string> = {
-  ru: "Здравствуйте! Я AI-ассистент форума Global EdTech. Помогу быстро найти информацию о форуме, регистрации, программе, партнерах и контактах.",
-  kk: "Сәлеметсіз бе! Мен Global EdTech форумының AI-ассистентімін. Форум, тіркелу, бағдарлама, серіктестер және байланыстар туралы ақпарат табуға көмектесемін.",
-  en: "Hello! I am the AI assistant for Global EdTech. I can help you with information about the forum, registration, program, partners, and contacts.",
+  ru: `Здравствуйте! Я цифровой ассистент Global EdTech. Помогу с информацией о форуме, регистрацией, спонсорством, стендом и контактами. Регистрация: ${REGISTRATION_URL}`,
+  kk: `Сәлеметсіз бе! Мен Global EdTech цифрлық ассистентімін. Форум, тіркелу, демеушілік, стенд және байланыс туралы көмектесемін. Тіркелу: ${REGISTRATION_URL}`,
+  en: `Hello! I am the Global EdTech digital assistant. I can help with event details, registration, sponsorship, stands, and contacts. Registration: ${REGISTRATION_URL}`,
 };
 
 const fallbackMessage: Record<AILocale, string> = {
-  ru: "Я могу помочь с информацией о Global EdTech, регистрации, программе, локации, спикерах, партнерах и контактах. Выберите быстрый вопрос или напишите запрос подробнее.",
-  kk: "Мен Global EdTech, тіркелу, бағдарлама, локация, спикерлер, серіктестер және байланыстар туралы ақпаратпен көмектесе аламын. Дайын сұрақтардың бірін таңдаңыз немесе сұрағыңызды нақтырақ жазыңыз.",
-  en: "I can help with information about Global EdTech, registration, program, location, speakers, partners, and contacts. Choose a suggested question or write your request in more detail.",
+  ru: `Я могу помочь с форумом Global EdTech, регистрацией, ролями участия, спонсорством, стендом и контактами. Регистрация: ${REGISTRATION_URL}. Контакты: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+  kk: `Мен Global EdTech форумы, тіркелу, қатысу форматтары, демеушілік, стенд және байланыс бойынша көмектесе аламын. Тіркелу: ${REGISTRATION_URL}. Байланыс: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+  en: `I can help with Global EdTech, registration, participation roles, sponsorship, stands, and contacts. Registration: ${REGISTRATION_URL}. Contacts: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
 };
 
 const responseRules: ResponseRule[] = [
   {
-    topic: "about",
-    patterns: ["global edtech", "о форуме", "форум", "about forum", "about global edtech", "не туралы", "форум туралы"],
+    patterns: ["global edtech", "о форуме", "about the event", "about global edtech", "форум туралы"],
     response: {
-      ru: "Global EdTech — это международный выставочный образовательный форум в Астане, который объединяет EdTech-компании, школы, университеты, экспертов, стартапы и технологических партнеров.",
-      kk: "Global EdTech — Астанада өтетін халықаралық көрме-білім беру форумы. Ол EdTech-компанияларды, мектептерді, университеттерді, сарапшыларды, стартаптарды және технологиялық серіктестерді біріктіреді.",
-      en: "Global EdTech is an international exhibition and educational forum in Astana that brings together EdTech companies, schools, universities, experts, startups, and technology partners.",
+      ru: "Global EdTech — международный выставочно-образовательный форум в Астане, который объединяет EdTech-компании, школы, университеты, стартапы и экспертов вокруг будущего образования.",
+      kk: "Global EdTech — Астанада өтетін халықаралық көрме-білім беру форумы. Ол EdTech-компанияларды, мектептерді, университеттерді, стартаптарды және сарапшыларды біріктіреді.",
+      en: "Global EdTech is an international exhibition and educational forum in Astana that brings together EdTech companies, schools, universities, startups, and experts.",
     },
   },
   {
-    topic: "registration",
-    patterns: ["регистрац", "register", "sign up", "тіркел", "участв", "join"],
+    patterns: ["регистрац", "register", "sign up", "тіркел", "join", "participate"],
     response: {
-      ru: "Для участия в Global EdTech откройте раздел «Регистрация» на сайте и заполните форму. После отправки заявки команда форума свяжется с вами при необходимости.",
-      kk: "Global EdTech-ке қатысу үшін сайттағы «Тіркелу» бөліміне өтіп, форманы толтырыңыз. Өтінім жіберілгеннен кейін қажет болса, форум командасы сізбен байланысады.",
-      en: "To join Global EdTech, open the Registration section on the website and complete the form. After submission, the forum team will contact you if needed.",
+      ru: `Для участия откройте форму регистрации: ${REGISTRATION_URL}. В форме можно выбрать формат участия: участник, спикер, партнер, спонсор или экспонент со стендом.`,
+      kk: `Қатысу үшін тіркелу формасын ашыңыз: ${REGISTRATION_URL}. Формада қатысу түрін таңдауға болады: қатысушы, спикер, серіктес, демеуші немесе стендпен экспонент.`,
+      en: `To participate, open the registration form: ${REGISTRATION_URL}. In the form, visitors can choose participant, speaker, partner, sponsor, or exhibitor with stand.`,
     },
   },
   {
-    topic: "speakers",
-    patterns: ["спикер", "speaker", "speakers", "сарапшы", "эксперт"],
+    patterns: ["спонс", "sponsor", "sponsorship", "демеуш", "партнерство"],
     response: {
-      ru: "На форуме ожидаются спикеры и эксперты из сфер образования, технологий, инноваций и EdTech. Актуальный список спикеров публикуется по мере подтверждения программы.",
-      kk: "Форумда білім, технология, инновация және EdTech салаларынан спикерлер мен сарапшылар қатысады. Нақты тізім бағдарлама бекітілген сайын жаңартылып отырады.",
-      en: "The forum features speakers and experts from education, technology, innovation, and EdTech. The confirmed speaker list is published as the program is finalized.",
+      ru: `По вопросам спонсорства можно зарегистрироваться как спонсор через форму ${REGISTRATION_URL} или сразу связаться с организаторами: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      kk: `Демеушілік бойынша ${REGISTRATION_URL} сілтемесі арқылы 'Демеуші' ретінде тіркелуге немесе ұйымдастырушыларға тікелей жазуға болады: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      en: `For sponsorship, visitors can register as a sponsor via ${REGISTRATION_URL} or contact the organizers directly at ${CONTACT_EMAIL} or ${CONTACT_PHONE}.`,
     },
   },
   {
-    topic: "program",
-    patterns: ["программ", "agenda", "schedule", "бағдарлама", "расписание"],
+    patterns: ["стенд", "stand", "booth", "expo", "exhibitor", "экспон", "көрме орны"],
     response: {
-      ru: "Программа Global EdTech включает экспертные выступления, панельные дискуссии, выставочную часть, технологические зоны, партнерские встречи и networking-сессии.",
-      kk: "Global EdTech бағдарламасына сарапшылар баяндамалары, панельдік сессиялар, көрме аймағы, технологиялық аймақтар, серіктестік кездесулер және networking форматтары кіреді.",
-      en: "The Global EdTech program includes expert talks, panel discussions, an exhibition area, technology zones, partnership meetings, and networking sessions.",
+      ru: `Если вы хотите приобрести стенд или участвовать с экспозицией, используйте форму ${REGISTRATION_URL} и выберите формат 'Экспонент со стендом'. Также можно обратиться напрямую: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      kk: `Егер стенд алғыңыз келсе немесе экспозициямен қатысқыңыз келсе, ${REGISTRATION_URL} арқылы тіркеліп, 'Стендпен экспонент' форматын таңдаңыз. Тікелей байланыс: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      en: `If you want to book a stand or join as an exhibitor, use ${REGISTRATION_URL} and choose 'Exhibitor with stand'. Direct contact: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
     },
   },
   {
-    topic: "location",
-    patterns: ["где", "локац", "location", "where", "астана", "қайда", "мекенжай"],
+    patterns: ["speaker", "speakers", "спикер", "спикеры", "сарапшы"],
     response: {
-      ru: "Форум Global EdTech пройдет в Астане, Казахстан. Даты мероприятия: 7–8 февраля 2027 года.",
-      kk: "Global EdTech форумы Астана қаласында, Қазақстанда өтеді. Іс-шара күндері: 2027 жылғы 7–8 ақпан.",
-      en: "Global EdTech will take place in Astana, Kazakhstan. Event dates: February 7–8, 2027.",
+      ru: "На форуме ожидаются спикеры и эксперты из сфер образования, технологий, инноваций и EdTech. Подтвержденный список публикуется по мере обновления программы.",
+      kk: "Форумда білім, технология, инновация және EdTech салаларынан спикерлер мен сарапшылар болады. Нақты тізім бағдарлама жаңарған сайын жарияланады.",
+      en: "The forum features speakers and experts from education, technology, innovation, and EdTech. The confirmed list is published as the program is updated.",
     },
   },
   {
-    topic: "contacts",
-    patterns: ["контакт", "contact", "email", "почта", "телефон", "байланыс", "phone"],
+    patterns: ["программ", "agenda", "schedule", "бағдарлама"],
     response: {
-      ru: "Контакты форума Global EdTech: globaledtechkz@gmail.com, +7 (700) 033 0229.",
-      kk: "Global EdTech форумының байланыстары: globaledtechkz@gmail.com, +7 (700) 033 0229.",
-      en: "Global EdTech contact details: globaledtechkz@gmail.com, +7 (700) 033 0229.",
+      ru: "Программа включает выступления спикеров, панельные дискуссии, выставочную зону, технологические демонстрации, партнерские встречи и networking.",
+      kk: "Бағдарламада спикерлер баяндамалары, панельдік сессиялар, көрме аймағы, технологиялық демонстрациялар, серіктестік кездесулер және networking бар.",
+      en: "The program includes speaker sessions, panel discussions, an exhibition area, technology showcases, partnership meetings, and networking.",
     },
   },
   {
-    topic: "partners",
-    patterns: ["партнер", "partner", "partners", "серіктес"],
+    patterns: ["где", "where", "location", "астана", "қайда"],
     response: {
-      ru: "Форум развивается вместе с образовательными организациями, EdTech-компаниями, технологическими командами и стратегическими партнерами экосистемы Global EdTech.",
-      kk: "Форум Global EdTech экожүйесінің білім беру ұйымдарымен, EdTech-компаниялармен, технологиялық командалармен және стратегиялық серіктестерімен бірге дамиды.",
-      en: "The forum is developed together with educational organizations, EdTech companies, technology teams, and strategic ecosystem partners.",
+      ru: "Форум пройдет в Астане, Казахстан, 7-8 февраля 2027 года.",
+      kk: "Форум Астана, Қазақстанда 2027 жылғы 7-8 ақпанда өтеді.",
+      en: "The forum will take place in Astana, Kazakhstan, on February 7-8, 2027.",
     },
   },
   {
-    topic: "faq",
-    patterns: ["faq", "часто", "вопрос", "question", "сұрақ"],
+    patterns: ["контакт", "contact", "email", "phone", "почта", "телефон", "байланыс"],
     response: {
-      ru: "Чаще всего участники спрашивают о регистрации, программе, спикерах, партнерах и логистике форума. Я могу подсказать по каждому из этих направлений.",
-      kk: "Қатысушылар көбіне тіркелу, бағдарлама, спикерлер, серіктестер және форум логистикасы туралы сұрайды. Осы бағыттардың әрқайсысы бойынша көмектесе аламын.",
-      en: "The most common questions are about registration, program, speakers, partners, and forum logistics. I can help with each of these topics.",
+      ru: `Контакты Global EdTech: ${CONTACT_EMAIL}, ${CONTACT_PHONE}. Регистрация: ${REGISTRATION_URL}.`,
+      kk: `Global EdTech байланыстары: ${CONTACT_EMAIL}, ${CONTACT_PHONE}. Тіркелу: ${REGISTRATION_URL}.`,
+      en: `Global EdTech contacts: ${CONTACT_EMAIL}, ${CONTACT_PHONE}. Registration: ${REGISTRATION_URL}.`,
     },
   },
 ];
-
-const suggestedQuestions: Record<AILocale, SuggestedQuestion[]> = {
-  ru: [
-    { id: "about", label: "О форуме", prompt: "Что такое Global EdTech?" },
-    { id: "registration", label: "Как зарегистрироваться?", prompt: "Как зарегистрироваться?" },
-    { id: "location", label: "Где пройдет мероприятие?", prompt: "Где пройдет мероприятие?" },
-    { id: "speakers", label: "Кто спикеры?", prompt: "Кто спикеры?" },
-    { id: "program", label: "Программа форума", prompt: "Какая программа форума?" },
-    { id: "partners", label: "Партнеры", prompt: "Кто партнеры форума?" },
-  ],
-  kk: [
-    { id: "about", label: "Форум туралы", prompt: "Global EdTech деген не?" },
-    { id: "registration", label: "Қалай тіркелемін?", prompt: "Қалай тіркелемін?" },
-    { id: "location", label: "Іс-шара қайда өтеді?", prompt: "Іс-шара қайда өтеді?" },
-    { id: "speakers", label: "Спикерлер кім?", prompt: "Спикерлер кім?" },
-    { id: "program", label: "Форум бағдарламасы", prompt: "Форум бағдарламасы қандай?" },
-    { id: "partners", label: "Серіктестер", prompt: "Форумның серіктестері кім?" },
-  ],
-  en: [
-    { id: "about", label: "About the forum", prompt: "What is Global EdTech?" },
-    { id: "registration", label: "How to register?", prompt: "How do I register?" },
-    { id: "location", label: "Where is the event?", prompt: "Where will the event take place?" },
-    { id: "speakers", label: "Who are the speakers?", prompt: "Who are the speakers?" },
-    { id: "program", label: "Forum program", prompt: "What is the forum program?" },
-    { id: "partners", label: "Partners", prompt: "Who are the forum partners?" },
-  ],
-};
 
 const normalizeText = (value: string) =>
   value
@@ -156,13 +118,11 @@ export const createAssistantGreeting = (locale: AILocale): AIMessage => ({
   createdAt: Date.now(),
 });
 
-export const getSuggestedQuestions = (locale: AILocale) => suggestedQuestions[locale];
-
 export const getAssistantUnavailableMessage = (locale: AILocale) =>
   ({
-    ru: "Сейчас AI-ассистент временно недоступен. Попробуйте снова через несколько секунд или воспользуйтесь разделами сайта.",
-    kk: "Қазір AI-ассистент уақытша қолжетімсіз. Бірнеше секундтан кейін қайта көріңіз немесе сайт бөлімдерін пайдаланыңыз.",
-    en: "The AI assistant is temporarily unavailable. Please try again in a few seconds or use the website sections.",
+    ru: "Сейчас AI-ассистент временно недоступен. Попробуйте снова чуть позже или воспользуйтесь разделами сайта.",
+    kk: "Қазір AI-ассистент уақытша қолжетімсіз. Сәл кейінірек қайталап көріңіз немесе сайт бөлімдерін пайдаланыңыз.",
+    en: "The AI assistant is temporarily unavailable. Please try again shortly or use the website sections.",
   })[locale];
 
 export const getAIResponse = (input: string, locale: AILocale): string => {

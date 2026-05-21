@@ -5,32 +5,10 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPE
 const voiceModel = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
 const fallbackVoice = process.env.OPENAI_TTS_VOICE || "cedar";
 const MAX_INPUT_LENGTH = 1200;
-
-const voiceProfiles = {
-  assistant: {
-    voice: "cedar",
-    instructions: {
-      ru: "Speak in Russian with a calm, confident, polished AI assistant tone. Sound natural, articulate, and balanced.",
-      kk: "Speak in Kazakh with a calm, confident, polished AI assistant tone. Sound natural, articulate, and balanced.",
-      en: "Speak in English with a calm, confident, polished AI assistant tone. Sound natural, articulate, and balanced.",
-    },
-  },
-  deep: {
-    voice: "onyx",
-    instructions: {
-      ru: "Speak in Russian with a deeper, steady, cinematic assistant tone. Stay calm, clear, and authoritative without sounding aggressive.",
-      kk: "Speak in Kazakh with a deeper, steady, cinematic assistant tone. Stay calm, clear, and authoritative without sounding aggressive.",
-      en: "Speak in English with a deeper, steady, cinematic assistant tone. Stay calm, clear, and authoritative without sounding aggressive.",
-    },
-  },
-  warm: {
-    voice: "marin",
-    instructions: {
-      ru: "Speak in Russian with a warm, lively, natural assistant tone. Sound expressive, friendly, and fluid.",
-      kk: "Speak in Kazakh with a warm, lively, natural assistant tone. Sound expressive, friendly, and fluid.",
-      en: "Speak in English with a warm, lively, natural assistant tone. Sound expressive, friendly, and fluid.",
-    },
-  },
+const voiceInstructions = {
+  ru: "Speak in Russian with a calm, clear, modern assistant voice. Sound natural and easy to understand.",
+  kk: "Speak in Kazakh with a calm, clear, modern assistant voice. Sound natural and easy to understand.",
+  en: "Speak in English with a calm, clear, modern assistant voice. Sound natural and easy to understand.",
 };
 
 export default async function handler(req, res) {
@@ -53,23 +31,17 @@ export default async function handler(req, res) {
 
     const locale = resolveLocale(rawBody.locale);
     const text = typeof rawBody.text === "string" ? rawBody.text.trim() : "";
-    const variant =
-      rawBody.variant === "assistant" || rawBody.variant === "deep" || rawBody.variant === "warm"
-        ? rawBody.variant
-        : "assistant";
-
     if (!text) {
       return res.status(400).json({
         error: "Text is required",
       });
     }
 
-    const profile = voiceProfiles[variant];
     const audioResponse = await openai.audio.speech.create({
       model: voiceModel,
-      voice: process.env.OPENAI_TTS_VOICE || profile.voice || fallbackVoice,
+      voice: fallbackVoice,
       input: text.slice(0, MAX_INPUT_LENGTH),
-      instructions: profile.instructions[locale],
+      instructions: voiceInstructions[locale],
       response_format: "mp3",
     });
 

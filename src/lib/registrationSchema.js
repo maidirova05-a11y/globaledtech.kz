@@ -95,7 +95,7 @@ export function createRegistrationSchema(validationMessages = defaultValidationM
           .min(2, messages.companyMin)
           .regex(companyPattern, messages.companyPattern),
       ),
-    participationType: z.enum(["delegate", "speaker", "partner"], {
+    participationType: z.enum(["delegate", "speaker", "partner", "sponsor", "exhibitor"], {
       errorMap: () => ({ message: messages.participationRequired }),
     }),
   });

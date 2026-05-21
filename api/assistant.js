@@ -127,7 +127,7 @@ export default async function handler(req, res) {
       try {
         const stream = await openai.responses.create({
           model: defaultModel,
-          max_output_tokens: 320,
+          max_output_tokens: 420,
           stream: true,
           input,
         });
@@ -185,7 +185,7 @@ export default async function handler(req, res) {
 
     const response = await openai.responses.create({
       model: defaultModel,
-      max_output_tokens: 260,
+      max_output_tokens: 360,
       input,
     });
 

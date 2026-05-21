@@ -257,6 +257,8 @@ export default function RegistrationForm({ language, translations }) {
       { value: "delegate", label: translations.participationTypes.delegate },
       { value: "speaker", label: translations.participationTypes.speaker },
       { value: "partner", label: translations.participationTypes.partner },
+      { value: "sponsor", label: translations.participationTypes.sponsor },
+      { value: "exhibitor", label: translations.participationTypes.exhibitor },
     ],
     [translations],
   );

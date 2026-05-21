@@ -1,8 +1,8 @@
-import { FormEvent, KeyboardEvent, useEffect, useRef } from "react";
+import { FormEvent, KeyboardEvent, Suspense, lazy, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import AIAvatar from "./AIAvatar";
-import type { AIMessage, SuggestedQuestion, AILocale } from "../../lib/ai";
-import type { VoiceVariant } from "./AIAssistant";
+import type { AIMessage, AILocale } from "../../lib/ai";
+
+const AIAvatar = lazy(() => import("./AIAvatar"));
 
 type ChatWindowProps = {
   isOpen: boolean;
@@ -12,13 +12,10 @@ type ChatWindowProps = {
   isTyping: boolean;
   isSpeaking: boolean;
   isVoiceEnabled: boolean;
-  voiceVariant: VoiceVariant;
-  suggestedQuestions: SuggestedQuestion[];
   onClose: () => void;
   onInputChange: (value: string) => void;
   onSend: (value: string) => void;
   onVoiceToggle: () => void;
-  onVoiceVariantChange: (value: VoiceVariant) => void;
   onReplayVoice: () => void;
   canReplayVoice: boolean;
 };
@@ -26,62 +23,81 @@ type ChatWindowProps = {
 const labels = {
   ru: {
     title: "AI-ассистент",
-    subtitle: "Цифровой помощник форума",
+    subtitle: "Помощник по Global EdTech",
     status: "Online",
-    placeholder: "Задайте вопрос о форуме...",
+    placeholder: "Задайте вопрос о мероприятии...",
     send: "Отправить",
     close: "Закрыть чат",
-    typing: "AI Assistant печатает",
-    voiceOn: "Выключить голос",
-    voiceOff: "Включить голос",
+    typing: "AI-ассистент печатает",
+    voiceOn: "Выключить озвучку",
+    voiceOff: "Включить озвучку",
     replay: "Повторить озвучку",
-    voiceStateOn: "AI-озвучка включена",
-    voiceStateOff: "AI-озвучка выключена",
-    voiceStyle: "Стиль голоса",
-    voiceAssistant: "Ассистент",
-    voiceDeep: "Глубокий",
-    voiceWarm: "Живой",
-    suggestionClouds: "Быстрые вопросы",
   },
   kk: {
     title: "AI-ассистент",
-    subtitle: "Форумның цифрлық көмекшісі",
+    subtitle: "Global EdTech көмекшісі",
     status: "Online",
-    placeholder: "Форум туралы сұрақ жазыңыз...",
+    placeholder: "Іс-шара туралы сұрақ жазыңыз...",
     send: "Жіберу",
     close: "Чатты жабу",
-    typing: "AI Assistant жауап дайындап жатыр",
-    voiceOn: "Дауысты өшіру",
-    voiceOff: "Дауысты қосу",
-    replay: "Дауысты қайталау",
-    voiceStateOn: "AI-дауыс қосулы",
-    voiceStateOff: "AI-дауыс өшірулі",
-    voiceStyle: "Дауыс стилі",
-    voiceAssistant: "Ассистент",
-    voiceDeep: "Терең",
-    voiceWarm: "Жанды",
-    suggestionClouds: "Жылдам сұрақтар",
+    typing: "AI-ассистент жауап жазып жатыр",
+    voiceOn: "Дыбыстауды өшіру",
+    voiceOff: "Дыбыстауды қосу",
+    replay: "Дыбыстауды қайталау",
   },
   en: {
     title: "AI Assistant",
-    subtitle: "Digital forum assistant",
+    subtitle: "Global EdTech helper",
     status: "Online",
-    placeholder: "Ask a question about the forum...",
+    placeholder: "Ask about the event...",
     send: "Send",
     close: "Close chat",
-    typing: "AI Assistant is typing",
-    voiceOn: "Mute voice",
-    voiceOff: "Enable voice",
+    typing: "AI assistant is typing",
+    voiceOn: "Turn voice off",
+    voiceOff: "Turn voice on",
     replay: "Replay voice",
-    voiceStateOn: "AI voice on",
-    voiceStateOff: "AI voice off",
-    voiceStyle: "Voice style",
-    voiceAssistant: "Assistant",
-    voiceDeep: "Deep",
-    voiceWarm: "Warm",
-    suggestionClouds: "Quick prompts",
   },
 } as const;
+
+function SpeakerIcon({ enabled }: { enabled: boolean }) {
+  return enabled ? (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="ai-action-icon">
+      <path
+        d="M5 9v6h4l5 4V5l-5 4H5Zm11.5 3a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12Zm0-8.5v2.08a7 7 0 0 1 0 12.84v2.08a9 9 0 0 0 0-17Z"
+        fill="currentColor"
+      />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="ai-action-icon">
+      <path
+        d="M16.5 12a4.5 4.5 0 0 0-1.2-3.04l1.42-1.42A6.46 6.46 0 0 1 18.5 12c0 1.65-.62 3.16-1.64 4.3l-1.42-1.42c.67-.8 1.06-1.83 1.06-2.88ZM19 3.59 17.59 2.18 2.18 17.59 3.6 19l4.4-4H9l5 4V9.59L19 3.59Zm-5-1.77-3.82 3.81H5v6h1.36L14 4.99V1.82Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function ReplayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="ai-action-icon">
+      <path
+        d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6a6 6 0 1 1-10.39-4.04L6.2 7.55A8 8 0 1 0 12 5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="ai-action-icon">
+      <path
+        d="M18.3 5.71 12 12l6.3 6.29-1.41 1.41L10.59 13.4 4.29 19.7 2.88 18.29 9.17 12 2.88 5.71 4.29 4.29l6.3 6.3 6.29-6.3 1.42 1.42Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 function ChatWindow({
   isOpen,
@@ -91,13 +107,10 @@ function ChatWindow({
   isTyping,
   isSpeaking,
   isVoiceEnabled,
-  voiceVariant,
-  suggestedQuestions,
   onClose,
   onInputChange,
   onSend,
   onVoiceToggle,
-  onVoiceVariantChange,
   onReplayVoice,
   canReplayVoice,
 }: ChatWindowProps) {
@@ -129,12 +142,6 @@ function ChatWindow({
     return null;
   }
 
-  const voiceButtons: Array<{ id: VoiceVariant; label: string }> = [
-    { id: "assistant", label: copy.voiceAssistant },
-    { id: "deep", label: copy.voiceDeep },
-    { id: "warm", label: copy.voiceWarm },
-  ];
-
   const content = (
     <div className="ai-overlay">
       <div className="ai-overlay-backdrop" aria-hidden="true" onClick={onClose} />
@@ -155,71 +162,36 @@ function ChatWindow({
           <div className="ai-chat-actions">
             <button
               type="button"
-              className="ai-chat-close ai-chat-action-label"
+              className="ai-chat-close"
               aria-label={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
               title={isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
               onClick={onVoiceToggle}
             >
-              TTS
+              <SpeakerIcon enabled={isVoiceEnabled} />
             </button>
             <button
               type="button"
-              className="ai-chat-close ai-chat-action-label"
+              className="ai-chat-close"
               aria-label={copy.replay}
               title={copy.replay}
               onClick={onReplayVoice}
               disabled={!canReplayVoice}
             >
-              Play
+              <ReplayIcon />
             </button>
             <button type="button" className="ai-chat-close" aria-label={copy.close} onClick={onClose}>
-              X
+              <CloseIcon />
             </button>
           </div>
         </header>
 
-        <div className="ai-voice-toolbar">
-          <div className="ai-voice-toolbar-copy">
-            <p className="ai-voice-toolbar-title">{copy.voiceStyle}</p>
-            <p className="ai-voice-toolbar-state">
-              {isVoiceEnabled ? copy.voiceStateOn : copy.voiceStateOff}
-            </p>
-          </div>
-          <div className="ai-voice-toolbar-buttons">
-            {voiceButtons.map((voiceButton) => (
-              <button
-                key={voiceButton.id}
-                type="button"
-                className={`ai-voice-pill ${voiceVariant === voiceButton.id ? "ai-voice-pill-active" : ""}`}
-                onClick={() => onVoiceVariantChange(voiceButton.id)}
-              >
-                {voiceButton.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div className="ai-avatar-wrap">
-          <AIAvatar isSpeaking={isSpeaking || isTyping} />
+          <Suspense fallback={<div className="ai-avatar-shell ai-avatar-shell-placeholder" />}>
+            <AIAvatar isSpeaking={isSpeaking || isTyping} />
+          </Suspense>
         </div>
 
-        <div className="ai-chat-main">
-          <aside className="ai-suggestion-clouds" aria-label={copy.suggestionClouds}>
-            <p className="ai-suggestion-clouds-title">{copy.suggestionClouds}</p>
-            <div className="ai-suggestion-clouds-list">
-              {suggestedQuestions.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className="ai-suggestion-cloud"
-                  onClick={() => onSend(item.prompt)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </aside>
-
+        <div className="ai-chat-main ai-chat-main-single">
           <div ref={contentRef} className="ai-messages">
             {messages.map((message) => (
               <div

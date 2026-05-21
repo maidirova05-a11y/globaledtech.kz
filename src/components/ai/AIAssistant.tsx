@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChatWindow from "./ChatWindow";
 import FloatingButton from "./FloatingButton";
 import {
   createAssistantGreeting,
   getAIResponse,
-  getSuggestedQuestions,
   type AIMessage,
   type AssistantApiPayload,
   type AILocale,
@@ -14,19 +13,9 @@ type AIAssistantProps = {
   language: string;
 };
 
-export type VoiceVariant = "assistant" | "deep" | "warm";
-
 const STORAGE_KEY = "globaledtech-ai-assistant";
 const CONVERSATION_KEY = "globaledtech-ai-conversation";
 const VOICE_ENABLED_KEY = "globaledtech-ai-voice-enabled";
-const VOICE_VARIANT_KEY = "globaledtech-ai-voice-variant";
-const DEFAULT_VOICE_VARIANT: VoiceVariant = "assistant";
-
-const FALLBACK_VOICE_SETTINGS: Record<VoiceVariant, { rate: number; pitch: number }> = {
-  assistant: { rate: 0.95, pitch: 0.9 },
-  deep: { rate: 0.88, pitch: 0.74 },
-  warm: { rate: 0.98, pitch: 1.02 },
-};
 
 function resolveLocale(language: string): AILocale {
   if (language === "kk" || language === "en") {
@@ -55,7 +44,6 @@ function createConversationId() {
 
 function AIAssistant({ language }: AIAssistantProps) {
   const locale = resolveLocale(language);
-  const suggestedQuestions = useMemo(() => getSuggestedQuestions(locale), [locale]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<AIMessage[]>([]);
@@ -63,7 +51,6 @@ function AIAssistant({ language }: AIAssistantProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
-  const [voiceVariant, setVoiceVariant] = useState<VoiceVariant>(DEFAULT_VOICE_VARIANT);
   const [conversationId, setConversationId] = useState("");
   const [lastAssistantText, setLastAssistantText] = useState("");
 
@@ -81,15 +68,9 @@ function AIAssistant({ language }: AIAssistantProps) {
     const savedMessages = sessionStorage.getItem(`${STORAGE_KEY}-${locale}`);
     const savedConversationId = sessionStorage.getItem(`${CONVERSATION_KEY}-${locale}`) || "";
     const savedVoicePreference = sessionStorage.getItem(VOICE_ENABLED_KEY);
-    const savedVoiceVariant = sessionStorage.getItem(VOICE_VARIANT_KEY);
 
     setConversationId(savedConversationId);
     setIsVoiceEnabled(savedVoicePreference !== "false");
-    setVoiceVariant(
-      savedVoiceVariant === "assistant" || savedVoiceVariant === "deep" || savedVoiceVariant === "warm"
-        ? savedVoiceVariant
-        : DEFAULT_VOICE_VARIANT,
-    );
 
     if (!savedMessages) {
       setMessages([createAssistantGreeting(locale)]);
@@ -134,14 +115,6 @@ function AIAssistant({ language }: AIAssistantProps) {
   }, [isVoiceEnabled]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    sessionStorage.setItem(VOICE_VARIANT_KEY, voiceVariant);
-  }, [voiceVariant]);
-
-  useEffect(() => {
     if (!isOpen) {
       return;
     }
@@ -163,7 +136,6 @@ function AIAssistant({ language }: AIAssistantProps) {
     }
 
     const previousOverflow = document.body.style.overflow;
-
     document.body.style.overflow = "hidden";
 
     return () => {
@@ -208,24 +180,23 @@ function AIAssistant({ language }: AIAssistantProps) {
   const stopSpeaking = () => {
     voiceAbortRef.current?.abort();
     voiceAbortRef.current = null;
+
     if (speechResumeTimerRef.current !== null && typeof window !== "undefined") {
       window.clearTimeout(speechResumeTimerRef.current);
       speechResumeTimerRef.current = null;
     }
+
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       utteranceRef.current = null;
     }
+
     cleanupAudio();
     setIsSpeaking(false);
   };
 
   const speakWithBrowserFallback = (text: string) => {
-    if (
-      typeof window === "undefined" ||
-      !("speechSynthesis" in window) ||
-      !text.trim()
-    ) {
+    if (typeof window === "undefined" || !("speechSynthesis" in window) || !text.trim()) {
       setIsSpeaking(false);
       return;
     }
@@ -238,8 +209,8 @@ function AIAssistant({ language }: AIAssistantProps) {
 
     const utterance = new SpeechSynthesisUtterance(text.trim());
     utterance.lang = localeToLang[locale];
-    utterance.rate = FALLBACK_VOICE_SETTINGS[voiceVariant].rate;
-    utterance.pitch = FALLBACK_VOICE_SETTINGS[voiceVariant].pitch;
+    utterance.rate = 0.95;
+    utterance.pitch = 0.95;
     utterance.volume = 1;
 
     const availableVoices = window.speechSynthesis.getVoices();
@@ -316,7 +287,6 @@ function AIAssistant({ language }: AIAssistantProps) {
         body: JSON.stringify({
           text,
           locale,
-          variant: voiceVariant,
         }),
         signal: controller.signal,
       });
@@ -385,6 +355,11 @@ function AIAssistant({ language }: AIAssistantProps) {
       isStreaming: true,
     };
 
+    const recentHistory = messages.slice(-8).map((message) => ({
+      role: message.role,
+      content: message.content,
+    }));
+
     setConversationId(activeConversationId);
     setMessages((currentMessages) => [...currentMessages, userMessage, placeholder]);
     setInputValue("");
@@ -396,10 +371,7 @@ function AIAssistant({ language }: AIAssistantProps) {
       locale,
       conversationId: activeConversationId,
       stream: true,
-      history: messages.slice(-8).map((message) => ({
-        role: message.role,
-        content: message.content,
-      })),
+      history: recentHistory,
     };
 
     try {
@@ -433,9 +405,7 @@ function AIAssistant({ language }: AIAssistantProps) {
         buffer = events.pop() || "";
 
         for (const eventBlock of events) {
-          const dataLine = eventBlock
-            .split("\n")
-            .find((line) => line.startsWith("data: "));
+          const dataLine = eventBlock.split("\n").find((line) => line.startsWith("data: "));
 
           if (!dataLine) {
             continue;
@@ -526,8 +496,6 @@ function AIAssistant({ language }: AIAssistantProps) {
         isTyping={isTyping}
         isSpeaking={isSpeaking}
         isVoiceEnabled={isVoiceEnabled}
-        voiceVariant={voiceVariant}
-        suggestedQuestions={suggestedQuestions}
         onClose={() => {
           stopSpeaking();
           setIsOpen(false);
@@ -541,10 +509,6 @@ function AIAssistant({ language }: AIAssistantProps) {
           if (!nextValue) {
             stopSpeaking();
           }
-        }}
-        onVoiceVariantChange={(nextVariant) => {
-          stopSpeaking();
-          setVoiceVariant(nextVariant);
         }}
         onReplayVoice={() => {
           if (lastAssistantText.trim()) {

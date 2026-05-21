@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
-import AdminDashboard from "./components/AdminDashboard";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import RegistrationForm from "./components/RegistrationForm";
-import AIAssistant from "./components/ai/AIAssistant";
+
+const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
+const AIAssistant = lazy(() => import("./components/ai/AIAssistant"));
 
 const languages = [
   { code: "ru", label: "RU" },
@@ -199,13 +200,13 @@ const translations = {
       eyebrow: "Регистрация",
       title: "Станьте частью Global EdTech в Астане",
       text:
-        "Присоединяйтесь к событию 7–8 февраля 2027 года и станьте частью экосистемы, где образование, технологии и сильные идеи встречаются на одной площадке.",
+        "Присоединяйтесь к событию 7–8 февраля 2027 года и выберите удобный формат участия: участник, спикер, партнер, спонсор или экспонент со стендом.",
     },
     contacts: {
       eyebrow: "Контакты",
       title: "Давайте вместе строить следующую главу в развитии образования",
       text1:
-        "Свяжитесь с нами по вопросам участия, партнерства и сотрудничества в рамках",
+        "Свяжитесь с нами по вопросам участия, партнерства, спонсорства и приобретения стенда в рамках",
       text2: "Global EdTech.",
       items: [
         { label: "Город", value: "Астана, Казахстан" },
@@ -231,6 +232,8 @@ const translations = {
         delegate: "Участник",
         speaker: "Спикер",
         partner: "Партнер",
+        sponsor: "Спонсор",
+        exhibitor: "Экспонент со стендом",
       },
       buttons: {
         submit: "Отправить заявку",
@@ -449,13 +452,13 @@ const translations = {
       eyebrow: "Тіркелу",
       title: "Астанадағы Global EdTech-тің бір бөлігі болыңыз",
       text:
-        "2027 жылғы 7–8 ақпанда өтетін іс-шараға қосылып, білім, технология және қуатты идеялар бір алаңда тоғысатын экожүйенің бір бөлігіне айналыңыз.",
+        "2027 жылғы 7–8 ақпанда өтетін іс-шараға қосылып, өзіңізге лайық қатысу форматын таңдаңыз: қатысушы, спикер, серіктес, демеуші немесе стендпен экспонент.",
     },
     contacts: {
       eyebrow: "Байланыс",
       title: "Білім дамуының келесі тарауын бірге құрайық",
       text1:
-        "Қатысу, серіктестік және ынтымақтастық мәселелері бойынша бізбен байланысыңыз",
+        "Қатысу, серіктестік, демеушілік және стенд сатып алу мәселелері бойынша бізбен байланысыңыз",
       text2: "Global EdTech аясында.",
       items: [
         { label: "Қала", value: "Астана, Қазақстан" },
@@ -481,6 +484,8 @@ const translations = {
         delegate: "Қатысушы",
         speaker: "Спикер",
         partner: "Серіктес",
+        sponsor: "Демеуші",
+        exhibitor: "Стендпен экспонент",
       },
       buttons: {
         submit: "Өтінімді жіберу",
@@ -700,13 +705,13 @@ const translations = {
       eyebrow: "Registration",
       title: "Become part of Global EdTech in Astana",
       text:
-        "Join the event on February 7–8, 2027 and become part of an ecosystem where education, technology, and bold ideas meet on one platform.",
+        "Join the event on February 7–8, 2027 and choose the format that fits you best: participant, speaker, partner, sponsor, or exhibitor with stand.",
     },
     contacts: {
       eyebrow: "Contacts",
       title: "Let’s build the next chapter in education together",
       text1:
-        "Contact us regarding participation, partnerships, and cooperation within",
+        "Contact us regarding participation, partnerships, sponsorships, and stand bookings within",
       text2: "Global EdTech.",
       items: [
         { label: "City", value: "Astana, Kazakhstan" },
@@ -732,6 +737,8 @@ const translations = {
         delegate: "Participant",
         speaker: "Speaker",
         partner: "Partner",
+        sponsor: "Sponsor",
+        exhibitor: "Exhibitor with stand",
       },
       buttons: {
         submit: "Submit Registration",
@@ -1024,6 +1031,7 @@ function GallerySlider({ gallery, onOpen }) {
                 alt={`${gallery.altBase} ${index + 1}`}
                 loading={index === 0 ? "eager" : "lazy"}
                 fetchPriority={index === 0 ? "high" : "auto"}
+                decoding="async"
                 className="gallery-slide-image"
               />
               <div className="gallery-slide-overlay" />
@@ -1086,6 +1094,7 @@ function GallerySlider({ gallery, onOpen }) {
               src={photo.thumb}
               alt={`${gallery.altBase} ${index + 1}`}
               loading="lazy"
+              decoding="async"
               className="gallery-thumb-image"
             />
           </button>
@@ -1137,6 +1146,7 @@ function HeroShowcase({ hero, forumOverview }) {
             alt={`Global EdTech highlight ${index + 1}`}
             loading={index === 0 ? "eager" : "lazy"}
             fetchPriority={index === 0 ? "high" : "auto"}
+            decoding="async"
             className={`hero-showcase-image ${activeIndex === index ? "hero-showcase-image-active" : ""}`}
           />
         ))}
@@ -1266,7 +1276,11 @@ function App() {
     selectedGalleryIndex === null ? null : galleryPhotos[selectedGalleryIndex] ?? null;
 
   if (isAdminRoute) {
-    return <AdminDashboard />;
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-[#0B0F2A]" />}>
+        <AdminDashboard />
+      </Suspense>
+    );
   }
 
   return (
@@ -1285,6 +1299,7 @@ function App() {
               src="/assets/globaledtech-logo.png"
               alt="Global EdTech"
               className="header-logo header-logo-main"
+              decoding="async"
             />
           </a>
 
@@ -1312,6 +1327,8 @@ function App() {
                 src="/assets/azgroup-logo.png"
                 alt="AZ Group"
                 className="header-logo header-logo-partner"
+                loading="lazy"
+                decoding="async"
               />
             </a>
             <a href="#register" className="button-primary">
@@ -1377,6 +1394,8 @@ function App() {
                       src="/assets/azgroup-logo.png"
                       alt="AZ Group"
                       className="header-logo header-logo-partner"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </a>
                   <a
@@ -1491,7 +1510,13 @@ function App() {
                   transition={{ delay: index * 0.08 }}
                 >
                   <div className="event-logo-wrap">
-                    <img src={event.image} alt={event.title} className="event-logo" />
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="event-logo"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </div>
                   <h3 className="mt-6 text-2xl font-semibold text-white">{event.title}</h3>
                   <p className="mt-4 text-sm leading-7 text-slate-300">{event.subtitle}</p>
@@ -1718,7 +1743,9 @@ function App() {
         </div>
       </footer>
 
-      <AIAssistant language={language} />
+      <Suspense fallback={null}>
+        <AIAssistant language={language} />
+      </Suspense>
 
       {selectedGalleryPhoto ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#020617]/88 px-4 py-6 backdrop-blur-md">
@@ -1766,6 +1793,7 @@ function App() {
                 srcSet={`${selectedGalleryPhoto.thumb} 800w, ${selectedGalleryPhoto.src} 1600w`}
                 sizes="92vw"
                 alt={`${gallery.altBase} ${(selectedGalleryIndex ?? 0) + 1}`}
+                decoding="async"
                 className="max-h-[82vh] w-full object-contain"
               />
             </div>
