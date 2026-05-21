@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import PhoneInput, { getCountryCallingCode } from "react-phone-number-input";
+import { participationTypeOrder } from "../lib/participationTypes";
 import { createRegistrationSchema, parseRegistrationPayload } from "../lib/registrationSchema";
 
 const fieldNames = [
@@ -254,11 +255,10 @@ export default function RegistrationForm({ language, translations }) {
   const participationOptions = useMemo(
     () => [
       { value: "", label: translations.fields.participationType.placeholder },
-      { value: "delegate", label: translations.participationTypes.delegate },
-      { value: "speaker", label: translations.participationTypes.speaker },
-      { value: "partner", label: translations.participationTypes.partner },
-      { value: "sponsor", label: translations.participationTypes.sponsor },
-      { value: "exhibitor", label: translations.participationTypes.exhibitor },
+      ...participationTypeOrder.map((value) => ({
+        value,
+        label: translations.participationTypes[value],
+      })),
     ],
     [translations],
   );

@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-
-const participationTypeLabels = {
-  delegate: "Участник",
-  speaker: "Спикер",
-  partner: "Партнер",
-};
+import { participationTypeLabels, participationTypeOrder } from "../lib/participationTypes";
 
 function formatDate(value) {
   if (!value) {
@@ -52,12 +47,13 @@ export default function AdminDashboard() {
   const [deletingId, setDeletingId] = useState("");
 
   const totalCount = registrations.length;
-  const speakerCount = useMemo(
-    () => registrations.filter((item) => item.participationType === "speaker").length,
-    [registrations],
-  );
-  const partnerCount = useMemo(
-    () => registrations.filter((item) => item.participationType === "partner").length,
+  const participationStats = useMemo(
+    () =>
+      participationTypeOrder.map((type) => ({
+        type,
+        label: participationTypeLabels[type] || type,
+        count: registrations.filter((item) => item.participationType === type).length,
+      })),
     [registrations],
   );
 
@@ -161,7 +157,7 @@ export default function AdminDashboard() {
 
     if (!response.ok) {
       setStatus("error");
-      setError(result?.error || "РќРµ СѓРґР°Р»РѕСЃСЊ РІРѕР№С‚Рё РІ Р°РґРјРёРЅРєСѓ.");
+      setError(result?.error || "Не удалось войти в админку.");
       return;
     }
 
@@ -345,19 +341,22 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <div className="grid gap-6">
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
               <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
                 <p className="text-sm uppercase tracking-[0.28em] text-slate-400">Всего заявок</p>
                 <p className="mt-3 text-3xl font-semibold text-white">{totalCount}</p>
               </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                <p className="text-sm uppercase tracking-[0.28em] text-slate-400">Спикеры</p>
-                <p className="mt-3 text-3xl font-semibold text-white">{speakerCount}</p>
-              </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                <p className="text-sm uppercase tracking-[0.28em] text-slate-400">Партнеры</p>
-                <p className="mt-3 text-3xl font-semibold text-white">{partnerCount}</p>
-              </div>
+              {participationStats.map((item) => (
+                <div
+                  key={item.type}
+                  className="rounded-[24px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl"
+                >
+                  <p className="text-sm uppercase tracking-[0.28em] text-slate-400">
+                    {item.label}
+                  </p>
+                  <p className="mt-3 text-3xl font-semibold text-white">{item.count}</p>
+                </div>
+              ))}
             </div>
 
             <div className="grid gap-4 rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl md:grid-cols-[1.2fr_0.8fr]">
@@ -389,9 +388,11 @@ export default function AdminDashboard() {
                   className="w-full rounded-[18px] border border-white/10 bg-[#212847] px-4 py-4 text-white outline-none transition focus:border-cyan-400/70"
                 >
                   <option value="all">Все форматы</option>
-                  <option value="delegate">Участник</option>
-                  <option value="speaker">Спикер</option>
-                  <option value="partner">Партнер</option>
+                  {participationTypeOrder.map((type) => (
+                    <option key={type} value={type}>
+                      {participationTypeLabels[type] || type}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -400,9 +401,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
                 <h2 className="text-lg font-semibold text-white">Список регистраций</h2>
                 <div className="flex items-center gap-4">
-                  <span className="text-sm text-slate-300">
-                    Показано: {filteredRegistrations.length}
-                  </span>
+                  <span className="text-sm text-slate-300">Показано: {filteredRegistrations.length}</span>
                   {status === "loading" ? (
                     <span className="text-sm text-cyan-200">Загрузка...</span>
                   ) : null}

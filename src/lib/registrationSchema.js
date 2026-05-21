@@ -1,5 +1,6 @@
 import { isValidPhoneNumber, parsePhoneNumber } from "libphonenumber-js";
 import { z } from "zod";
+import { participationTypeOrder } from "./participationTypes";
 
 const namePattern = /^(?=.{2,}$)[\p{L}\p{M}]+(?:-[\p{L}\p{M}]+)*$/u;
 const emailPattern = /^(?!.*\s)[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -95,7 +96,7 @@ export function createRegistrationSchema(validationMessages = defaultValidationM
           .min(2, messages.companyMin)
           .regex(companyPattern, messages.companyPattern),
       ),
-    participationType: z.enum(["delegate", "speaker", "partner", "sponsor", "exhibitor"], {
+    participationType: z.enum(participationTypeOrder, {
       errorMap: () => ({ message: messages.participationRequired }),
     }),
   });
