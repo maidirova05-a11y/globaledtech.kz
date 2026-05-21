@@ -13,6 +13,7 @@ const STORAGE_KEY = "globaledtech-ai-assistant";
 const CONVERSATION_KEY = "globaledtech-ai-conversation";
 const VOICE_ENABLED_KEY = "globaledtech-ai-voice-enabled";
 const MIN_THINKING_MS = 520;
+const MAX_INPUT_LENGTH = 700;
 
 function createMessage(role: "assistant" | "user", content: string): AIMessage {
   return {
@@ -386,7 +387,7 @@ export function useAssistantController(locale: AILocale) {
 
       if (!response.ok || !response.body) {
         const data = await response.json().catch(() => null);
-        throw new Error(data?.error || "Assistant request failed");
+        throw new Error(data?.fallback || data?.error || "Assistant request failed");
       }
 
       const reader = response.body.getReader();
@@ -481,7 +482,7 @@ export function useAssistantController(locale: AILocale) {
       setLastAssistantText(finalText);
       await speakMessage(finalText);
     } catch (error) {
-      console.error("AI assistant request failed:", error);
+      console.error("AI assistant request failed:", error instanceof Error ? error.message : "unknown");
 
       const fallbackResponse = getAIResponse(trimmedPrompt, locale, recentHistory);
       setLastAssistantText(fallbackResponse);
@@ -518,7 +519,7 @@ export function useAssistantController(locale: AILocale) {
       setIsOpen,
       messages,
       inputValue,
-      setInputValue,
+      setInputValue: (value: string) => setInputValue(value.slice(0, MAX_INPUT_LENGTH)),
       isTyping,
       isThinking,
       isSpeaking,

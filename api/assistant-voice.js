@@ -1,9 +1,30 @@
-import { resolveLocale } from "./_lib/assistantKnowledge.js";
+import { z } from "zod";
+import { parseAssistantVoiceRequest } from "./_lib/assistantSchemas.js";
+import { applyApiSecurity, getSecurityConfig } from "./_lib/security.js";
 import { resolveVoiceRuntimeConfig, synthesizeVoice } from "./_lib/voiceProviders.js";
+
+const REQUEST_TIMEOUT_MS = Number(process.env.AI_REQUEST_TIMEOUT_MS || 18_000);
+
+async function withTimeout(task) {
+  return await Promise.race([
+    task(),
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Voice request timeout")), REQUEST_TIMEOUT_MS);
+    }),
+  ]);
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const security = await applyApiSecurity(req, res, {
+    rateLimit: getSecurityConfig().voice,
+  });
+
+  if (security.ended) {
+    return;
   }
 
   try {
@@ -12,36 +33,31 @@ export default async function handler(req, res) {
         ? JSON.parse(req.body || "{}")
         : (req.body ?? {});
 
-    const locale = resolveLocale(rawBody.locale);
-    const text = typeof rawBody.text === "string" ? rawBody.text.trim() : "";
-
-    if (!text) {
-      return res.status(400).json({
-        error: "Text is required",
-      });
-    }
+    const payload = parseAssistantVoiceRequest(rawBody);
+    const locale = payload.locale;
+    const text = payload.text;
 
     const runtimeConfig = resolveVoiceRuntimeConfig(locale, rawBody.provider);
     let buffer;
 
     try {
-      buffer = await synthesizeVoice({
+      buffer = await withTimeout(() => synthesizeVoice({
         text,
         locale: runtimeConfig.locale,
         provider: runtimeConfig.provider,
         voiceId: runtimeConfig.voiceId,
-      });
+      }));
     } catch (primaryError) {
       if (runtimeConfig.provider !== "openai") {
         console.error("Primary voice provider failed, falling back to OpenAI:", primaryError);
 
         const fallbackConfig = resolveVoiceRuntimeConfig(locale, "openai");
-        buffer = await synthesizeVoice({
+        buffer = await withTimeout(() => synthesizeVoice({
           text,
           locale: fallbackConfig.locale,
           provider: fallbackConfig.provider,
           voiceId: fallbackConfig.voiceId,
-        });
+        }));
 
         runtimeConfig.provider = fallbackConfig.provider;
         runtimeConfig.voiceId = fallbackConfig.voiceId;
@@ -63,7 +79,14 @@ export default async function handler(req, res) {
     res.end(buffer);
     return;
   } catch (error) {
-    console.error("AI assistant voice error:", error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: "Validation failed",
+        issues: error.flatten(),
+      });
+    }
+
+    console.error("AI assistant voice error:", error instanceof Error ? error.message : "unknown");
 
     return res.status(500).json({
       error: "Failed to synthesize assistant voice",

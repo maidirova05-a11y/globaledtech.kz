@@ -287,7 +287,7 @@ function AIAvatar({ mode = "idle" }: AIAvatarProps) {
         <pointLight position={[2.4, 1.6, 1.8]} intensity={12} color="#ff2e7e" />
         <AvatarModel mode={mode} />
         <Environment preset="city" />
-        <ContactShadows position={[0, -2.2, 0]}} opacity={0.35} scale={5.5} blur={2.2} far={3.5} />
+        <ContactShadows position={[0, -2.2, 0]} opacity={0.35} scale={5.5} blur={2.2} far={3.5} />
       </Canvas>
     </div>
   );

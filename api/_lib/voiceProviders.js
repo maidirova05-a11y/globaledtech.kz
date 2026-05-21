@@ -29,7 +29,7 @@ export function resolveVoiceRuntimeConfig(locale, requestedProvider) {
   const normalizedProvider = provider === "elevenlabs" ? "elevenlabs" : "openai";
   const voiceId =
     normalizedProvider === "elevenlabs"
-      ? process.env.ELEVENLABS_VOICE_ID || process.env.VITE_ELEVENLABS_VOICE_ID || "EXAVITQu4vr4xnSDxMaL"
+      ? process.env.ELEVENLABS_VOICE_ID || "EXAVITQu4vr4xnSDxMaL"
       : process.env.OPENAI_TTS_VOICE || "cedar";
   const voiceLabel =
     normalizedProvider === "elevenlabs"
@@ -61,7 +61,7 @@ async function synthesizeWithOpenAI({ text, locale, voiceId }) {
 }
 
 async function synthesizeWithElevenLabs({ text, locale, voiceId }) {
-  const apiKey = process.env.ELEVENLABS_API_KEY || process.env.VITE_ELEVENLABS_API_KEY;
+  const apiKey = process.env.ELEVENLABS_API_KEY;
 
   if (!apiKey) {
     throw new Error("ElevenLabs API key is not configured");

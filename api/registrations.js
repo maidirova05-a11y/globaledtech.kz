@@ -1,4 +1,6 @@
 import { parseRegistrationPayload } from "../src/lib/registrationSchema.js";
+import { sanitizeUnknownObject } from "./_lib/sanitize.js";
+import { applyApiSecurity, getSecurityConfig } from "./_lib/security.js";
 import {
   appendRegistration,
   isRegistrationStoreConfigured,
@@ -22,6 +24,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const security = await applyApiSecurity(req, res, {
+    rateLimit: getSecurityConfig().registration,
+  });
+
+  if (security.ended) {
+    return;
+  }
+
   if (!isRegistrationStoreConfigured()) {
     return res.status(500).json({
       error: "Registration database is not configured",
@@ -34,7 +44,7 @@ export default async function handler(req, res) {
         ? JSON.parse(req.body || "{}")
         : (req.body ?? {});
 
-    const payload = parseRegistrationPayload(rawBody);
+    const payload = parseRegistrationPayload(sanitizeUnknownObject(rawBody));
     const record = createRegistrationRecord(payload);
 
     await appendRegistration(record);
@@ -48,7 +58,7 @@ export default async function handler(req, res) {
       });
     }
 
-    console.error("Registration save error:", error);
+    console.error("Registration save error:", error instanceof Error ? error.message : "unknown");
 
     return res.status(500).json({
       error: "Failed to save registration",

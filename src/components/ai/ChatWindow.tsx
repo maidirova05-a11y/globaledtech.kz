@@ -1,6 +1,7 @@
 import { FormEvent, KeyboardEvent, Suspense, lazy, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import DOMPurify from "isomorphic-dompurify";
 import { assistantUiCopy, type AssistantQuickPrompt } from "./config";
 import type { AIMessage, AILocale } from "../../lib/ai";
 
@@ -37,10 +38,14 @@ function normalizeUrl(rawUrl: string) {
 }
 
 function renderMessageContent(content: string) {
-  const matches = Array.from(content.matchAll(URL_PATTERN));
+  const safeContent = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  });
+  const matches = Array.from(safeContent.matchAll(URL_PATTERN));
 
   if (matches.length === 0) {
-    return content;
+    return safeContent;
   }
 
   const parts: Array<string | JSX.Element> = [];
@@ -53,7 +58,7 @@ function renderMessageContent(content: string) {
     const trailingText = url.slice(normalizedUrl.length);
 
     if (startIndex > lastIndex) {
-      parts.push(content.slice(lastIndex, startIndex));
+      parts.push(safeContent.slice(lastIndex, startIndex));
     }
 
     parts.push(
@@ -75,8 +80,8 @@ function renderMessageContent(content: string) {
     lastIndex = startIndex + url.length;
   });
 
-  if (lastIndex < content.length) {
-    parts.push(content.slice(lastIndex));
+  if (lastIndex < safeContent.length) {
+    parts.push(safeContent.slice(lastIndex));
   }
 
   return parts;
