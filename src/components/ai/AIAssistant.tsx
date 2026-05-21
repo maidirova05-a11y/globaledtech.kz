@@ -1,6 +1,7 @@
 import AssistantErrorBoundary from "./AssistantErrorBoundary";
 import ChatWindow from "./ChatWindow";
 import FloatingButton from "./FloatingButton";
+import SiteGuide from "./SiteGuide";
 import { assistantQuickPrompts, assistantUiCopy } from "./config";
 import { useAssistantController } from "./useAssistantController";
 import type { AILocale } from "../../lib/ai";
@@ -25,6 +26,15 @@ function AIAssistant({ language }: AIAssistantProps) {
   return (
     <AssistantErrorBoundary>
       <>
+        <SiteGuide
+          locale={locale}
+          isChatOpen={controller.isOpen}
+          onOpenChat={() => controller.setIsOpen(true)}
+          onPrompt={(prompt) => {
+            void controller.openChatWithPrompt(prompt);
+          }}
+        />
+
         <ChatWindow
           isOpen={controller.isOpen}
           locale={locale}
@@ -33,13 +43,8 @@ function AIAssistant({ language }: AIAssistantProps) {
           isTyping={controller.isTyping}
           isThinking={controller.isThinking}
           thinkingText={controller.thinkingText}
-          isSpeaking={controller.isSpeaking}
-          isVoiceEnabled={controller.isVoiceEnabled}
-          voiceProviderLabel={controller.voiceMeta.providerLabel}
-          voiceLabel={controller.voiceMeta.voiceLabel}
           quickPrompts={assistantQuickPrompts[locale]}
           onClose={() => {
-            controller.stopSpeaking();
             controller.setIsOpen(false);
           }}
           onInputChange={controller.setInputValue}
@@ -47,22 +52,7 @@ function AIAssistant({ language }: AIAssistantProps) {
           onQuickPrompt={(prompt) => {
             void controller.submitPrompt(prompt);
           }}
-          onVoiceToggle={() => {
-            const nextValue = !controller.isVoiceEnabled;
-            controller.setIsVoiceEnabled(nextValue);
-
-            if (!nextValue) {
-              controller.stopSpeaking();
-            }
-          }}
-          onReplayVoice={() => {
-            if (controller.lastAssistantText.trim()) {
-              void controller.speakMessage(controller.lastAssistantText);
-            }
-          }}
-          onStopVoice={controller.stopSpeaking}
           onClearChat={controller.resetConversation}
-          canReplayVoice={Boolean(controller.lastAssistantText.trim())}
         />
 
         {!controller.isOpen ? (

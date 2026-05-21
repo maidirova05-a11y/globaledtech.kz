@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { assistantUiCopy } from "./config";
-import { getVoiceMeta } from "../../services/voice/config";
 import {
   createAssistantGreeting,
   getAIResponse,
@@ -11,7 +10,6 @@ import {
 
 const STORAGE_KEY = "globaledtech-ai-assistant";
 const CONVERSATION_KEY = "globaledtech-ai-conversation";
-const VOICE_ENABLED_KEY = "globaledtech-ai-voice-enabled";
 const MIN_THINKING_MS = 520;
 const MAX_INPUT_LENGTH = 700;
 
@@ -44,18 +42,9 @@ export function useAssistantController(locale: AILocale) {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [conversationId, setConversationId] = useState("");
   const [lastAssistantText, setLastAssistantText] = useState("");
   const [thinkingText, setThinkingText] = useState(assistantUiCopy[locale].typingPhrases[0]);
-  const [voiceMeta, setVoiceMeta] = useState(() => getVoiceMeta(null, null, null));
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUrlRef = useRef<string | null>(null);
-  const voiceAbortRef = useRef<AbortController | null>(null);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const speechResumeTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -64,10 +53,8 @@ export function useAssistantController(locale: AILocale) {
 
     const savedMessages = sessionStorage.getItem(`${STORAGE_KEY}-${locale}`);
     const savedConversationId = sessionStorage.getItem(`${CONVERSATION_KEY}-${locale}`) || "";
-    const savedVoicePreference = sessionStorage.getItem(VOICE_ENABLED_KEY);
 
     setConversationId(savedConversationId);
-    setIsVoiceEnabled(savedVoicePreference !== "false");
 
     if (!savedMessages) {
       setMessages([createAssistantGreeting(locale)]);
@@ -104,21 +91,12 @@ export function useAssistantController(locale: AILocale) {
   }, [conversationId, locale]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    sessionStorage.setItem(VOICE_ENABLED_KEY, String(isVoiceEnabled));
-  }, [isVoiceEnabled]);
-
-  useEffect(() => {
     if (!isOpen) {
       return;
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        stopSpeaking();
         setIsOpen(false);
       }
     };
@@ -140,203 +118,8 @@ export function useAssistantController(locale: AILocale) {
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    return () => {
-      stopSpeaking();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      return;
-    }
-
-    window.speechSynthesis.getVoices();
-
-    const handleVoicesChanged = () => {
-      window.speechSynthesis.getVoices();
-    };
-
-    window.speechSynthesis.addEventListener("voiceschanged", handleVoicesChanged);
-    return () => window.speechSynthesis.removeEventListener("voiceschanged", handleVoicesChanged);
-  }, []);
-
-  const cleanupAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = "";
-      audioRef.current = null;
-    }
-
-    if (audioUrlRef.current) {
-      URL.revokeObjectURL(audioUrlRef.current);
-      audioUrlRef.current = null;
-    }
-  };
-
-  const stopSpeaking = () => {
-    voiceAbortRef.current?.abort();
-    voiceAbortRef.current = null;
-
-    if (speechResumeTimerRef.current !== null && typeof window !== "undefined") {
-      window.clearTimeout(speechResumeTimerRef.current);
-      speechResumeTimerRef.current = null;
-    }
-
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      utteranceRef.current = null;
-    }
-
-    cleanupAudio();
-    setIsSpeaking(false);
-  };
-
-  const speakWithBrowserFallback = (text: string) => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window) || !text.trim()) {
-      setIsSpeaking(false);
-      return;
-    }
-
-    const localeToLang: Record<AILocale, string> = {
-      ru: "ru-RU",
-      kk: "kk-KZ",
-      en: "en-US",
-    };
-
-    const utterance = new SpeechSynthesisUtterance(text.trim());
-    utterance.lang = localeToLang[locale];
-    utterance.rate = 0.96;
-    utterance.pitch = 0.98;
-    utterance.volume = 1;
-
-    const availableVoices = window.speechSynthesis.getVoices();
-    const localePrefix = localeToLang[locale].split("-")[0];
-    const matchingVoice =
-      availableVoices.find((voice) => voice.lang.toLowerCase() === localeToLang[locale].toLowerCase()) ||
-      availableVoices.find((voice) => voice.lang.toLowerCase().startsWith(localePrefix)) ||
-      availableVoices.find((voice) => voice.default) ||
-      null;
-
-    if (matchingVoice) {
-      utterance.voice = matchingVoice;
-      setVoiceMeta(getVoiceMeta("openai", matchingVoice.name, matchingVoice.name));
-    }
-
-    utterance.onend = () => {
-      if (utteranceRef.current === utterance) {
-        utteranceRef.current = null;
-        if (speechResumeTimerRef.current !== null) {
-          window.clearTimeout(speechResumeTimerRef.current);
-          speechResumeTimerRef.current = null;
-        }
-        setIsSpeaking(false);
-      }
-    };
-
-    utterance.onerror = () => {
-      if (utteranceRef.current === utterance) {
-        utteranceRef.current = null;
-        if (speechResumeTimerRef.current !== null) {
-          window.clearTimeout(speechResumeTimerRef.current);
-          speechResumeTimerRef.current = null;
-        }
-        setIsSpeaking(false);
-      }
-    };
-
-    utteranceRef.current = utterance;
-    setIsSpeaking(true);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    window.speechSynthesis.resume();
-
-    speechResumeTimerRef.current = window.setTimeout(() => {
-      if (utteranceRef.current === utterance) {
-        window.speechSynthesis.resume();
-      }
-      speechResumeTimerRef.current = null;
-    }, 250);
-  };
-
-  const speakMessage = async (text: string) => {
-    if (!isVoiceEnabled || !text.trim()) {
-      setIsSpeaking(false);
-      return;
-    }
-
-    stopSpeaking();
-
-    const controller = new AbortController();
-    voiceAbortRef.current = controller;
-    setIsSpeaking(true);
-
-    try {
-      const response = await fetch("/api/assistant-voice", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text,
-          locale,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error("Voice request failed");
-      }
-
-      const provider = response.headers.get("x-voice-provider");
-      const voiceId = response.headers.get("x-voice-id");
-      const voiceLabel = response.headers.get("x-voice-label");
-      setVoiceMeta(getVoiceMeta(provider, voiceId, voiceLabel));
-
-      const audioBlob = await response.blob();
-      if (!audioBlob.size) {
-        throw new Error("Voice response is empty");
-      }
-
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-
-      audioRef.current = audio;
-      audioUrlRef.current = audioUrl;
-      audio.volume = 1;
-      audio.muted = false;
-      audio.preload = "auto";
-      audio.playsInline = true;
-
-      audio.onended = () => {
-        cleanupAudio();
-        setIsSpeaking(false);
-      };
-
-      audio.onerror = () => {
-        cleanupAudio();
-        setIsSpeaking(false);
-      };
-
-      await audio.play();
-    } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) {
-        console.error("AI assistant voice failed:", error);
-        speakWithBrowserFallback(text);
-        return;
-      }
-
-      cleanupAudio();
-      setIsSpeaking(false);
-    } finally {
-      if (voiceAbortRef.current === controller) {
-        voiceAbortRef.current = null;
-      }
-    }
-  };
-
   const submitPrompt = async (prompt: string) => {
-    const trimmedPrompt = prompt.trim();
+    const trimmedPrompt = prompt.trim().slice(0, MAX_INPUT_LENGTH);
 
     if (!trimmedPrompt || isTyping || isThinking) {
       return;
@@ -364,7 +147,7 @@ export function useAssistantController(locale: AILocale) {
     setInputValue("");
     setIsThinking(true);
     setIsTyping(false);
-    stopSpeaking();
+    setIsOpen(true);
 
     const payload: AssistantApiPayload = {
       message: trimmedPrompt,
@@ -480,7 +263,6 @@ export function useAssistantController(locale: AILocale) {
       }
 
       setLastAssistantText(finalText);
-      await speakMessage(finalText);
     } catch (error) {
       console.error("AI assistant request failed:", error instanceof Error ? error.message : "unknown");
 
@@ -495,15 +277,21 @@ export function useAssistantController(locale: AILocale) {
       );
       setIsThinking(false);
       setIsTyping(false);
-      await speakMessage(fallbackResponse);
     } finally {
       setIsThinking(false);
       setIsTyping(false);
     }
   };
 
+  const openChatWithPrompt = async (prompt?: string) => {
+    setIsOpen(true);
+
+    if (prompt?.trim()) {
+      await submitPrompt(prompt);
+    }
+  };
+
   const resetConversation = () => {
-    stopSpeaking();
     setConversationId("");
     setLastAssistantText("");
     setMessages([createAssistantGreeting(locale)]);
@@ -522,28 +310,20 @@ export function useAssistantController(locale: AILocale) {
       setInputValue: (value: string) => setInputValue(value.slice(0, MAX_INPUT_LENGTH)),
       isTyping,
       isThinking,
-      isSpeaking,
-      isVoiceEnabled,
-      setIsVoiceEnabled,
       lastAssistantText,
       thinkingText,
-      voiceMeta,
       submitPrompt,
-      stopSpeaking,
-      speakMessage,
+      openChatWithPrompt,
       resetConversation,
     }),
     [
       inputValue,
       isOpen,
-      isSpeaking,
       isThinking,
       isTyping,
-      isVoiceEnabled,
       lastAssistantText,
       messages,
       thinkingText,
-      voiceMeta,
     ],
   );
 }

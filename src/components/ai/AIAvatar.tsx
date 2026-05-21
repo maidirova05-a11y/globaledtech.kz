@@ -13,6 +13,8 @@ type AvatarMode = "idle" | "thinking" | "talking";
 
 type AIAvatarProps = {
   mode?: AvatarMode;
+  className?: string;
+  background?: string;
 };
 
 function AvatarModel({ mode = "idle" }: AIAvatarProps) {
@@ -276,11 +278,11 @@ function AvatarModel({ mode = "idle" }: AIAvatarProps) {
   );
 }
 
-function AIAvatar({ mode = "idle" }: AIAvatarProps) {
+function AIAvatar({ mode = "idle", className = "ai-avatar-shell", background = "#091224" }: AIAvatarProps) {
   return (
-    <div className="ai-avatar-shell">
+    <div className={className}>
       <Canvas camera={{ position: [0, 0.16, 4.9], fov: 30 }} dpr={[1, 1.75]}>
-        <color attach="background" args={["#091224"]} />
+        <color attach="background" args={[background]} />
         <ambientLight intensity={1.45} />
         <directionalLight position={[2.5, 3.2, 3.2]} intensity={3.2} color="#d5ecff" />
         <pointLight position={[-2.2, 2.1, 1.8]} intensity={18} color="#67e8f9" />
