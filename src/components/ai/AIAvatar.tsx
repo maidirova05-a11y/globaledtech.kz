@@ -1,93 +1,167 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, Float, MeshTransmissionMaterial, RoundedBox } from "@react-three/drei";
-import { memo, useMemo, useRef } from "react";
+import {
+  ContactShadows,
+  Environment,
+  Float,
+  MeshTransmissionMaterial,
+  RoundedBox,
+} from "@react-three/drei";
+import { memo, useEffect, useMemo, useRef } from "react";
 import type { Group, Mesh } from "three";
 
+type AvatarMode = "idle" | "thinking" | "talking";
+
 type AIAvatarProps = {
-  isSpeaking?: boolean;
+  mode?: AvatarMode;
 };
 
-function AvatarModel({ isSpeaking = false }: AIAvatarProps) {
+function AvatarModel({ mode = "idle" }: AIAvatarProps) {
   const rootRef = useRef<Group | null>(null);
   const headRef = useRef<Group | null>(null);
+  const torsoRef = useRef<Group | null>(null);
   const leftEyeRef = useRef<Mesh | null>(null);
   const rightEyeRef = useRef<Mesh | null>(null);
   const mouthRef = useRef<Mesh | null>(null);
   const chestCoreRef = useRef<Mesh | null>(null);
   const haloRef = useRef<Mesh | null>(null);
   const waveRef = useRef<Mesh | null>(null);
+  const leftArmRef = useRef<Group | null>(null);
+  const rightArmRef = useRef<Group | null>(null);
+  const pointerTargetRef = useRef({ x: 0, y: 0 });
+  const smoothedPointerRef = useRef({ x: 0, y: 0 });
 
   const particles = useMemo(
     () =>
-      Array.from({ length: 14 }, (_, index) => ({
+      Array.from({ length: 16 }, (_, index) => ({
         id: index,
         position: [
-          Math.sin(index * 1.7) * 1.45,
-          0.3 + ((index % 6) - 2.5) * 0.32,
-          Math.cos(index * 1.1) * 0.65,
+          Math.sin(index * 1.4) * 1.5,
+          0.2 + ((index % 7) - 3) * 0.28,
+          Math.cos(index * 0.95) * 0.7,
         ] as [number, number, number],
-        scale: 0.03 + (index % 3) * 0.015,
+        scale: 0.028 + (index % 3) * 0.016,
       })),
     [],
   );
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const x = (event.clientX / window.innerWidth) * 2 - 1;
+      const y = (event.clientY / window.innerHeight) * 2 - 1;
+
+      pointerTargetRef.current = {
+        x: Math.max(-0.32, Math.min(0.32, x * 0.18)),
+        y: Math.max(-0.18, Math.min(0.18, -y * 0.12)),
+      };
+    };
+
+    const handlePointerLeave = () => {
+      pointerTargetRef.current = { x: 0, y: 0 };
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerleave", handlePointerLeave);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerleave", handlePointerLeave);
+    };
+  }, []);
+
   useFrame(({ clock }) => {
     const time = clock.getElapsedTime();
-    const blink = 0.15 + Math.abs(Math.sin(time * 0.9)) * 0.85;
-    const speaking = isSpeaking ? 0.88 + Math.abs(Math.sin(time * 8)) * 1.1 : 0.35;
+    const blinkWave = Math.sin(time * 0.75);
+    const blink = blinkWave > 0.96 ? 0.08 : 1;
+    const talkingAmount = mode === "talking" ? 1 : 0;
+    const thinkingAmount = mode === "thinking" ? 1 : 0;
+    const breathing = 1 + Math.sin(time * 1.8) * 0.018;
+
+    smoothedPointerRef.current.x += (pointerTargetRef.current.x - smoothedPointerRef.current.x) * 0.06;
+    smoothedPointerRef.current.y += (pointerTargetRef.current.y - smoothedPointerRef.current.y) * 0.06;
 
     if (rootRef.current) {
-      rootRef.current.position.y = Math.sin(time * 1.3) * 0.06;
-      rootRef.current.rotation.y = Math.sin(time * 0.45) * 0.08;
+      rootRef.current.position.y = Math.sin(time * 1.15) * 0.05;
+      rootRef.current.rotation.y = Math.sin(time * 0.4) * 0.05;
+    }
+
+    if (torsoRef.current) {
+      torsoRef.current.scale.y = breathing;
+      torsoRef.current.rotation.z = Math.sin(time * 0.8) * 0.015;
     }
 
     if (headRef.current) {
-      headRef.current.rotation.y = Math.sin(time * 0.7) * 0.2;
-      headRef.current.rotation.x = Math.cos(time * 0.8) * 0.04;
+      headRef.current.rotation.y =
+        smoothedPointerRef.current.x + Math.sin(time * 0.6) * 0.04 + thinkingAmount * 0.03;
+      headRef.current.rotation.x =
+        smoothedPointerRef.current.y + Math.cos(time * 0.75) * 0.03 - thinkingAmount * 0.02;
     }
 
     if (leftEyeRef.current && rightEyeRef.current) {
       leftEyeRef.current.scale.y = blink;
       rightEyeRef.current.scale.y = blink;
+
+      leftEyeRef.current.position.x = -0.21 + smoothedPointerRef.current.x * 0.12;
+      rightEyeRef.current.position.x = 0.21 + smoothedPointerRef.current.x * 0.12;
+      leftEyeRef.current.position.y = 0.04 + smoothedPointerRef.current.y * 0.08;
+      rightEyeRef.current.position.y = 0.04 + smoothedPointerRef.current.y * 0.08;
     }
 
     if (mouthRef.current) {
-      mouthRef.current.scale.y = speaking;
-      mouthRef.current.scale.x = isSpeaking ? 1.15 : 0.85;
+      const mouthPulse =
+        mode === "talking" ? 0.58 + Math.abs(Math.sin(time * 8.5)) * 0.75 : 0.22 + thinkingAmount * 0.16;
+      mouthRef.current.scale.y = mouthPulse;
+      mouthRef.current.scale.x = mode === "talking" ? 1.1 : 0.8;
     }
 
     if (chestCoreRef.current) {
-      const pulse = isSpeaking ? 1.05 + Math.abs(Math.sin(time * 7.5)) * 0.28 : 0.92 + Math.sin(time * 1.8) * 0.05;
+      const pulse =
+        mode === "talking"
+          ? 1.05 + Math.abs(Math.sin(time * 7.8)) * 0.28
+          : mode === "thinking"
+            ? 0.98 + Math.abs(Math.sin(time * 4.4)) * 0.18
+            : 0.9 + Math.sin(time * 1.8) * 0.05;
       chestCoreRef.current.scale.setScalar(pulse);
     }
 
     if (haloRef.current) {
-      haloRef.current.rotation.z += 0.004;
-      haloRef.current.material.opacity = isSpeaking ? 0.42 : 0.24;
+      haloRef.current.rotation.z += mode === "thinking" ? 0.008 : 0.004;
+      haloRef.current.scale.setScalar(mode === "talking" ? 1.04 : 1);
+      haloRef.current.material.opacity = mode === "talking" ? 0.45 : mode === "thinking" ? 0.34 : 0.22;
     }
 
     if (waveRef.current) {
-      waveRef.current.scale.x = isSpeaking ? 1.08 + Math.abs(Math.sin(time * 9)) * 0.35 : 0.82;
-      waveRef.current.scale.y = isSpeaking ? 0.8 + Math.abs(Math.sin(time * 9)) * 0.24 : 0.42;
-      waveRef.current.material.opacity = isSpeaking ? 0.42 : 0.12;
+      waveRef.current.scale.x = mode === "talking" ? 1.1 + Math.abs(Math.sin(time * 9)) * 0.36 : 0.9;
+      waveRef.current.scale.y = mode === "talking" ? 0.82 + Math.abs(Math.sin(time * 9)) * 0.24 : 0.45;
+      waveRef.current.material.opacity = mode === "talking" ? 0.42 : mode === "thinking" ? 0.2 : 0.1;
+    }
+
+    if (leftArmRef.current && rightArmRef.current) {
+      leftArmRef.current.rotation.z = -0.34 + Math.sin(time * 3.6) * 0.08 * talkingAmount;
+      rightArmRef.current.rotation.z = 0.34 - Math.sin(time * 3.2) * 0.1 * talkingAmount;
+      leftArmRef.current.rotation.x = 0.06 + Math.cos(time * 3.8) * 0.05 * talkingAmount;
+      rightArmRef.current.rotation.x = -0.06 + Math.sin(time * 3.5) * 0.05 * talkingAmount;
     }
   });
 
   return (
-    <Float speed={1.6} rotationIntensity={0.08} floatIntensity={0.2}>
+    <Float speed={1.5} rotationIntensity={0.06} floatIntensity={0.18}>
       <group ref={rootRef} position={[0, -0.05, 0]}>
-        <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0.15, -0.4]}>
-          <torusGeometry args={[1.42, 0.045, 16, 64]} />
+        <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0.14, -0.42]}>
+          <torusGeometry args={[1.44, 0.045, 16, 64]} />
           <meshBasicMaterial color="#67e8f9" transparent opacity={0.28} />
         </mesh>
 
-        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.1, -0.65]}>
-          <torusGeometry args={[0.72, 0.03, 16, 64]} />
-          <meshBasicMaterial color="#ff2e7e" transparent opacity={0.22} />
+        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.08, -0.68]}>
+          <torusGeometry args={[0.76, 0.03, 16, 64]} />
+          <meshBasicMaterial color="#ff2e7e" transparent opacity={0.2} />
         </mesh>
 
-        <mesh ref={haloRef} rotation={[Math.PI / 2, 0, 0]} position={[0, 0.22, -0.2]}>
-          <torusGeometry args={[1.05, 0.022, 16, 64]} />
+        <mesh ref={haloRef} rotation={[Math.PI / 2, 0, 0]} position={[0, 0.24, -0.2]}>
+          <torusGeometry args={[1.06, 0.022, 16, 64]} />
           <meshBasicMaterial color="#d5ecff" transparent opacity={0.24} />
         </mesh>
 
@@ -102,18 +176,32 @@ function AvatarModel({ isSpeaking = false }: AIAvatarProps) {
             <meshBasicMaterial
               color={index % 2 === 0 ? "#67e8f9" : "#f472b6"}
               transparent
-              opacity={0.85}
+              opacity={0.82}
             />
           </mesh>
         ))}
 
-        <group position={[0, -0.05, 0]}>
+        <group ref={torsoRef} position={[0, -0.05, 0]}>
           <mesh position={[0, -0.72, 0]}>
             <cylinderGeometry args={[0.12, 0.16, 0.28, 32]} />
             <meshStandardMaterial color="#d5ecff" metalness={0.55} roughness={0.18} />
           </mesh>
 
-          <RoundedBox args={[1.35, 1.05, 0.65]} radius={0.18} smoothness={4} position={[0, -1.32, 0]}>
+          <group ref={leftArmRef} position={[-0.74, -1.08, 0]}>
+            <mesh rotation={[0, 0, -0.2]} position={[0, -0.2, 0]}>
+              <capsuleGeometry args={[0.09, 0.44, 8, 16]} />
+              <meshStandardMaterial color="#dbeafe" metalness={0.4} roughness={0.18} />
+            </mesh>
+          </group>
+
+          <group ref={rightArmRef} position={[0.74, -1.08, 0]}>
+            <mesh rotation={[0, 0, 0.2]} position={[0, -0.2, 0]}>
+              <capsuleGeometry args={[0.09, 0.44, 8, 16]} />
+              <meshStandardMaterial color="#dbeafe" metalness={0.4} roughness={0.18} />
+            </mesh>
+          </group>
+
+          <RoundedBox args={[1.35, 1.08, 0.65]} radius={0.18} smoothness={4} position={[0, -1.32, 0]}>
             <MeshTransmissionMaterial
               color="#dbeafe"
               transmission={0.88}
@@ -178,7 +266,7 @@ function AvatarModel({ isSpeaking = false }: AIAvatarProps) {
             <meshBasicMaterial color="#7dd3fc" transparent opacity={0.85} />
           </mesh>
 
-          <mesh ref={mouthRef} position={[0, -0.28, 0.58]} scale={[0.18, 0.35, 0.1]}>
+          <mesh ref={mouthRef} position={[0, -0.28, 0.58]} scale={[0.18, 0.28, 0.1]}>
             <sphereGeometry args={[0.18, 20, 20]} />
             <meshBasicMaterial color="#ff2e7e" transparent opacity={0.85} />
           </mesh>
@@ -188,24 +276,18 @@ function AvatarModel({ isSpeaking = false }: AIAvatarProps) {
   );
 }
 
-function AIAvatar({ isSpeaking = false }: AIAvatarProps) {
+function AIAvatar({ mode = "idle" }: AIAvatarProps) {
   return (
     <div className="ai-avatar-shell">
-      <Canvas camera={{ position: [0, 0.2, 4.8], fov: 30 }} dpr={[1, 1.75]}>
+      <Canvas camera={{ position: [0, 0.16, 4.9], fov: 30 }} dpr={[1, 1.75]}>
         <color attach="background" args={["#091224"]} />
-        <ambientLight intensity={1.4} />
-        <directionalLight position={[2.5, 3.2, 3.2]} intensity={3.5} color="#d5ecff" />
+        <ambientLight intensity={1.45} />
+        <directionalLight position={[2.5, 3.2, 3.2]} intensity={3.2} color="#d5ecff" />
         <pointLight position={[-2.2, 2.1, 1.8]} intensity={18} color="#67e8f9" />
         <pointLight position={[2.4, 1.6, 1.8]} intensity={12} color="#ff2e7e" />
-        <AvatarModel isSpeaking={isSpeaking} />
+        <AvatarModel mode={mode} />
         <Environment preset="city" />
-        <ContactShadows
-          position={[0, -2.2, 0]}
-          opacity={0.35}
-          scale={5.5}
-          blur={2.2}
-          far={3.5}
-        />
+        <ContactShadows position={[0, -2.2, 0]}} opacity={0.35} scale={5.5} blur={2.2} far={3.5} />
       </Canvas>
     </div>
   );

@@ -1,5 +1,7 @@
 import { FormEvent, KeyboardEvent, Suspense, lazy, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { assistantUiCopy, type AssistantQuickPrompt } from "./config";
 import type { AIMessage, AILocale } from "../../lib/ai";
 
 const AIAvatar = lazy(() => import("./AIAvatar"));
@@ -12,58 +14,23 @@ type ChatWindowProps = {
   messages: AIMessage[];
   inputValue: string;
   isTyping: boolean;
+  isThinking: boolean;
+  thinkingText: string;
   isSpeaking: boolean;
   isVoiceEnabled: boolean;
+  voiceProviderLabel: string;
+  voiceLabel: string;
+  quickPrompts: AssistantQuickPrompt[];
   onClose: () => void;
   onInputChange: (value: string) => void;
   onSend: (value: string) => void;
+  onQuickPrompt: (value: string) => void;
   onVoiceToggle: () => void;
   onReplayVoice: () => void;
+  onStopVoice: () => void;
+  onClearChat: () => void;
   canReplayVoice: boolean;
 };
-
-const labels = {
-  ru: {
-    title: "AI-ассистент",
-    subtitle: "Помощник по Global EdTech",
-    status: "Online",
-    placeholder: "Задайте вопрос о мероприятии...",
-    send: "Отправить",
-    close: "Закрыть чат",
-    typing: "AI-ассистент печатает",
-    voiceOn: "Выключить озвучку",
-    voiceOff: "Включить озвучку",
-    replay: "Повторить озвучку",
-  },
-  kk: {
-    title: "AI-ассистент",
-    subtitle: "Global EdTech көмекшісі",
-    status: "Online",
-    placeholder: "Іс-шара туралы сұрақ жазыңыз...",
-    send: "Жіберу",
-    close: "Чатты жабу",
-    typing: "AI-ассистент жауап жазып жатыр",
-    voiceOn: "Дыбыстауды өшіру",
-    voiceOff: "Дыбыстауды қосу",
-    replay: "Дыбыстауды қайталау",
-  },
-  en: {
-    title: "AI Assistant",
-    subtitle: "Global EdTech helper",
-    status: "Online",
-    placeholder: "Ask about the event...",
-    send: "Send",
-    close: "Close chat",
-    typing: "AI assistant is typing",
-    voiceOn: "Turn voice off",
-    voiceOff: "Turn voice on",
-    replay: "Replay voice",
-    registerCta: "Registration",
-  },
-} as const;
-
-labels.ru.registerCta = "\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f";
-labels.kk.registerCta = "\u0422\u0456\u0440\u043a\u0435\u043b\u0443";
 
 function normalizeUrl(rawUrl: string) {
   return rawUrl.replace(/[.,!?;:]+$/g, "");
@@ -144,6 +111,25 @@ function ReplayIcon() {
   );
 }
 
+function StopIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="ai-action-icon">
+      <path d="M6 6h12v12H6z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function RefreshIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="ai-action-icon">
+      <path
+        d="M17.65 6.35A7.95 7.95 0 0 0 12 4V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 12.65-5.65Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 function CloseIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="ai-action-icon">
@@ -155,23 +141,65 @@ function CloseIcon() {
   );
 }
 
+function MessageMeta({
+  isThinking,
+  isSpeaking,
+  thinkingText,
+  locale,
+}: {
+  isThinking: boolean;
+  isSpeaking: boolean;
+  thinkingText: string;
+  locale: AILocale;
+}) {
+  const copy = assistantUiCopy[locale];
+
+  if (!isThinking && !isSpeaking) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      className="ai-presence-strip"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.22 }}
+    >
+      <span className="ai-presence-dot" aria-hidden="true" />
+      <span className="ai-presence-text">
+        {isThinking ? `${copy.thinkingLabel}: ${thinkingText}` : copy.speakingLabel}
+      </span>
+    </motion.div>
+  );
+}
+
 function ChatWindow({
   isOpen,
   locale,
   messages,
   inputValue,
   isTyping,
+  isThinking,
+  thinkingText,
   isSpeaking,
   isVoiceEnabled,
+  voiceProviderLabel,
+  voiceLabel,
+  quickPrompts,
   onClose,
   onInputChange,
   onSend,
+  onQuickPrompt,
   onVoiceToggle,
   onReplayVoice,
+  onStopVoice,
+  onClearChat,
   canReplayVoice,
 }: ChatWindowProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const copy = labels[locale];
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const copy = assistantUiCopy[locale];
   const canUsePortal = typeof document !== "undefined";
 
   useEffect(() => {
@@ -180,7 +208,16 @@ function ChatWindow({
     }
 
     contentRef.current.scrollTop = contentRef.current.scrollHeight;
-  }, [messages, isTyping]);
+  }, [messages, isTyping, isThinking]);
+
+  useEffect(() => {
+    if (!textAreaRef.current) {
+      return;
+    }
+
+    textAreaRef.current.style.height = "0px";
+    textAreaRef.current.style.height = `${Math.min(textAreaRef.current.scrollHeight, 144)}px`;
+  }, [inputValue]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -239,49 +276,121 @@ function ChatWindow({
             >
               <ReplayIcon />
             </button>
+            <button
+              type="button"
+              className="ai-chat-close"
+              aria-label={copy.stopVoice}
+              title={copy.stopVoice}
+              onClick={onStopVoice}
+              disabled={!isSpeaking}
+            >
+              <StopIcon />
+            </button>
+            <button
+              type="button"
+              className="ai-chat-close"
+              aria-label={copy.clearChat}
+              title={copy.clearChat}
+              onClick={onClearChat}
+            >
+              <RefreshIcon />
+            </button>
             <button type="button" className="ai-chat-close" aria-label={copy.close} onClick={onClose}>
               <CloseIcon />
             </button>
           </div>
         </header>
 
+        <div className="ai-voice-toolbar">
+          <div className="ai-voice-toolbar-copy">
+            <p className="ai-voice-toolbar-title">{copy.voiceProvider}</p>
+            <p className="ai-voice-toolbar-state">
+              {voiceProviderLabel} · {voiceLabel}
+            </p>
+          </div>
+          <div className="ai-voice-toolbar-buttons">
+            <button
+              type="button"
+              className={`ai-voice-pill ${isVoiceEnabled ? "ai-voice-pill-active" : ""}`}
+              onClick={onVoiceToggle}
+            >
+              {isVoiceEnabled ? copy.voiceOn : copy.voiceOff}
+            </button>
+            <button
+              type="button"
+              className="ai-voice-pill"
+              disabled={!isSpeaking}
+              onClick={onStopVoice}
+            >
+              {copy.stopVoice}
+            </button>
+          </div>
+        </div>
+
         <div className="ai-avatar-wrap">
           <Suspense fallback={<div className="ai-avatar-shell ai-avatar-shell-placeholder" />}>
-            <AIAvatar isSpeaking={isSpeaking || isTyping} />
+            <AIAvatar mode={isThinking ? "thinking" : isSpeaking || isTyping ? "talking" : "idle"} />
           </Suspense>
         </div>
 
+        <div className="ai-quick-prompts">
+          <div className="ai-quick-prompts-head">
+            <p className="ai-quick-prompts-title">{copy.quickPrompts}</p>
+            <p className="ai-quick-prompts-hint">{copy.chipsHint}</p>
+          </div>
+          <div className="ai-quick-prompts-list">
+            {quickPrompts.map((prompt) => (
+              <button
+                key={prompt.id}
+                type="button"
+                className="ai-quick-prompt-chip"
+                onClick={() => onQuickPrompt(prompt.prompt)}
+              >
+                {prompt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="ai-chat-main ai-chat-main-single">
+          <AnimatePresence mode="wait">
+            <MessageMeta
+              isThinking={isThinking}
+              isSpeaking={isSpeaking}
+              thinkingText={thinkingText}
+              locale={locale}
+            />
+          </AnimatePresence>
+
           <div ref={contentRef} className="ai-messages">
             {messages.map((message) => (
-              <div
+              <motion.div
                 key={message.id}
                 className={`ai-message ${message.role === "assistant" ? "ai-message-assistant" : "ai-message-user"}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22 }}
               >
                 <div className="ai-message-bubble">
                   {renderMessageContent(message.content)}
                   {message.role === "assistant" && REGISTRATION_URL_PATTERN.test(message.content) ? (
                     <div className="ai-message-actions">
-                      <a
-                        href="#register"
-                        className="ai-message-cta"
-                        onClick={handleRegistrationClick}
-                      >
-                        {copy.registerCta}
+                      <a href="#register" className="ai-message-cta" onClick={handleRegistrationClick}>
+                        {quickPrompts[0]?.label || "Registration"}
                       </a>
                     </div>
                   ) : null}
                 </div>
-              </div>
+              </motion.div>
             ))}
 
-            {isTyping ? (
+            {(isTyping || isThinking) ? (
               <div className="ai-message ai-message-assistant">
                 <div className="ai-message-bubble ai-typing">
                   <span className="ai-typing-dot" />
                   <span className="ai-typing-dot" />
                   <span className="ai-typing-dot" />
-                  <span className="sr-only">{copy.typing}</span>
+                  <span className="sr-only">{copy.thinkingLabel}</span>
                 </div>
               </div>
             ) : null}
@@ -290,6 +399,7 @@ function ChatWindow({
 
         <form className="ai-input-row" onSubmit={handleSubmit}>
           <textarea
+            ref={textAreaRef}
             value={inputValue}
             onChange={(event) => onInputChange(event.target.value)}
             onKeyDown={handleKeyDown}
@@ -297,7 +407,11 @@ function ChatWindow({
             className="ai-input"
             placeholder={copy.placeholder}
           />
-          <button type="submit" className="ai-send-button" disabled={!inputValue.trim() || isTyping}>
+          <button
+            type="submit"
+            className="ai-send-button"
+            disabled={!inputValue.trim() || isTyping || isThinking}
+          >
             {copy.send}
           </button>
         </form>

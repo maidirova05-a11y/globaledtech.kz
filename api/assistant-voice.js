@@ -1,26 +1,9 @@
-import OpenAI from "openai";
 import { resolveLocale } from "./_lib/assistantKnowledge.js";
-
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
-const voiceModel = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
-const fallbackVoice = process.env.OPENAI_TTS_VOICE || "cedar";
-const MAX_INPUT_LENGTH = 1200;
-const voiceInstructions = {
-  ru: "Speak in Russian with a calm, clear, modern assistant voice. Sound natural and easy to understand.",
-  kk: "Speak in Kazakh with a calm, clear, modern assistant voice. Sound natural and easy to understand.",
-  en: "Speak in English with a calm, clear, modern assistant voice. Sound natural and easy to understand.",
-};
+import { resolveVoiceRuntimeConfig, synthesizeVoice } from "./_lib/voiceProviders.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  if (!openai) {
-    return res.status(500).json({
-      error: "OpenAI API is not configured",
-      code: "OPENAI_NOT_CONFIGURED",
-    });
   }
 
   try {
@@ -31,26 +14,50 @@ export default async function handler(req, res) {
 
     const locale = resolveLocale(rawBody.locale);
     const text = typeof rawBody.text === "string" ? rawBody.text.trim() : "";
+
     if (!text) {
       return res.status(400).json({
         error: "Text is required",
       });
     }
 
-    const audioResponse = await openai.audio.speech.create({
-      model: voiceModel,
-      voice: fallbackVoice,
-      input: text.slice(0, MAX_INPUT_LENGTH),
-      instructions: voiceInstructions[locale],
-      response_format: "mp3",
-    });
+    const runtimeConfig = resolveVoiceRuntimeConfig(locale, rawBody.provider);
+    let buffer;
 
-    const buffer = Buffer.from(await audioResponse.arrayBuffer());
+    try {
+      buffer = await synthesizeVoice({
+        text,
+        locale: runtimeConfig.locale,
+        provider: runtimeConfig.provider,
+        voiceId: runtimeConfig.voiceId,
+      });
+    } catch (primaryError) {
+      if (runtimeConfig.provider !== "openai") {
+        console.error("Primary voice provider failed, falling back to OpenAI:", primaryError);
+
+        const fallbackConfig = resolveVoiceRuntimeConfig(locale, "openai");
+        buffer = await synthesizeVoice({
+          text,
+          locale: fallbackConfig.locale,
+          provider: fallbackConfig.provider,
+          voiceId: fallbackConfig.voiceId,
+        });
+
+        runtimeConfig.provider = fallbackConfig.provider;
+        runtimeConfig.voiceId = fallbackConfig.voiceId;
+        runtimeConfig.voiceLabel = fallbackConfig.voiceLabel;
+      } else {
+        throw primaryError;
+      }
+    }
 
     res.writeHead(200, {
       "Content-Type": "audio/mpeg",
       "Content-Length": buffer.length,
       "Cache-Control": "no-store",
+      "x-voice-provider": runtimeConfig.provider,
+      "x-voice-id": runtimeConfig.voiceId,
+      "x-voice-label": runtimeConfig.voiceLabel,
     });
 
     res.end(buffer);

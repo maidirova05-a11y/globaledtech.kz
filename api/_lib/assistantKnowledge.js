@@ -11,141 +11,60 @@ export function resolveLocale(locale) {
 const forumKnowledge = {
   ru: {
     forumName: "Global EdTech",
-    eventType: "международный выставочно-образовательный форум",
-    city: "Астана",
-    country: "Казахстан",
+    eventType: "международная платформа в сфере образования и технологий",
+    location: "МВЦ EXPO, Астана, Казахстан",
+    format: "офлайн",
     dates: "7-8 февраля 2027 года",
     about:
-      "Global EdTech объединяет EdTech-компании, школы, университеты, экспертов, стартапы и технологических партнеров вокруг будущего образования.",
-    registration:
-      "Для регистрации нужно открыть форму на сайте, выбрать формат участия и отправить заявку.",
-    audience:
-      "Аудитория форума включает школы, университеты, образовательные центры, EdTech-компании, инвесторов, государственные структуры, студентов, преподавателей и технологические команды.",
+      "Global EdTech — это пространство, где формируется экосистема образования будущего: среда, которая не только обучает, но и развивает навыки и мышление нового поколения.",
     program:
-      "В программе предусмотрены выступления спикеров, панельные дискуссии, выставочная зона, технологические демонстрации, партнерские встречи и networking.",
-    programHighlights: [
-      "09:00 - выступления спикеров и панельные дискуссии",
-      "10:30 - ярмарка образовательных организаций",
-      "12:00 - зоны технологий и стартапов",
-      "14:00 - интерактивные экспозиции",
-      "15:30 - подписание меморандумов",
-      "17:00 - networking и обмен идеями",
-    ],
-    speakers:
-      "На форуме ожидаются спикеры и эксперты из сфер образования, технологий, инноваций и EdTech. Подтвержденный список публикуется по мере обновления программы.",
-    partners:
-      "Форум развивается вместе с образовательными организациями, EdTech-компаниями, технологическими командами и стратегическими партнерами экосистемы.",
-    partnerHighlights: ["AZ Group", "AstanaTechCup", "BilimTalks", "ITECx"],
-    participationFormats: [
-      "Участник",
-      "Спикер",
-      "Партнер",
-      "Спонсор",
-      "Экспонент со стендом",
-    ],
-    sponsorInfo:
-      "Для обсуждения спонсорства можно зарегистрироваться через форму на сайте, выбрав формат 'Спонсор', либо сразу связаться с командой форума по почте или телефону.",
-    exhibitorInfo:
-      "Для покупки стенда или участия с экспозицией можно зарегистрироваться через форму на сайте, выбрав формат 'Экспонент со стендом', либо обратиться напрямую к организаторам.",
-    contacts: {
-      email: CONTACT_EMAIL,
-      phone: CONTACT_PHONE,
-      registrationUrl: REGISTRATION_URL,
-    },
-    followUp:
-      "Если нужно, ассистент должен помочь человеку понять, кем ему лучше зарегистрироваться: участником, спикером, партнером, спонсором или экспонентом со стендом.",
+      "На площадке будут панельные дискуссии, мастер-классы, выставка EdTech-компаний, B2B/B2C/B2G встречи и стартап-питч-сессии.",
+    audience:
+      "Школы, колледжи, университеты, EdTech и IT-компании, инвесторы, госструктуры, родители, студенты, школьники и предприниматели.",
+    participationFormats:
+      "Участник, спикер, партнёр, спонсор, экспонент со стендом.",
+    studentValue:
+      "Для студентов и школьников это доступ к идеям, карьерным ориентирам, технологиям, мастер-классам и живому общению с экспертами и компаниями.",
+    partnerValue:
+      "Для компаний, партнёров и инвесторов это площадка для встреч, презентации решений, поиска контактов и запуска новых коллабораций.",
   },
   kk: {
     forumName: "Global EdTech",
-    eventType: "халықаралық көрме-білім беру форумы",
-    city: "Астана",
-    country: "Қазақстан",
+    eventType: "білім мен технология саласындағы халықаралық платформа",
+    location: "EXPO халықаралық көрме орталығы, Астана, Қазақстан",
+    format: "офлайн",
     dates: "2027 жылғы 7-8 ақпан",
     about:
-      "Global EdTech EdTech-компанияларды, мектептерді, университеттерді, сарапшыларды, стартаптарды және технологиялық серіктестерді білім берудің болашағы төңірегіне біріктіреді.",
-    registration:
-      "Тіркелу үшін сайттағы форманы ашып, қатысу форматын таңдап, өтінім жіберу керек.",
-    audience:
-      "Форум аудиториясына мектептер, университеттер, білім беру орталықтары, EdTech-компаниялар, инвесторлар, мемлекеттік ұйымдар, студенттер, оқытушылар және технологиялық командалар кіреді.",
+      "Global EdTech — болашақ білім беру экожүйесі қалыптасатын орта: ол тек оқытып қана қоймай, жаңа буынның дағдылары мен ойлауын дамытады.",
     program:
-      "Бағдарламада спикерлер баяндамалары, панельдік сессиялар, көрме аймағы, технологиялық демонстрациялар, серіктестік кездесулер және networking бар.",
-    programHighlights: [
-      "09:00 - спикерлер баяндамалары мен панельдік сессиялар",
-      "10:30 - білім беру ұйымдарының жәрмеңкесі",
-      "12:00 - технологиялар мен стартаптар аймағы",
-      "14:00 - интерактивті экспозициялар",
-      "15:30 - меморандумдарға қол қою",
-      "17:00 - networking және идея алмасу",
-    ],
-    speakers:
-      "Форумда білім, технология, инновация және EdTech салаларынан спикерлер мен сарапшылар қатысады. Нақты тізім бағдарлама жаңарған сайын жарияланады.",
-    partners:
-      "Форум білім беру ұйымдарымен, EdTech-компаниялармен, технологиялық командалармен және экожүйенің стратегиялық серіктестерімен бірге дамиды.",
-    partnerHighlights: ["AZ Group", "AstanaTechCup", "BilimTalks", "ITECx"],
-    participationFormats: [
-      "Қатысушы",
-      "Спикер",
-      "Серіктес",
-      "Демеуші",
-      "Стендпен экспонент",
-    ],
-    sponsorInfo:
-      "Демеушілік мәселесін талқылау үшін сайттағы форма арқылы 'Демеуші' форматын таңдап тіркелуге немесе командаға тікелей пошта не телефон арқылы хабарласуға болады.",
-    exhibitorInfo:
-      "Стенд сатып алу немесе экспозициямен қатысу үшін сайттағы формада 'Стендпен экспонент' форматын таңдап тіркелуге немесе ұйымдастырушыларға тікелей жүгінуге болады.",
-    contacts: {
-      email: CONTACT_EMAIL,
-      phone: CONTACT_PHONE,
-      registrationUrl: REGISTRATION_URL,
-    },
-    followUp:
-      "Қажет болса, ассистент адамға өзіне лайық форматты таңдауға көмектесуі керек: қатысушы, спикер, серіктес, демеуші немесе стендпен экспонент.",
+      "Алаңда панельдік дискуссиялар, мастер-кластар, EdTech-компаниялар көрмесі, B2B/B2C/B2G кездесулері және стартап-питч-сессиялар болады.",
+    audience:
+      "Мектептер, колледждер, университеттер, EdTech және IT-компаниялар, инвесторлар, мемлекеттік құрылымдар, ата-аналар, студенттер, оқушылар және кәсіпкерлер.",
+    participationFormats:
+      "Қатысушы, спикер, серіктес, демеуші, стендпен экспонент.",
+    studentValue:
+      "Студенттер мен оқушылар үшін бұл идеяларға, технологияларға, мастер-кластарға және сарапшылар мен компаниялармен тірі байланысқа шығу мүмкіндігі.",
+    partnerValue:
+      "Компаниялар, серіктестер және инвесторлар үшін бұл кездесу, шешім ұсыну, байланыс табу және жаңа коллаборациялар бастау алаңы.",
   },
   en: {
     forumName: "Global EdTech",
-    eventType: "international exhibition and educational forum",
-    city: "Astana",
-    country: "Kazakhstan",
+    eventType: "an international platform for education and technology",
+    location: "EXPO International Exhibition Center, Astana, Kazakhstan",
+    format: "offline",
     dates: "February 7-8, 2027",
     about:
-      "Global EdTech brings together EdTech companies, schools, universities, experts, startups, and technology partners around the future of education.",
-    registration:
-      "To register, visitors should open the form on the website, choose a participation format, and submit their application.",
-    audience:
-      "The audience includes schools, universities, education centers, EdTech companies, investors, public institutions, students, teachers, and technology teams.",
+      "Global EdTech is a space where the ecosystem of future education takes shape: an environment that not only teaches, but also develops the skills and mindset of the next generation.",
     program:
-      "The program includes speaker sessions, panel discussions, an exhibition area, technology showcases, partnership meetings, and networking.",
-    programHighlights: [
-      "09:00 - speaker sessions and panel discussions",
-      "10:30 - education fair",
-      "12:00 - technology and startup zones",
-      "14:00 - interactive showcases",
-      "15:30 - memorandum signing",
-      "17:00 - networking and idea exchange",
-    ],
-    speakers:
-      "The forum features speakers and experts from education, technology, innovation, and EdTech. The confirmed list is published as the program is updated.",
-    partners:
-      "The forum is developed together with educational organizations, EdTech companies, technology teams, and strategic ecosystem partners.",
-    partnerHighlights: ["AZ Group", "AstanaTechCup", "BilimTalks", "ITECx"],
-    participationFormats: [
-      "Participant",
-      "Speaker",
-      "Partner",
-      "Sponsor",
-      "Exhibitor with stand",
-    ],
-    sponsorInfo:
-      "To discuss sponsorship, visitors can register through the website form by choosing 'Sponsor', or contact the forum team directly by email or phone.",
-    exhibitorInfo:
-      "To book a stand or join with an exhibition presence, visitors can register through the website form by choosing 'Exhibitor with stand', or contact the organizers directly.",
-    contacts: {
-      email: CONTACT_EMAIL,
-      phone: CONTACT_PHONE,
-      registrationUrl: REGISTRATION_URL,
-    },
-    followUp:
-      "When helpful, the assistant should guide the visitor toward the best participation format: participant, speaker, partner, sponsor, or exhibitor with stand.",
+      "The venue will host panel discussions, workshops, an EdTech company exhibition, B2B/B2C/B2G meetings, and startup pitch sessions.",
+    audience:
+      "Schools, colleges, universities, EdTech and IT companies, investors, public institutions, parents, students, school students, and entrepreneurs.",
+    participationFormats:
+      "Participant, speaker, partner, sponsor, exhibitor with stand.",
+    studentValue:
+      "For students and school learners, the forum offers ideas, career inspiration, technology exposure, workshops, and direct access to experts and companies.",
+    partnerValue:
+      "For companies, partners, and investors, it is a place to meet, showcase solutions, build relationships, and launch new collaborations.",
   },
 };
 
@@ -154,57 +73,52 @@ export function buildAssistantInstructions(locale) {
   const content = forumKnowledge[normalizedLocale];
 
   return `
-You are the official AI assistant of ${content.forumName}, a ${content.eventType}.
+You are the official AI assistant of ${content.forumName}.
+You speak only in ${normalizedLocale}.
 
-Reply only in ${normalizedLocale}.
-Tone: clear, polite, accurate, and useful.
-Keep most answers to 1-4 short sentences.
-Do not invent facts that are not in the knowledge below.
-If some details are not fully confirmed, say the information is being updated.
+Core role:
+- You are a friendly, modern, natural event consultant.
+- You sound like a live representative of an international EdTech forum.
+- You understand short requests and incomplete phrases.
+- You do not repeat the same wording over and over.
+- You explain things simply and clearly.
 
-Your job is not only to describe the event, but also to help interested visitors understand what role fits them best and where to contact the organizers.
+Style:
+- Keep most replies short: 2 to 5 sentences.
+- Vary openings and endings naturally.
+- Avoid robotic definitions unless the user explicitly asks for a formal description.
+- Prefer practical answers over generic branding language.
+- If useful, end with one helpful next-step suggestion.
+- Ask at most one short follow-up question when clarification would genuinely help.
 
-Use the forum knowledge below whenever the user asks about:
-- the event
-- registration
-- participation formats
-- sponsorship
-- buying or booking a stand
-- exhibitors
-- contacts
-- program
-- partners
-- speakers
-- audience
+Behavior:
+- If the user asks about the program, describe the format dynamically, not like a brochure.
+- If the user asks about students, parents, companies, partners, investors, schools, or universities, tailor the answer to that audience.
+- If the user asks how to join, explain the role options and include the registration link.
+- If the user asks about sponsorship or stands, mention both the registration path and direct contacts.
+- If details are not fully confirmed, say they are being updated instead of inventing facts.
+- Keep tone warm, confident, concise, and human.
 
-Forum knowledge:
+Forum facts you may rely on:
 - Forum: ${content.forumName}
-- Type: ${content.eventType}
-- Location: ${content.city}, ${content.country}
+- What it is: ${content.eventType}
+- Format: ${content.format}
+- Venue: ${content.location}
 - Dates: ${content.dates}
 - About: ${content.about}
-- Registration: ${content.registration}
-- Registration link: ${content.contacts.registrationUrl}
 - Program: ${content.program}
-- Program highlights: ${content.programHighlights.join("; ")}
-- Speakers: ${content.speakers}
-- Partners: ${content.partners}
-- Partner highlights: ${content.partnerHighlights.join(", ")}
 - Audience: ${content.audience}
-- Participation formats: ${content.participationFormats.join(", ")}
-- Sponsorship guidance: ${content.sponsorInfo}
-- Stand / exhibitor guidance: ${content.exhibitorInfo}
-- Contact email: ${content.contacts.email}
-- Contact phone: ${content.contacts.phone}
-- Guidance goal: ${content.followUp}
+- Participation formats: ${content.participationFormats}
+- Student value: ${content.studentValue}
+- Partner value: ${content.partnerValue}
+- Registration link: ${REGISTRATION_URL}
+- Contact email: ${CONTACT_EMAIL}
+- Contact phone: ${CONTACT_PHONE}
 
-Behavior rules:
-- If the user asks how to participate, explain the available roles and include the registration link.
-- If the user asks about sponsorship, mention both the registration link and the direct contact email and phone.
-- If the user asks about buying a stand, booth, expo place, or exhibitor participation, mention both the registration link and the direct contact email and phone.
-- If the user asks a simple factual question like date, city, location, or what the forum is, answer directly and do not add a registration link or contacts unless the user asked for them.
-- If the user is unsure which role to choose, briefly compare the relevant options and help them decide.
-- If the user asks a broad question, finish with the most useful next step, such as registration or direct contact.
-- When greeting, introduce yourself as the digital assistant of Global EdTech and mention that you can help with registration, sponsorship, stands, and event information.
+Important:
+- Do not say you are unsure about things that are clearly listed above.
+- Do not answer with the same canned paragraph every time.
+- For short prompts like "Программа", "Спикеры?", "Для студентов?", "Стенд?", "Партнерство?", infer the intent and answer directly.
+- When greeting, briefly introduce yourself as the official AI assistant of Global EdTech and mention that you can help with registration, program, partnerships, stands, sponsorships, and participation questions.
 `;
 }
