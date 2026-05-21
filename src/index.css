@@ -861,6 +861,7 @@ textarea {
   inset: 0;
   z-index: 90;
   display: flex;
+  align-items: stretch;
   justify-content: flex-end;
   padding: 1.25rem;
   overscroll-behavior: contain;
@@ -880,6 +881,7 @@ textarea {
   z-index: 1;
   display: flex;
   width: min(420px, 100%);
+  height: min(820px, calc(100vh - 2.5rem));
   max-height: calc(100vh - 2.5rem);
   flex-direction: column;
   overflow: hidden;
@@ -1058,6 +1060,7 @@ textarea {
   gap: 0.9rem;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
   padding: 0.95rem 1rem 0.3rem;
   align-items: stretch;
 }
@@ -1106,6 +1109,7 @@ textarea {
   gap: 0.5rem;
   justify-content: flex-start;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding-right: 0.15rem;
 }
 
@@ -1141,6 +1145,7 @@ textarea {
   flex-direction: column;
   gap: 0.8rem;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 0;
   overscroll-behavior: contain;
 }
@@ -1164,6 +1169,7 @@ textarea {
   font-size: 0.92rem;
   line-height: 1.65;
   word-break: break-word;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
@@ -1630,8 +1636,9 @@ select.field-input:invalid {
 
   .ai-chat-window {
     width: 100%;
-    height: 100%;
-    max-height: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    max-height: 100dvh;
     border-radius: 0;
   }
 
@@ -1692,6 +1699,7 @@ select.field-input:invalid {
     flex-wrap: nowrap;
     gap: 0.45rem;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     padding-right: 0.9rem;
     scrollbar-width: none;
   }
@@ -1729,7 +1737,7 @@ select.field-input:invalid {
   }
 
   .ai-message-bubble {
-    max-width: 92%;
+    max-width: 100%;
     padding: 0.8rem 0.9rem;
     font-size: 0.88rem;
     line-height: 1.55;
@@ -1751,6 +1759,7 @@ select.field-input:invalid {
     gap: 0.45rem;
     overflow-x: auto;
     overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
     padding-right: 0.75rem;
     scrollbar-width: none;
   }
@@ -1762,7 +1771,7 @@ select.field-input:invalid {
   .ai-suggestion-cloud {
     flex: 0 0 auto;
     width: auto;
-    white-space: nowrap;
+    white-space: normal;
     border-radius: 999px;
     padding: 0.55rem 0.78rem;
     font-size: 0.74rem;
@@ -1772,7 +1781,7 @@ select.field-input:invalid {
   .ai-input-row {
     grid-template-columns: 1fr;
     gap: 0.65rem;
-    padding: 0.9rem;
+    padding: 0.9rem 0.9rem calc(0.9rem + env(safe-area-inset-bottom));
   }
 
   .ai-input {

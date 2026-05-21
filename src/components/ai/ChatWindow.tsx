@@ -32,13 +32,11 @@ const labels = {
     send: "Отправить",
     close: "Закрыть чат",
     typing: "AI Assistant печатает",
-    quickActions: "Быстрые вопросы",
     voiceOn: "Выключить голос",
     voiceOff: "Включить голос",
     replay: "Повторить озвучку",
     voiceStateOn: "AI-озвучка включена",
     voiceStateOff: "AI-озвучка выключена",
-    voiceDisclosure: "Голос синтезирован ИИ",
     voiceStyle: "Стиль голоса",
     voiceAssistant: "Ассистент",
     voiceDeep: "Глубокий",
@@ -53,13 +51,11 @@ const labels = {
     send: "Жіберу",
     close: "Чатты жабу",
     typing: "AI Assistant жауап дайындап жатыр",
-    quickActions: "Жылдам сұрақтар",
     voiceOn: "Дауысты өшіру",
     voiceOff: "Дауысты қосу",
     replay: "Дауысты қайталау",
     voiceStateOn: "AI-дауыс қосулы",
     voiceStateOff: "AI-дауыс өшірулі",
-    voiceDisclosure: "Дауыс ИИ арқылы синтезделеді",
     voiceStyle: "Дауыс стилі",
     voiceAssistant: "Ассистент",
     voiceDeep: "Терең",
@@ -74,13 +70,11 @@ const labels = {
     send: "Send",
     close: "Close chat",
     typing: "AI Assistant is typing",
-    quickActions: "Suggested questions",
     voiceOn: "Mute voice",
     voiceOff: "Enable voice",
     replay: "Replay voice",
     voiceStateOn: "AI voice on",
     voiceStateOff: "AI voice off",
-    voiceDisclosure: "Voice is AI-generated",
     voiceStyle: "Voice style",
     voiceAssistant: "Assistant",
     voiceDeep: "Deep",
@@ -143,7 +137,7 @@ function ChatWindow({
 
   const content = (
     <div className="ai-overlay">
-      <div className="ai-overlay-backdrop" aria-hidden="true" />
+      <div className="ai-overlay-backdrop" aria-hidden="true" onClick={onClose} />
 
       <section className="ai-chat-window" role="dialog" aria-modal="true" aria-label={copy.title}>
         <div className="ai-chat-holo" aria-hidden="true" />
