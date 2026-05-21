@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import type { AIMessage, AILocale } from "../../lib/ai";
 
 const AIAvatar = lazy(() => import("./AIAvatar"));
+const URL_PATTERN = /https?:\/\/[^\s]+/g;
+const REGISTRATION_URL_PATTERN = /https?:\/\/[^\s]*#register\b/i;
 
 type ChatWindowProps = {
   isOpen: boolean;
@@ -56,8 +58,62 @@ const labels = {
     voiceOn: "Turn voice off",
     voiceOff: "Turn voice on",
     replay: "Replay voice",
+    registerCta: "Registration",
   },
 } as const;
+
+labels.ru.registerCta = "\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f";
+labels.kk.registerCta = "\u0422\u0456\u0440\u043a\u0435\u043b\u0443";
+
+function normalizeUrl(rawUrl: string) {
+  return rawUrl.replace(/[.,!?;:]+$/g, "");
+}
+
+function renderMessageContent(content: string) {
+  const matches = Array.from(content.matchAll(URL_PATTERN));
+
+  if (matches.length === 0) {
+    return content;
+  }
+
+  const parts: Array<string | JSX.Element> = [];
+  let lastIndex = 0;
+
+  matches.forEach((match, index) => {
+    const url = match[0];
+    const startIndex = match.index ?? 0;
+    const normalizedUrl = normalizeUrl(url);
+    const trailingText = url.slice(normalizedUrl.length);
+
+    if (startIndex > lastIndex) {
+      parts.push(content.slice(lastIndex, startIndex));
+    }
+
+    parts.push(
+      <a
+        key={`${normalizedUrl}-${index}`}
+        href={normalizedUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="ai-message-link"
+      >
+        {normalizedUrl}
+      </a>,
+    );
+
+    if (trailingText) {
+      parts.push(trailingText);
+    }
+
+    lastIndex = startIndex + url.length;
+  });
+
+  if (lastIndex < content.length) {
+    parts.push(content.slice(lastIndex));
+  }
+
+  return parts;
+}
 
 function SpeakerIcon({ enabled }: { enabled: boolean }) {
   return enabled ? (
@@ -138,6 +194,10 @@ function ChatWindow({
     }
   };
 
+  const handleRegistrationClick = () => {
+    onClose();
+  };
+
   if (!isOpen) {
     return null;
   }
@@ -198,7 +258,20 @@ function ChatWindow({
                 key={message.id}
                 className={`ai-message ${message.role === "assistant" ? "ai-message-assistant" : "ai-message-user"}`}
               >
-                <div className="ai-message-bubble">{message.content}</div>
+                <div className="ai-message-bubble">
+                  {renderMessageContent(message.content)}
+                  {message.role === "assistant" && REGISTRATION_URL_PATTERN.test(message.content) ? (
+                    <div className="ai-message-actions">
+                      <a
+                        href="#register"
+                        className="ai-message-cta"
+                        onClick={handleRegistrationClick}
+                      >
+                        {copy.registerCta}
+                      </a>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ))}
 

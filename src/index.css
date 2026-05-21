@@ -1198,6 +1198,44 @@ textarea {
   white-space: pre-wrap;
 }
 
+.ai-message-link {
+  color: #67e8f9;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.ai-message-link:hover {
+  color: #a5f3fc;
+}
+
+.ai-message-actions {
+  display: flex;
+  margin-top: 0.85rem;
+}
+
+.ai-message-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 194, 255, 0.28);
+  background: linear-gradient(135deg, rgba(0, 194, 255, 0.95), rgba(255, 46, 126, 0.9));
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.58rem 0.95rem;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.ai-message-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(255, 46, 126, 0.18);
+}
+
 .ai-message-assistant .ai-message-bubble {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.05);
@@ -1774,6 +1812,10 @@ select.field-input:invalid {
     padding: 0.8rem 0.9rem;
     font-size: 0.88rem;
     line-height: 1.55;
+  }
+
+  .ai-message-cta {
+    width: 100%;
   }
 
   .ai-suggestion-clouds {
