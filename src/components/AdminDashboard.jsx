@@ -42,10 +42,8 @@ function buildExportRows(registrations) {
 }
 
 export default function AdminDashboard() {
-  const [password, setPassword] = useState(() => sessionStorage.getItem("adminPassword") || "");
-  const [inputValue, setInputValue] = useState(
-    () => sessionStorage.getItem("adminPassword") || "",
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [inputValue, setInputValue] = useState("");
   const [registrations, setRegistrations] = useState([]);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
@@ -85,14 +83,12 @@ export default function AdminDashboard() {
     });
   }, [participationFilter, registrations, searchQuery]);
 
-  const loadRegistrations = async (adminPassword) => {
+  const loadRegistrations = async () => {
     setStatus("loading");
     setError("");
 
     const response = await fetch("/api/admin/registrations", {
-      headers: {
-        "x-admin-password": adminPassword,
-      },
+      credentials: "include",
     });
 
     const result = await response.json().catch(() => null);
@@ -108,12 +104,36 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (!password) {
-      return;
-    }
+    let isMounted = true;
 
-    void loadRegistrations(password);
-  }, [password]);
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/admin/auth", {
+          credentials: "include",
+        });
+        const result = await response.json().catch(() => null);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (response.ok && result?.authenticated) {
+          setIsAuthenticated(true);
+          void loadRegistrations();
+        }
+      } catch {
+        if (isMounted) {
+          setIsAuthenticated(false);
+        }
+      }
+    };
+
+    void checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -125,13 +145,37 @@ export default function AdminDashboard() {
       return;
     }
 
-    sessionStorage.setItem("adminPassword", trimmedPassword);
-    setPassword(trimmedPassword);
+    setStatus("loading");
+    setError("");
+
+    const response = await fetch("/api/admin/auth", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ password: trimmedPassword }),
+    });
+
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      setStatus("error");
+      setError(result?.error || "РќРµ СѓРґР°Р»РѕСЃСЊ РІРѕР№С‚Рё РІ Р°РґРјРёРЅРєСѓ.");
+      return;
+    }
+
+    setIsAuthenticated(true);
+    void loadRegistrations();
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("adminPassword");
-    setPassword("");
+  const handleLogout = async () => {
+    await fetch("/api/admin/auth", {
+      method: "DELETE",
+      credentials: "include",
+    }).catch(() => null);
+
+    setIsAuthenticated(false);
     setInputValue("");
     setRegistrations([]);
     setStatus("idle");
@@ -200,9 +244,7 @@ export default function AdminDashboard() {
 
     const response = await fetch(`/api/admin/registrations?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
-      headers: {
-        "x-admin-password": password,
-      },
+      credentials: "include",
     });
 
     const result = await response.json().catch(() => null);
@@ -234,7 +276,7 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          {password ? (
+          {isAuthenticated ? (
             <div className="flex flex-wrap gap-3">
               <a
                 href="/"
@@ -244,7 +286,7 @@ export default function AdminDashboard() {
               </a>
               <button
                 type="button"
-                onClick={() => void loadRegistrations(password)}
+                onClick={() => void loadRegistrations()}
                 className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-5 py-3 text-sm font-medium text-cyan-100 transition hover:bg-cyan-400/20"
               >
                 Обновить
@@ -267,7 +309,7 @@ export default function AdminDashboard() {
           ) : null}
         </div>
 
-        {!password ? (
+        {!isAuthenticated ? (
           <div className="mx-auto max-w-xl rounded-[28px] border border-white/10 bg-white/5 p-6 shadow-[0_25px_80px_rgba(8,15,42,0.45)] backdrop-blur-xl sm:p-8">
             <form className="grid gap-5" onSubmit={handleLogin}>
               <div>
