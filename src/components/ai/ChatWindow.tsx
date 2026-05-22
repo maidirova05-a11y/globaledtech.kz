@@ -7,8 +7,6 @@ import { assistantUiCopy, type AssistantQuickPrompt } from "./config";
 import type { AIMessage, AILocale } from "../../lib/ai";
 
 const URL_PATTERN = /https?:\/\/[^\s]+/g;
-const REGISTRATION_URL_PATTERN = /https?:\/\/[^\s]*#register\b/i;
-
 type ChatWindowProps = {
   isOpen: boolean;
   locale: AILocale;
@@ -243,13 +241,6 @@ function ChatWindow({
                 >
                   <div className="ai-message-bubble">
                     {renderMessageContent(message.content)}
-                    {message.role === "assistant" && REGISTRATION_URL_PATTERN.test(message.content) ? (
-                      <div className="ai-message-actions">
-                        <a href="#register" className="ai-message-cta" onClick={onClose}>
-                          {quickPrompts[0]?.label || "Registration"}
-                        </a>
-                      </div>
-                    ) : null}
                   </div>
                 </motion.div>
               );

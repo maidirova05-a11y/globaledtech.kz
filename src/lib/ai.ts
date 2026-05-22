@@ -31,35 +31,34 @@ type ResponseCategory =
   | "contacts"
   | "fallback";
 
-const REGISTRATION_URL = "https://globaledtech-kz.vercel.app/#register";
 const CONTACT_EMAIL = "globaledtechkz@gmail.com";
 const CONTACT_PHONE = "+7 (700) 033 0229";
 
 const introMessage: Record<AILocale, string> = {
-  ru: "Здравствуйте! Я официальный AI-ассистент Global EdTech. Помогу быстро разобраться с программой, регистрацией, партнерством, стендами, спонсорством и форматом участия.",
-  kk: "Сәлеметсіз бе! Мен Global EdTech-тің ресми AI-ассистентімін. Бағдарлама, тіркелу, серіктестік, стенд және қатысу форматтары бойынша көмектесе аламын.",
-  en: "Hello! I am the official Global EdTech AI assistant. I can help with the program, registration, partnerships, sponsorships, stands, and participation options.",
+  ru: "Здравствуйте. Я AI-ассистент Global EdTech. Могу коротко помочь по программе, участию и контактам.",
+  kk: "Сәлеметсіз бе. Мен Global EdTech AI-ассистентімін. Бағдарлама, қатысу және байланыс бойынша қысқа жауап бере аламын.",
+  en: "Hello. I am the Global EdTech AI assistant. I can help briefly with the program, participation, and contacts.",
 };
 
 const fallbackMessage: Record<AILocale, string[]> = {
   ru: [
-    "Могу помочь по Global EdTech с программой, регистрацией, участием, партнёрством, стендами и контактами. Напишите, что именно вас интересует.",
-    "Если хотите, я подскажу по программе, формату участия, выставке, стартап-питчам или регистрации. Что для вас сейчас актуальнее?",
+    "Уточните, что именно вас интересует: программа, участие, стенд, партнерство или контакты.",
+    "Могу коротко ответить по программе, участию, стенду, партнерству или контактам.",
   ],
   kk: [
-    "Global EdTech бойынша бағдарлама, тіркелу, қатысу форматы, серіктестік, стенд және байланыс туралы көмектесе аламын. Нақты не қызықтырып тұр?",
-    "Қаласаңыз, бағдарлама, көрме, стартап-питчтер немесе тіркелу бойынша қысқа жауап беремін. Қайсысы маңыздырақ?",
+    "Нақты не қызықтыратынын жазыңыз: бағдарлама, қатысу, стенд, серіктестік немесе байланыс.",
+    "Бағдарлама, қатысу, стенд, серіктестік немесе байланыс бойынша қысқа жауап бере аламын.",
   ],
   en: [
-    "I can help with the program, registration, participation formats, partnerships, stands, and contacts. What would you like to explore first?",
-    "If you want, I can quickly guide you on the agenda, expo, startup pitches, sponsorships, or registration. What matters most right now?",
+    "Please уточните the topic: program, participation, stand, partnership, or contacts.",
+    "I can answer briefly about the program, participation, stands, partnerships, or contacts.",
   ],
 };
 
 const keywordGroups: Array<{ category: ResponseCategory; keywords: string[] }> = [
   {
     category: "program",
-    keywords: ["программ", "agenda", "schedule", "program", "бағдарлам", "мастер-класс", "panel", "дискусс"],
+    keywords: ["программ", "agenda", "schedule", "program", "бағдарлам", "panel", "дискусс"],
   },
   {
     category: "speakers",
@@ -67,7 +66,7 @@ const keywordGroups: Array<{ category: ResponseCategory; keywords: string[] }> =
   },
   {
     category: "registration",
-    keywords: ["регист", "register", "sign up", "тіркел", "участв", "participat"],
+    keywords: ["регистр", "register", "sign up", "тіркел", "участв", "participat"],
   },
   {
     category: "startups",
@@ -75,7 +74,7 @@ const keywordGroups: Array<{ category: ResponseCategory; keywords: string[] }> =
   },
   {
     category: "audience",
-    keywords: ["кто может", "кто участвует", "для кого", "audience", "who can", "кім қатыса", "аудитория"],
+    keywords: ["кто может", "для кого", "audience", "who can", "аудитория", "кім қатыса"],
   },
   {
     category: "students",
@@ -91,7 +90,7 @@ const keywordGroups: Array<{ category: ResponseCategory; keywords: string[] }> =
   },
   {
     category: "venue",
-    keywords: ["где", "where", "location", "venue", "expo", "мвц", "expo venue", "қайда"],
+    keywords: ["где", "where", "location", "venue", "мвц", "expo venue", "қайда"],
   },
   {
     category: "dates",
@@ -99,7 +98,7 @@ const keywordGroups: Array<{ category: ResponseCategory; keywords: string[] }> =
   },
   {
     category: "meetings",
-    keywords: ["b2b", "b2c", "b2g", "встреч", "meeting", "нетворк", "networking"],
+    keywords: ["b2b", "b2c", "b2g", "встреч", "meeting", "networking"],
   },
   {
     category: "contacts",
@@ -110,170 +109,170 @@ const keywordGroups: Array<{ category: ResponseCategory; keywords: string[] }> =
 const categoryResponses: Record<ResponseCategory, Record<AILocale, string[]>> = {
   program: {
     ru: [
-      "Программа будет насыщенной: панельные дискуссии, мастер-классы, выставка EdTech-компаний, B2B/B2C/B2G встречи и стартап-питчи. Если хотите, могу отдельно рассказать, что будет интересно именно студентам, компаниям или партнёрам.",
-      "На Global EdTech не одна сцена, а целая экосистема активностей: дискуссии, практические мастер-классы, выставочная зона и деловые встречи. Могу коротко разложить программу по блокам.",
+      "Сейчас заявлены деловая программа, выставочная зона и B2B/B2C/B2G-встречи. Детали программы еще обновляются.",
+      "На данный момент подтверждены деловая программа, выставочная часть и деловые встречи. Подробное расписание еще готовится.",
     ],
     kk: [
-      "Бағдарлама өте мазмұнды болады: панельдік дискуссиялар, мастер-кластар, EdTech-компаниялар көрмесі, B2B/B2C/B2G кездесулері және стартап-питчтер. Қаласаңыз, оны студенттерге, компанияларға немесе серіктестерге бөлек түсіндіріп беремін.",
-      "Global EdTech тек бір сахна емес, тұтас белсенді экожүйе болады: пікірталастар, практикалық мастер-кластар, көрме аймағы және іскерлік кездесулер. Қысқаша блоктарға бөліп айтып бере аламын.",
+      "Қазір іскерлік бағдарлама, көрме аймағы және B2B/B2C/B2G кездесулері жарияланған. Толық бағдарлама әлі жаңарып жатыр.",
+      "Әзірге іскерлік бағдарлама, көрме бөлігі және іскерлік кездесулер расталған. Толық кесте кейінірек жарияланады.",
     ],
     en: [
-      "The program will be quite packed: panel discussions, workshops, an EdTech company expo, B2B/B2C/B2G meetings, and startup pitch sessions. If you want, I can break it down for students, companies, or partners.",
-      "Global EdTech is not just a stage program. It is a mix of discussions, practical workshops, an exhibition area, and business networking. I can also summarize the agenda by audience type.",
+      "At the moment, the confirmed format includes a business program, an expo area, and B2B/B2C/B2G meetings. Detailed scheduling is still being updated.",
+      "The confirmed format currently includes the business program, the expo area, and business meetings. The detailed agenda is still in progress.",
     ],
   },
   speakers: {
     ru: [
-      "Ожидаются спикеры и эксперты из образования, технологий, EdTech и инноваций. Подтверждённый список обычно публикуется по мере обновления программы, но уже понятно, что акцент будет на практиках и лидерах рынка.",
-      "Спикерский состав формируется вокруг образования будущего, технологий и инноваций. Если хотите, могу подсказать, какие именно темы обычно интересны инвесторам, вузам или EdTech-компаниям.",
+      "Подтвержденный список спикеров пока не объявлен.",
+      "Список спикеров еще формируется и пока не опубликован.",
     ],
     kk: [
-      "Білім, технология, EdTech және инновация салаларынан спикерлер мен сарапшылар күтіледі. Нақты тізім бағдарлама жаңарған сайын жарияланады, бірақ негізгі акцент тәжірибе мен нарық көшбасшыларына жасалады.",
-      "Спикерлік құрам білім болашағы, технология және инновация тақырыптарына құрылады. Қаласаңыз, инвесторларға, университеттерге немесе EdTech-компанияларға қай тақырыптар маңызды болатынын айтып беремін.",
+      "Расталған спикерлер тізімі әзірге жарияланған жоқ.",
+      "Спикерлер тізімі әлі қалыптасып жатыр.",
     ],
     en: [
-      "Speakers and experts are expected from education, technology, EdTech, and innovation. The confirmed lineup is usually published as the program is finalized, but the focus is clearly on practical insight and ecosystem leaders.",
-      "The speaker lineup is being shaped around the future of education, technology, and innovation. If helpful, I can also tell you what topics are likely to matter most for investors, universities, or EdTech teams.",
+      "The confirmed speaker lineup has not been announced yet.",
+      "The speaker list is still being finalized and has not been published yet.",
     ],
   },
   registration: {
     ru: [
-      `Зарегистрироваться можно через форму на сайте: ${REGISTRATION_URL}. Там вы выбираете формат участия: участник, спикер, партнёр, спонсор или экспонент со стендом.`,
-      `Самый быстрый путь — открыть форму регистрации: ${REGISTRATION_URL}. Внутри можно сразу выбрать нужную роль и отправить заявку.`,
+      "Для участия можно выбрать формат: участник, партнер, спонсор или экспонент со стендом.",
+      "Участие доступно в нескольких форматах: участник, партнер, спонсор или экспонент со стендом.",
     ],
     kk: [
-      `Тіркелу үшін сайттағы форманы ашу керек: ${REGISTRATION_URL}. Сол жерде қатысу форматын таңдауға болады: қатысушы, спикер, серіктес, демеуші немесе стендпен экспонент.`,
-      `Ең жылдам жолы — тіркелу формасын ашу: ${REGISTRATION_URL}. Ішінде рөліңізді таңдап, өтінім жібере аласыз.`,
+      "Қатысу үшін бірнеше формат бар: қатысушы, серіктес, демеуші немесе стенді бар экспонент.",
+      "Қатысу форматын таңдауға болады: қатысушы, серіктес, демеуші немесе стенді бар экспонент.",
     ],
     en: [
-      `You can register through the website form here: ${REGISTRATION_URL}. In the form, you can choose the right participation type: participant, speaker, partner, sponsor, or exhibitor with stand.`,
-      `The quickest way is to open the registration form: ${REGISTRATION_URL}. From there, you can pick your role and submit the request right away.`,
+      "There are several participation formats: participant, partner, sponsor, or exhibitor with a stand.",
+      "You can join in different formats: participant, partner, sponsor, or exhibitor with a stand.",
     ],
   },
   startups: {
     ru: [
-      "Да, стартап-питчи предусмотрены. Это хороший формат для команд, которые хотят показать своё решение, получить внимание аудитории и завести полезные контакты в EdTech-среде.",
-      "Да, на форуме будут питч-сессии стартапов. Если вы развиваете продукт, это как раз подходящая точка для презентации, обратной связи и нетворкинга.",
+      "Стартап-питчи заявлены в формате мероприятия. Детали еще обновляются.",
+      "Питч-сессии предусмотрены, но подробности пока не опубликованы.",
     ],
     kk: [
-      "Иә, стартап-питчтер болады. Бұл өз шешімін көрсетуге, аудитория назарын аударуға және EdTech ортасында пайдалы байланыстар орнатуға жақсы формат.",
-      "Иә, форумда стартаптарға арналған питч-сессиялар қарастырылған. Егер өнім дамытып жүрсеңіз, бұл презентация, кері байланыс және нетворкинг үшін өте қолайлы алаң.",
+      "Стартап-питчтер форматта бар. Толық мәлімет кейінірек жарияланады.",
+      "Питч-сессиялар қарастырылған, бірақ егжей-тегжейі әлі жоқ.",
     ],
     en: [
-      "Yes, startup pitch sessions are part of the event. It is a strong format for teams that want visibility, feedback, and useful connections inside the EdTech ecosystem.",
-      "Yes, there will be startup pitches. If you are building a product, this is a good space to present it, get reactions, and meet potential partners.",
+      "Startup pitch sessions are included in the event format. Details are still being updated.",
+      "Pitch sessions are planned, but detailed information has not been published yet.",
     ],
   },
   audience: {
     ru: [
-      "Аудитория очень широкая: школы, колледжи, университеты, EdTech и IT-компании, инвесторы, госструктуры, родители, студенты, школьники и предприниматели. Форум как раз задуман как точка пересечения этих групп.",
-      "Участвовать могут не только образовательные организации, но и бизнес, инвесторы, родители, студенты и школьники. Если скажете, кто вы, я подскажу, зачем вам туда идти и какой формат лучше выбрать.",
+      "Форум ориентирован на образовательные организации, EdTech и IT-компании, студентов, родителей и предпринимателей.",
+      "Среди целевой аудитории - образовательные организации, компании, студенты, родители и предприниматели.",
     ],
     kk: [
-      "Аудитория өте кең: мектептер, колледждер, университеттер, EdTech және IT-компаниялар, инвесторлар, мемлекеттік құрылымдар, ата-аналар, студенттер, оқушылар және кәсіпкерлер. Форум осы топтарды тоғыстыру үшін жасалған.",
-      "Қатысу тек білім ұйымдарына ғана емес, бизнеске, инвесторларға, ата-аналарға, студенттерге және оқушыларға да ашық. Егер кім екеніңізді айтсаңыз, сізге қай формат қолайлы екенін нақтылап беремін.",
+      "Форум білім беру ұйымдарына, EdTech және IT-компанияларға, студенттерге, ата-аналарға және кәсіпкерлерге арналған.",
+      "Негізгі аудитория - білім беру ұйымдары, компаниялар, студенттер, ата-аналар және кәсіпкерлер.",
     ],
     en: [
-      "The audience is intentionally broad: schools, colleges, universities, EdTech and IT companies, investors, public institutions, parents, students, school students, and entrepreneurs. The forum is designed as a meeting point for all of them.",
-      "It is not limited to education institutions. Businesses, investors, parents, students, and young learners can all benefit. If you tell me who you are, I can suggest the best participation format.",
+      "The forum is aimed at education organizations, EdTech and IT companies, students, parents, and entrepreneurs.",
+      "The target audience includes education organizations, companies, students, parents, and entrepreneurs.",
     ],
   },
   students: {
     ru: [
-      "Для студентов это хороший шанс увидеть реальные EdTech-решения, попасть на мастер-классы, послушать экспертов и познакомиться с компаниями и стартапами. Если хотите, могу отдельно подсказать, на какие зоны им стоит обратить внимание в первую очередь.",
-      "Студентам форум полезен не только как событие, но и как среда для контактов, идей и карьерных ориентиров. Там будут и практические активности, и выставка, и живая деловая атмосфера.",
+      "Для студентов участие возможно. Подробная отдельная программа для студентов пока не объявлена.",
+      "Студенты могут участвовать в форуме. Дополнительные детали для этой аудитории еще не опубликованы.",
     ],
     kk: [
-      "Студенттер үшін бұл нақты EdTech-шешімдерді көруге, мастер-кластарға қатысуға, сарапшыларды тыңдауға және компаниялар мен стартаптармен танысуға жақсы мүмкіндік. Қаласаңыз, қай аймақтарға бірінші назар аудару керек екенін де айтамын.",
-      "Форум студенттерге жай ғана іс-шара емес, байланыс, идея және болашақ мансап бағытын көруге мүмкіндік береді. Практикалық белсенділіктер де, көрме де, тірі іскерлік орта да болады.",
+      "Студенттер қатыса алады. Студенттерге арналған жеке толық бағдарлама әзірге жарияланған жоқ.",
+      "Студенттердің қатысуы мүмкін. Қосымша мәлімет кейінірек жарияланады.",
     ],
     en: [
-      "For students, this is a strong chance to explore real EdTech solutions, join workshops, hear from experts, and meet companies and startups. If you want, I can point out which parts of the event will be the most useful for them.",
-      "For students, the forum is not only informative but also energizing. It gives exposure to ideas, people, and possible career directions through workshops, talks, and the expo area.",
+      "Students can participate. A separate detailed student program has not been announced yet.",
+      "Student participation is possible. More details for this audience are still pending.",
     ],
   },
   expo: {
     ru: [
-      "Да, будет выставка EdTech-компаний. Это одна из ключевых частей форума: можно посмотреть решения вживую, познакомиться с командами и обсудить сотрудничество или внедрение.",
-      "Да, выставочная зона предусмотрена. Если вам интересны стенды, демонстрации и прямой разговор с компаниями, это как раз одна из центральных точек события.",
+      "Стенд можно обсудить с командой форума по контактам организаторов.",
+      "Участие со стендом доступно в формате экспонента. Для деталей лучше связаться с организаторами.",
     ],
     kk: [
-      "Иә, EdTech-компаниялардың көрмесі болады. Бұл форумның негізгі бөліктерінің бірі: шешімдерді тірідей көріп, командалармен танысып, серіктестік немесе енгізу мүмкіндігін талқылауға болады.",
-      "Иә, көрме аймағы қарастырылған. Егер сізге стендтер, демонстрациялар және компаниялармен тікелей сөйлесу қызық болса, бұл іс-шараның басты бөліктерінің бірі болады.",
+      "Стенд бойынша қатысуды ұйымдастырушылармен байланысып талқылауға болады.",
+      "Стендпен қатысу экспонент форматы арқылы мүмкін. Толық мәлімет үшін ұйымдастырушыларға жазыңыз.",
     ],
     en: [
-      "Yes, there will be an EdTech company exhibition. It is one of the core parts of the forum, where visitors can explore solutions live, meet teams, and discuss partnerships or adoption.",
-      "Yes, the expo area is part of the experience. If you are interested in booths, live demos, and direct conversations with companies, that will be one of the main zones to visit.",
+      "Stand participation can be discussed directly with the organizing team.",
+      "Joining with a stand is available through the exhibitor format. For details, contact the organizers.",
     ],
   },
   partners: {
     ru: [
-      `Да, можно стать партнёром или спонсором. Обычно самый удобный путь — заполнить форму ${REGISTRATION_URL} с нужным форматом участия, а если нужен быстрый контакт, можно сразу написать на ${CONTACT_EMAIL} или позвонить по номеру ${CONTACT_PHONE}.`,
-      `Партнёрство и спонсорство доступны. Если хотите обсудить это предметно, можно подать заявку через ${REGISTRATION_URL} или напрямую связаться с командой: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      `Партнерство можно обсудить напрямую с организаторами: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      `По вопросам партнерства и спонсорства лучше написать или позвонить организаторам: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
     ],
     kk: [
-      `Иә, серіктес немесе демеуші болуға болады. Ең ыңғайлы жолы — ${REGISTRATION_URL} формасын толтыру, ал жедел байланыс керек болса, ${CONTACT_EMAIL} поштасына жазуға немесе ${CONTACT_PHONE} нөміріне хабарласуға болады.`,
-      `Серіктестік пен демеушілік ашық. Нақты талқылау үшін ${REGISTRATION_URL} арқылы өтінім беруге немесе командамен тікелей байланысуға болады: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      `Серіктестік бойынша ұйымдастырушылармен тікелей байланысуға болады: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      `Серіктестік және демеушілік мәселелері бойынша ұйымдастырушыларға жазыңыз немесе қоңырау шалыңыз: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
     ],
     en: [
-      `Yes, it is possible to join as a partner or sponsor. The easiest route is to submit the form at ${REGISTRATION_URL}, and if you want direct contact, you can also reach the team at ${CONTACT_EMAIL} or ${CONTACT_PHONE}.`,
-      `Partnership and sponsorship options are available. You can apply through ${REGISTRATION_URL} or speak directly with the team at ${CONTACT_EMAIL} and ${CONTACT_PHONE}.`,
+      `Partnership questions can be discussed directly with the organizers: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      `For partnership or sponsorship, please contact the organizers directly: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
     ],
   },
   venue: {
     ru: [
-      "Мероприятие пройдёт офлайн в МВЦ EXPO в Астане. Это большой формат с живыми встречами, выставочной зоной и деловой программой на площадке.",
-      "Локация — МВЦ EXPO, Астана. То есть форум будет именно в офлайн-формате, с реальным присутствием участников, компаний и партнёров.",
+      "Форум пройдет офлайн в МВЦ EXPO, Астана.",
+      "Локация форума - МВЦ EXPO, Астана.",
     ],
     kk: [
-      "Іс-шара Астанадағы EXPO халықаралық көрме орталығында офлайн өтеді. Бұл тірі кездесулерге, көрме аймағына және іскерлік бағдарламаға арналған ауқымды формат.",
-      "Өтетін орны — Астана қаласындағы EXPO көрме орталығы. Яғни форум офлайн форматта, қатысушылар мен компаниялардың тікелей қатысуымен өтеді.",
+      "Форум офлайн түрде EXPO, Астанада өтеді.",
+      "Өтетін орны - EXPO, Астана.",
     ],
     en: [
-      "The event will take place offline at the EXPO International Exhibition Center in Astana. It is designed as a live forum with meetings, an exhibition area, and an in-person business program.",
-      "The venue is the EXPO center in Astana. So yes, this is an offline event with on-site participation from visitors, companies, and partners.",
+      "The forum will take place offline at EXPO in Astana.",
+      "The venue is EXPO, Astana.",
     ],
   },
   dates: {
     ru: [
-      "Global EdTech пройдёт 7-8 февраля 2027 года.",
       "Даты форума: 7-8 февраля 2027 года.",
+      "Global EdTech пройдет 7-8 февраля 2027 года.",
     ],
     kk: [
-      "Global EdTech 2027 жылғы 7-8 ақпанда өтеді.",
       "Форум күндері: 2027 жылғы 7-8 ақпан.",
+      "Global EdTech 2027 жылғы 7-8 ақпанда өтеді.",
     ],
     en: [
-      "Global EdTech will take place on February 7-8, 2027.",
       "The forum dates are February 7-8, 2027.",
+      "Global EdTech will take place on February 7-8, 2027.",
     ],
   },
   meetings: {
     ru: [
-      "Да, в рамках форума запланированы B2B, B2C и B2G встречи. Это важная часть события для компаний, партнёров, инвесторов и образовательных организаций.",
-      "Да, деловые встречи предусмотрены. Форум как раз создаёт среду для общения бизнеса, образовательных учреждений, инвесторов и государственных структур.",
+      "B2B, B2C и B2G-встречи заявлены в формате форума.",
+      "Деловые встречи предусмотрены. Подробный порядок еще уточняется.",
     ],
     kk: [
-      "Иә, форум аясында B2B, B2C және B2G кездесулері жоспарланған. Бұл компаниялар, серіктестер, инвесторлар және білім ұйымдары үшін өте маңызды бөлік.",
-      "Иә, іскерлік кездесулер болады. Форум бизнес, білім ұйымдары, инвесторлар және мемлекеттік құрылымдар арасындағы диалог алаңы ретінде құрылған.",
+      "B2B, B2C және B2G кездесулері форум форматында бар.",
+      "Іскерлік кездесулер қарастырылған. Толық тәртібі кейінірек нақтыланады.",
     ],
     en: [
-      "Yes, B2B, B2C, and B2G meetings are part of the forum. That is one of the key reasons the event is valuable for companies, partners, investors, and education institutions.",
-      "Yes, business meetings are planned. The forum is built to connect business, education, investors, and public-sector stakeholders in one place.",
+      "B2B, B2C, and B2G meetings are included in the forum format.",
+      "Business meetings are planned. The detailed process is still being clarified.",
     ],
   },
   contacts: {
     ru: [
-      `Контакты организаторов: ${CONTACT_EMAIL}, ${CONTACT_PHONE}. Если нужно, могу ещё подсказать, когда лучше писать по поводу партнёрства, стенда или регистрации.`,
-      `Связаться с командой можно по email ${CONTACT_EMAIL} или по телефону ${CONTACT_PHONE}. Если скажете цель, я подскажу, какой запрос лучше отправить.`,
+      `Контакты организаторов: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      `Связаться с организаторами можно по email ${CONTACT_EMAIL} или по телефону ${CONTACT_PHONE}.`,
     ],
     kk: [
-      `Ұйымдастырушылардың байланысы: ${CONTACT_EMAIL}, ${CONTACT_PHONE}. Қаласаңыз, серіктестік, стенд немесе тіркелу бойынша қалай дұрыс жазу керегін де айтып беремін.`,
-      `Командамен ${CONTACT_EMAIL} поштасы немесе ${CONTACT_PHONE} телефоны арқылы байланысуға болады. Мақсатыңызды айтсаңыз, қандай өтініш жолдау тиімді екенін ұсынамын.`,
+      `Ұйымдастырушылардың байланысы: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      `Ұйымдастырушылармен ${CONTACT_EMAIL} немесе ${CONTACT_PHONE} арқылы байланысуға болады.`,
     ],
     en: [
-      `You can reach the organizers at ${CONTACT_EMAIL} or ${CONTACT_PHONE}. If you want, I can also suggest the best way to frame a request about partnerships, stands, or registration.`,
-      `The team can be contacted at ${CONTACT_EMAIL} and ${CONTACT_PHONE}. If you tell me your goal, I can help you phrase the right request.`,
+      `Organizer contacts: ${CONTACT_EMAIL}, ${CONTACT_PHONE}.`,
+      `You can contact the organizers via ${CONTACT_EMAIL} or ${CONTACT_PHONE}.`,
     ],
   },
   fallback: fallbackMessage,
@@ -311,9 +310,9 @@ export const createAssistantGreeting = (locale: AILocale): AIMessage => ({
 
 export const getAssistantUnavailableMessage = (locale: AILocale) =>
   ({
-    ru: "Сейчас AI-ассистент временно недоступен. Попробуйте чуть позже или воспользуйтесь разделами сайта.",
-    kk: "Қазір AI-ассистент уақытша қолжетімсіз. Сәл кейінірек қайталап көріңіз немесе сайт бөлімдерін пайдаланыңыз.",
-    en: "The AI assistant is temporarily unavailable. Please try again shortly or use the website sections.",
+    ru: "Сейчас AI-ассистент временно недоступен. Попробуйте позже.",
+    kk: "Қазір AI-ассистент уақытша қолжетімсіз. Кейінірек қайталап көріңіз.",
+    en: "The AI assistant is temporarily unavailable. Please try again later.",
   })[locale];
 
 export const getAIResponse = (

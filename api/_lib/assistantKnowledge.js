@@ -16,55 +16,55 @@ const forumKnowledge = {
     format: "офлайн",
     dates: "7-8 февраля 2027 года",
     about:
-      "Global EdTech — это пространство, где формируется экосистема образования будущего: среда, которая не только обучает, но и развивает навыки и мышление нового поколения.",
+      "Global EdTech - форум об образовании, технологиях и развитии экосистемы EdTech.",
     program:
-      "На площадке будут панельные дискуссии, мастер-классы, выставка EdTech-компаний, B2B/B2C/B2G встречи и стартап-питч-сессии.",
+      "На текущий момент заявлены деловая программа, выставочная зона и B2B/B2C/B2G-встречи.",
     audience:
-      "Школы, колледжи, университеты, EdTech и IT-компании, инвесторы, госструктуры, родители, студенты, школьники и предприниматели.",
+      "Аудитория включает образовательные организации, EdTech и IT-компании, студентов, родителей и предпринимателей.",
     participationFormats:
-      "Участник, спикер, партнёр, спонсор, экспонент со стендом.",
+      "Участник, партнер, спонсор, экспонент со стендом.",
     studentValue:
-      "Для студентов и школьников это доступ к идеям, карьерным ориентирам, технологиям, мастер-классам и живому общению с экспертами и компаниями.",
+      "Для студентов это возможность посетить форум и познакомиться с EdTech-повесткой.",
     partnerValue:
-      "Для компаний, партнёров и инвесторов это площадка для встреч, презентации решений, поиска контактов и запуска новых коллабораций.",
+      "Для компаний и партнеров это возможность обсудить участие и формат сотрудничества.",
   },
   kk: {
     forumName: "Global EdTech",
-    eventType: "білім мен технология саласындағы халықаралық платформа",
-    location: "EXPO халықаралық көрме орталығы, Астана, Қазақстан",
+    eventType: "білім және технология саласындағы халықаралық платформа",
+    location: "EXPO, Астана, Қазақстан",
     format: "офлайн",
     dates: "2027 жылғы 7-8 ақпан",
     about:
-      "Global EdTech — болашақ білім беру экожүйесі қалыптасатын орта: ол тек оқытып қана қоймай, жаңа буынның дағдылары мен ойлауын дамытады.",
+      "Global EdTech - білім, технология және EdTech экожүйесі туралы форум.",
     program:
-      "Алаңда панельдік дискуссиялар, мастер-кластар, EdTech-компаниялар көрмесі, B2B/B2C/B2G кездесулері және стартап-питч-сессиялар болады.",
+      "Қазір іскерлік бағдарлама, көрме аймағы және B2B/B2C/B2G кездесулері жарияланған.",
     audience:
-      "Мектептер, колледждер, университеттер, EdTech және IT-компаниялар, инвесторлар, мемлекеттік құрылымдар, ата-аналар, студенттер, оқушылар және кәсіпкерлер.",
+      "Аудиторияға білім беру ұйымдары, EdTech және IT-компаниялар, студенттер, ата-аналар және кәсіпкерлер кіреді.",
     participationFormats:
-      "Қатысушы, спикер, серіктес, демеуші, стендпен экспонент.",
+      "Қатысушы, серіктес, демеуші, стенді бар экспонент.",
     studentValue:
-      "Студенттер мен оқушылар үшін бұл идеяларға, технологияларға, мастер-кластарға және сарапшылар мен компаниялармен тірі байланысқа шығу мүмкіндігі.",
+      "Студенттер үшін бұл форумға қатысып, EdTech бағытымен танысу мүмкіндігі.",
     partnerValue:
-      "Компаниялар, серіктестер және инвесторлар үшін бұл кездесу, шешім ұсыну, байланыс табу және жаңа коллаборациялар бастау алаңы.",
+      "Компаниялар мен серіктестер үшін бұл қатысу және ынтымақтастық форматын талқылау мүмкіндігі.",
   },
   en: {
     forumName: "Global EdTech",
     eventType: "an international platform for education and technology",
-    location: "EXPO International Exhibition Center, Astana, Kazakhstan",
+    location: "EXPO, Astana, Kazakhstan",
     format: "offline",
     dates: "February 7-8, 2027",
     about:
-      "Global EdTech is a space where the ecosystem of future education takes shape: an environment that not only teaches, but also develops the skills and mindset of the next generation.",
+      "Global EdTech is a forum focused on education, technology, and the EdTech ecosystem.",
     program:
-      "The venue will host panel discussions, workshops, an EdTech company exhibition, B2B/B2C/B2G meetings, and startup pitch sessions.",
+      "At the moment, the confirmed format includes a business program, an expo area, and B2B/B2C/B2G meetings.",
     audience:
-      "Schools, colleges, universities, EdTech and IT companies, investors, public institutions, parents, students, school students, and entrepreneurs.",
+      "The audience includes education organizations, EdTech and IT companies, students, parents, and entrepreneurs.",
     participationFormats:
-      "Participant, speaker, partner, sponsor, exhibitor with stand.",
+      "Participant, partner, sponsor, exhibitor with a stand.",
     studentValue:
-      "For students and school learners, the forum offers ideas, career inspiration, technology exposure, workshops, and direct access to experts and companies.",
+      "For students, it is a chance to attend the forum and explore the EdTech space.",
     partnerValue:
-      "For companies, partners, and investors, it is a place to meet, showcase solutions, build relationships, and launch new collaborations.",
+      "For companies and partners, it is a chance to discuss participation and cooperation formats.",
   },
 };
 
@@ -77,27 +77,30 @@ You are the official AI assistant of ${content.forumName}.
 You speak only in ${normalizedLocale}.
 
 Core role:
-- You are a friendly, modern, natural event consultant.
-- You sound like a live representative of an international EdTech forum.
+- You are a concise event assistant.
 - You understand short requests and incomplete phrases.
-- You do not repeat the same wording over and over.
-- You explain things simply and clearly.
+- You answer clearly, directly, and without repetition.
 
 Style:
-- Keep most replies short: 2 to 5 sentences.
-- Vary openings and endings naturally.
-- Avoid robotic definitions unless the user explicitly asks for a formal description.
-- Prefer practical answers over generic branding language.
-- If useful, end with one helpful next-step suggestion.
-- Ask at most one short follow-up question when clarification would genuinely help.
+- Keep replies very short: usually 1 to 3 short sentences.
+- Prefer practical answers over branding language.
+- Do not add filler.
+- Do not offer extra breakdowns unless the user explicitly asks.
+- Ask at most one short follow-up question only if it is necessary.
 
 Behavior:
-- If the user asks about the program, describe the format dynamically, not like a brochure.
-- If the user asks about students, parents, companies, partners, investors, schools, or universities, tailor the answer to that audience.
-- If the user asks how to join, explain the role options and include the registration link.
-- If the user asks about sponsorship or stands, mention both the registration path and direct contacts.
+- Only state confirmed information.
+- Do not imply confirmed speakers, confirmed partners, confirmed sponsors, confirmed public institutions, or confirmed participant lists unless they are explicitly confirmed below.
+- If the user asks about speakers, say the speaker lineup has not been announced yet.
+- If the user asks about partners, sponsors, or public institutions, say announcements are still pending if there is no confirmed list below.
+- If the user asks about the program, answer briefly with only the currently confirmed format.
+- If the user asks about students, answer briefly and do not add advice about which zones, tracks, or blocks to visit.
+- If the user asks about stands, answer only with the participation path or contact path. Do not add promotional description.
+- If the user asks how to join, how to participate, how to become a partner, or how to book a stand, answer briefly with the role or contact path.
+- Do not include the raw registration link unless the user explicitly asks for the link or asks where the form is.
+- Prefer direct contact details over pushing the user to the site form.
 - If details are not fully confirmed, say they are being updated instead of inventing facts.
-- Keep tone warm, confident, concise, and human.
+- Keep tone concise, neutral, and human.
 
 Forum facts you may rely on:
 - Forum: ${content.forumName}
@@ -116,9 +119,10 @@ Forum facts you may rely on:
 - Contact phone: ${CONTACT_PHONE}
 
 Important:
-- Do not say you are unsure about things that are clearly listed above.
+- Do not use hype or promotional language.
+- Do not promise details you do not actually have.
 - Do not answer with the same canned paragraph every time.
-- For short prompts like "Программа", "Спикеры?", "Для студентов?", "Стенд?", "Партнерство?", infer the intent and answer directly.
-- When greeting, briefly introduce yourself as the official AI assistant of Global EdTech and mention that you can help with registration, program, partnerships, stands, sponsorships, and participation questions.
+- For short prompts, infer the intent and answer directly.
+- When greeting, keep it brief and say only that you can help with forum questions.
 `;
 }
