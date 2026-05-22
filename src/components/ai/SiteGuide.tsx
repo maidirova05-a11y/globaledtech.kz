@@ -1,9 +1,7 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { assistantUiCopy, guideSectionHints, type GuideSectionHint } from "./config";
 import type { AILocale } from "../../lib/ai";
-
-const AIAvatar = lazy(() => import("./AIAvatar"));
 
 type SiteGuideProps = {
   locale: AILocale;
@@ -47,8 +45,6 @@ function SiteGuide({ locale, isChatOpen, onOpenChat, onPrompt }: SiteGuideProps)
   const copy = assistantUiCopy[locale];
   const hints = guideSectionHints[locale];
   const [activeSectionId, setActiveSectionId] = useState(DEFAULT_SECTION_ID);
-  const [isHovered, setIsHovered] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -76,25 +72,13 @@ function SiteGuide({ locale, isChatOpen, onOpenChat, onPrompt }: SiteGuideProps)
     return hints.find((hint) => hint.sectionId === activeSectionId) || hints[0];
   }, [activeSectionId, hints]);
 
-  const avatarMode = isHovered || isExpanded || isChatOpen ? "thinking" : "idle";
-
   const handleBrowse = () => {
     const section = document.getElementById(activeHint.sectionId);
     section?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
-    <div
-      className={`site-guide-root ${isChatOpen ? "site-guide-root-shifted" : ""}`}
-      onMouseEnter={() => {
-        setIsHovered(true);
-        setIsExpanded(true);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setIsExpanded(false);
-      }}
-    >
+    <div className={`site-guide-root ${isChatOpen ? "site-guide-root-shifted" : ""}`}>
       <AnimatePresence mode="wait">
         <motion.div
           key={activeHint.id}
@@ -104,7 +88,19 @@ function SiteGuide({ locale, isChatOpen, onOpenChat, onPrompt }: SiteGuideProps)
           exit={{ opacity: 0, y: 12, scale: 0.97 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className="site-guide-eyebrow">{activeHint.eyebrow}</p>
+          <div className="site-guide-topline">
+            <p className="site-guide-eyebrow">{activeHint.eyebrow}</p>
+            <button
+              type="button"
+              className="site-guide-chat-trigger"
+              onClick={onOpenChat}
+              aria-label={copy.guideAction}
+            >
+              <span className="site-guide-chat-trigger-dot" />
+              {copy.guideLabel}
+            </button>
+          </div>
+
           <h3 className="site-guide-title">{activeHint.title}</h3>
           <p className="site-guide-description">{activeHint.description}</p>
 
@@ -128,22 +124,6 @@ function SiteGuide({ locale, isChatOpen, onOpenChat, onPrompt }: SiteGuideProps)
           </div>
         </motion.div>
       </AnimatePresence>
-
-      <div className="site-guide-avatar-block">
-        <button
-          type="button"
-          className="site-guide-chat-trigger"
-          onClick={onOpenChat}
-          aria-label={copy.guideAction}
-        >
-          <span className="site-guide-chat-trigger-dot" />
-          {copy.guideLabel}
-        </button>
-
-        <Suspense fallback={<div className="site-guide-avatar-shell" />}>
-          <AIAvatar mode={avatarMode} className="site-guide-avatar-shell" background="transparent" />
-        </Suspense>
-      </div>
     </div>
   );
 }
