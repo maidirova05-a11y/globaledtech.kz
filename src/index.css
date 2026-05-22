@@ -2298,6 +2298,11 @@ select.field-input:invalid {
   box-shadow: 0 0 12px rgba(74, 222, 128, 0.8);
 }
 
+.section-deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 960px;
+}
+
 @media (max-width: 640px) {
   .ai-chat-window-minimal {
     width: 100%;

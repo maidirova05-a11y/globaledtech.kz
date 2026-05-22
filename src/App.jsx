@@ -1029,8 +1029,8 @@ function GallerySlider({ gallery, onOpen }) {
                 srcSet={`${photo.thumb} 800w, ${photo.src} 1600w`}
                 sizes="(max-width: 768px) 92vw, (max-width: 1280px) 56vw, 760px"
                 alt={`${gallery.altBase} ${index + 1}`}
-                loading={index === 0 ? "eager" : "lazy"}
-                fetchPriority={index === 0 ? "high" : "auto"}
+                loading="lazy"
+                fetchPriority="low"
                 decoding="async"
                 className="gallery-slide-image"
               />
@@ -1145,7 +1145,7 @@ function HeroShowcase({ hero, forumOverview }) {
             sizes="(max-width: 768px) 92vw, 42vw"
             alt={`Global EdTech highlight ${index + 1}`}
             loading={index === 0 ? "eager" : "lazy"}
-            fetchPriority={index === 0 ? "high" : "auto"}
+            fetchPriority={index === 0 ? "high" : "low"}
             decoding="async"
             className={`hero-showcase-image ${activeIndex === index ? "hero-showcase-image-active" : ""}`}
           />
@@ -1206,6 +1206,7 @@ function HeroShowcase({ hero, forumOverview }) {
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState(null);
+  const [shouldLoadAssistant, setShouldLoadAssistant] = useState(false);
   const [language, setLanguage] = useState(() => {
     if (typeof window === "undefined") {
       return "ru";
@@ -1269,6 +1270,58 @@ function App() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedGalleryIndex]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || isAdminRoute || shouldLoadAssistant) {
+      return undefined;
+    }
+
+    let idleId = null;
+    let timeoutId = null;
+
+    const loadAssistant = () => {
+      setShouldLoadAssistant(true);
+    };
+
+    const scheduleLoad = () => {
+      if ("requestIdleCallback" in window) {
+        idleId = window.requestIdleCallback(loadAssistant, { timeout: 3000 });
+      } else {
+        timeoutId = window.setTimeout(loadAssistant, 2200);
+      }
+    };
+
+    const handleInteraction = () => {
+      loadAssistant();
+    };
+
+    if (document.readyState === "complete") {
+      scheduleLoad();
+    } else {
+      window.addEventListener("load", scheduleLoad, { once: true });
+    }
+
+    window.addEventListener("pointerdown", handleInteraction, { once: true, passive: true });
+    window.addEventListener("keydown", handleInteraction, { once: true });
+    window.addEventListener("touchstart", handleInteraction, { once: true, passive: true });
+    window.addEventListener("scroll", handleInteraction, { once: true, passive: true });
+
+    return () => {
+      if (idleId !== null && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+
+      window.removeEventListener("load", scheduleLoad);
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("keydown", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+      window.removeEventListener("scroll", handleInteraction);
+    };
+  }, [isAdminRoute, shouldLoadAssistant]);
 
   const t = useMemo(() => translations[language] || translations.ru, [language]);
   const gallery = useMemo(() => galleryContent[language] || galleryContent.ru, [language]);
@@ -1463,7 +1516,7 @@ function App() {
           </div>
         </section>
 
-        <section id="about" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="about" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.about.eyebrow}
@@ -1490,7 +1543,7 @@ function App() {
           </div>
         </section>
 
-        <section id="events" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="events" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.events.eyebrow}
@@ -1526,7 +1579,7 @@ function App() {
           </div>
         </section>
 
-        <section id="gallery" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="gallery" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-8 lg:grid-cols-[0.44fr_0.56fr] lg:items-start">
               <motion.div
@@ -1565,7 +1618,7 @@ function App() {
           </div>
         </section>
 
-        <section id="audience" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="audience" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <motion.div
               variants={reveal}
@@ -1604,7 +1657,7 @@ function App() {
           </div>
         </section>
 
-        <section id="benefits" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="benefits" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.benefits.eyebrow}
@@ -1640,7 +1693,7 @@ function App() {
           </div>
         </section>
 
-        <section id="program" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="program" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.program.eyebrow}
@@ -1673,7 +1726,7 @@ function App() {
           </div>
         </section>
 
-        <section id="register" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="register" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
             <motion.div
               variants={reveal}
@@ -1702,7 +1755,7 @@ function App() {
           </div>
         </section>
 
-        <section id="contacts" className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="contacts" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.contacts.eyebrow}
@@ -1743,9 +1796,11 @@ function App() {
         </div>
       </footer>
 
-      <Suspense fallback={null}>
-        <AIAssistant language={language} />
-      </Suspense>
+      {shouldLoadAssistant ? (
+        <Suspense fallback={null}>
+          <AIAssistant language={language} />
+        </Suspense>
+      ) : null}
 
       {selectedGalleryPhoto ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#020617]/88 px-4 py-6 backdrop-blur-md">
