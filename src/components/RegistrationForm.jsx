@@ -22,6 +22,32 @@ const messageMotion = {
   transition: { duration: 0.2, ease: "easeOut" },
 };
 
+function resolveSubmitErrorMessage(response, result, translations) {
+  const backendError = typeof result?.error === "string" ? result.error : "";
+
+  if (backendError === "Registration database is not configured") {
+    return "Регистрация временно недоступна: не настроено хранилище заявок.";
+  }
+
+  if (backendError === "Failed to save registration") {
+    return "Не удалось сохранить заявку. Проверьте настройки хранилища в Vercel.";
+  }
+
+  if (backendError === "Validation failed") {
+    return "Не удалось отправить заявку: проверьте корректность заполнения формы.";
+  }
+
+  if (response.status === 404) {
+    return "API регистрации недоступно. Если вы запускаете проект локально, используйте Vercel environment и backend.";
+  }
+
+  if (response.status >= 500) {
+    return backendError || "Ошибка сервера при отправке заявки.";
+  }
+
+  return backendError || translations.messages.submitError;
+}
+
 function SearchableCountrySelect({
   value,
   onChange,
@@ -331,7 +357,7 @@ export default function RegistrationForm({ language, translations }) {
     if (!response.ok) {
       const result = await response.json().catch(() => null);
       setSubmitState("error");
-      setSubmitError(result?.error || translations.messages.submitError);
+      setSubmitError(resolveSubmitErrorMessage(response, result, translations));
       return;
     }
 

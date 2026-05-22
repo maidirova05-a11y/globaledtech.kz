@@ -1,4 +1,4 @@
-import { parseRegistrationPayload } from "../src/lib/registrationSchema.js";
+import { parseRegistrationPayload } from "./_lib/registrationSchema.js";
 import { sanitizeUnknownObject } from "./_lib/sanitize.js";
 import { applyApiSecurity, getSecurityConfig } from "./_lib/security.js";
 import {
