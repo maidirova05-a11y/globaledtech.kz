@@ -59,7 +59,6 @@ function AIAssistant({ language }: AIAssistantProps) {
           <div className="ai-floating-root">
             <FloatingButton
               title={copy.fabTitle}
-              subtitle={copy.fabSubtitle}
               onClick={() => controller.setIsOpen(true)}
             />
           </div>

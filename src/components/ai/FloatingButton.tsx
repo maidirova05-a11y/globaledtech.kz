@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
+import { Suspense, lazy } from "react";
 
 type FloatingButtonProps = {
   onClick: () => void;
   title: string;
-  subtitle: string;
 };
 
-function FloatingButton({ onClick, title, subtitle }: FloatingButtonProps) {
+const AIAvatar = lazy(() => import("./AIAvatar"));
+
+function FloatingButton({ onClick, title }: FloatingButtonProps) {
   return (
     <motion.button
       type="button"
@@ -22,18 +24,13 @@ function FloatingButton({ onClick, title, subtitle }: FloatingButtonProps) {
       <span className="ai-fab-ring" aria-hidden="true" />
       <span className="ai-fab-core">
         <span className="ai-fab-status" />
-        <span className="ai-fab-orb ai-fab-orb-cyan" aria-hidden="true" />
-        <span className="ai-fab-orb ai-fab-orb-pink" aria-hidden="true" />
-        <svg viewBox="0 0 24 24" aria-hidden="true" className="ai-fab-icon">
-          <path
-            d="M12 2 5.2 5.9v6.2c0 4.2 2.9 8.1 6.8 9.1 3.9-1 6.8-4.9 6.8-9.1V5.9L12 2Zm0 3.1 3.9 2.2v4.6c0 2.6-1.6 5.1-3.9 6.1-2.3-1-3.9-3.5-3.9-6.1V7.3L12 5.1Zm0 2.5a2.6 2.6 0 1 0 0 5.2 2.6 2.6 0 0 0 0-5.2Zm-3.7 8.4a7.7 7.7 0 0 0 7.4 0"
-            fill="currentColor"
+        <Suspense fallback={<span className="ai-fab-avatar-fallback" aria-hidden="true" />}>
+          <AIAvatar
+            mode="idle"
+            className="ai-fab-avatar-shell"
+            background="transparent"
           />
-        </svg>
-      </span>
-      <span className="ai-fab-label">
-        <span className="ai-fab-label-title">{title}</span>
-        <span className="ai-fab-label-subtitle">{subtitle}</span>
+        </Suspense>
       </span>
     </motion.button>
   );
