@@ -59,7 +59,7 @@ function FloatingButton({ onClick, title }: FloatingButtonProps) {
         <span className="ai-fab-status" />
         <Suspense fallback={<span className="ai-fab-avatar-fallback" aria-hidden="true" />}>
           <AIAvatar
-            mode="idle"
+            mode="thinking"
             className="ai-fab-avatar-shell"
             background="transparent"
           />

@@ -21,6 +21,8 @@ function AvatarModel({ mode = "idle" }: AIAvatarProps) {
   const rootRef = useRef<Group | null>(null);
   const headRef = useRef<Group | null>(null);
   const torsoRef = useRef<Group | null>(null);
+  const orbRef = useRef<Mesh | null>(null);
+  const orbGlowRef = useRef<Mesh | null>(null);
   const leftEyeRef = useRef<Mesh | null>(null);
   const rightEyeRef = useRef<Mesh | null>(null);
   const mouthRef = useRef<Mesh | null>(null);
@@ -87,12 +89,14 @@ function AvatarModel({ mode = "idle" }: AIAvatarProps) {
 
     if (rootRef.current) {
       rootRef.current.position.y = Math.sin(time * 1.15) * 0.05;
-      rootRef.current.rotation.y = Math.sin(time * 0.4) * 0.05;
+      rootRef.current.rotation.y = Math.sin(time * 0.4) * 0.05 + smoothedPointerRef.current.x * 0.28;
+      rootRef.current.rotation.x = smoothedPointerRef.current.y * 0.12;
     }
 
     if (torsoRef.current) {
       torsoRef.current.scale.y = breathing;
-      torsoRef.current.rotation.z = Math.sin(time * 0.8) * 0.015;
+      torsoRef.current.rotation.z = Math.sin(time * 0.8) * 0.015 + smoothedPointerRef.current.x * 0.04;
+      torsoRef.current.rotation.y = smoothedPointerRef.current.x * 0.1;
     }
 
     if (headRef.current) {
@@ -127,6 +131,18 @@ function AvatarModel({ mode = "idle" }: AIAvatarProps) {
             ? 0.98 + Math.abs(Math.sin(time * 4.4)) * 0.18
             : 0.9 + Math.sin(time * 1.8) * 0.05;
       chestCoreRef.current.scale.setScalar(pulse);
+    }
+
+    if (orbRef.current && orbGlowRef.current) {
+      const orbitX = smoothedPointerRef.current.x * 1.8 + Math.sin(time * 1.6) * 0.12;
+      const orbitY = 0.2 + smoothedPointerRef.current.y * 1.2 + Math.cos(time * 1.9) * 0.08;
+      const orbitZ = 0.7 + Math.sin(time * 1.3) * 0.08;
+      const orbScale = mode === "talking" ? 1.14 : mode === "thinking" ? 1.06 : 0.98;
+
+      orbRef.current.position.set(orbitX, orbitY, orbitZ);
+      orbGlowRef.current.position.set(orbitX, orbitY, orbitZ - 0.04);
+      orbRef.current.scale.setScalar(orbScale);
+      orbGlowRef.current.scale.setScalar(1.4 + Math.abs(Math.sin(time * 3.5)) * 0.18);
     }
 
     if (haloRef.current) {
@@ -165,6 +181,16 @@ function AvatarModel({ mode = "idle" }: AIAvatarProps) {
         <mesh ref={haloRef} rotation={[Math.PI / 2, 0, 0]} position={[0, 0.24, -0.2]}>
           <torusGeometry args={[1.06, 0.022, 16, 64]} />
           <meshBasicMaterial color="#d5ecff" transparent opacity={0.24} />
+        </mesh>
+
+        <mesh ref={orbGlowRef} position={[0.38, 0.28, 0.62]}>
+          <sphereGeometry args={[0.22, 24, 24]} />
+          <meshBasicMaterial color="#67e8f9" transparent opacity={0.16} />
+        </mesh>
+
+        <mesh ref={orbRef} position={[0.38, 0.28, 0.66]}>
+          <sphereGeometry args={[0.11, 24, 24]} />
+          <meshBasicMaterial color="#67e8f9" transparent opacity={0.96} />
         </mesh>
 
         {particles.map((particle, index) => (
@@ -251,6 +277,11 @@ function AvatarModel({ mode = "idle" }: AIAvatarProps) {
           <mesh position={[0, 0.3, 0.42]} scale={[0.55, 0.24, 0.16]}>
             <sphereGeometry args={[0.46, 32, 32]} />
             <meshBasicMaterial color="#67e8f9" transparent opacity={0.22} />
+          </mesh>
+
+          <mesh position={[0.18, 0.22, 0.56]} scale={[0.12, 0.12, 0.1]}>
+            <sphereGeometry args={[1, 24, 24]} />
+            <meshBasicMaterial color="#f472b6" transparent opacity={0.24} />
           </mesh>
 
           <mesh ref={leftEyeRef} position={[-0.21, 0.04, 0.58]} scale={[1, 1, 0.8]}>
