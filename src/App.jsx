@@ -41,7 +41,7 @@ const translations = {
       cityLabel: "Город",
       cityValue: "Астана",
       datesLabel: "Даты",
-      datesValue: "7 - 8 февраля 2027 года",
+      datesValue: "20 - 21 февраля 2027 года",
       stats: [
         ["3", "внутренних мероприятия"],
         ["150+", "спикеров и экспертов"],
@@ -200,7 +200,7 @@ const translations = {
       eyebrow: "Регистрация",
       title: "Станьте частью Global EdTech в Астане",
       text:
-        "Присоединяйтесь к событию 7–8 февраля 2027 года и выберите удобный формат участия: участник, спикер, партнер, спонсор или экспонент со стендом.",
+        "Присоединяйтесь к событию 20–21 февраля 2027 года и выберите удобный формат участия: участник, спикер, партнер, спонсор или экспонент со стендом.",
     },
     contacts: {
       eyebrow: "Контакты",
@@ -210,7 +210,7 @@ const translations = {
       text2: "Global EdTech.",
       items: [
         { label: "Город", value: "Астана, Казахстан" },
-        { label: "Даты", value: "7 - 8 февраля 2027 года" },
+        { label: "Даты", value: "20 - 21 февраля 2027 года" },
         { label: "Email", value: "globaledtechkz@gmail.com" },
         { label: "Телефон", value: "+7 (700) 033 0229" },
       ],
@@ -293,7 +293,7 @@ const translations = {
       cityLabel: "Қала",
       cityValue: "Астана",
       datesLabel: "Күндер",
-      datesValue: "2027 жылғы 7 - 8 ақпан",
+      datesValue: "2027 жылғы 20 - 21 ақпан",
       stats: [
         ["3", "ішкі іс-шара"],
         ["150+", "спикер мен сарапшы"],
@@ -452,7 +452,7 @@ const translations = {
       eyebrow: "Тіркелу",
       title: "Астанадағы Global EdTech-тің бір бөлігі болыңыз",
       text:
-        "2027 жылғы 7–8 ақпанда өтетін іс-шараға қосылып, өзіңізге лайық қатысу форматын таңдаңыз: қатысушы, спикер, серіктес, демеуші немесе стендпен экспонент.",
+        "2027 жылғы 20–21 ақпанда өтетін іс-шараға қосылып, өзіңізге лайық қатысу форматын таңдаңыз: қатысушы, спикер, серіктес, демеуші немесе стендпен экспонент.",
     },
     contacts: {
       eyebrow: "Байланыс",
@@ -462,7 +462,7 @@ const translations = {
       text2: "Global EdTech аясында.",
       items: [
         { label: "Қала", value: "Астана, Қазақстан" },
-        { label: "Күндер", value: "2027 жылғы 7 - 8 ақпан" },
+        { label: "Күндер", value: "2027 жылғы 20 - 21 ақпан" },
         { label: "Email", value: "globaledtechkz@gmail.com" },
         { label: "Телефон", value: "+7 (700) 033 0229" },
       ],
@@ -545,7 +545,7 @@ const translations = {
       cityLabel: "City",
       cityValue: "Astana",
       datesLabel: "Dates",
-      datesValue: "February 7 - 8, 2027",
+      datesValue: "February 20 - 21, 2027",
       stats: [
         ["3", "internal events"],
         ["150+", "speakers and experts"],
@@ -705,7 +705,7 @@ const translations = {
       eyebrow: "Registration",
       title: "Become part of Global EdTech in Astana",
       text:
-        "Join the event on February 7–8, 2027 and choose the format that fits you best: participant, speaker, partner, sponsor, or exhibitor with stand.",
+        "Join the event on February 20–21, 2027 and choose the format that fits you best: participant, speaker, partner, sponsor, or exhibitor with stand.",
     },
     contacts: {
       eyebrow: "Contacts",
@@ -715,7 +715,7 @@ const translations = {
       text2: "Global EdTech.",
       items: [
         { label: "City", value: "Astana, Kazakhstan" },
-        { label: "Dates", value: "February 7 - 8, 2027" },
+        { label: "Dates", value: "February 20 - 21, 2027" },
         { label: "Email", value: "globaledtechkz@gmail.com" },
         { label: "Phone", value: "+7 (700) 033 0229" },
       ],
