@@ -231,12 +231,7 @@ function SearchableCountrySelect({
 }
 
 function inferDefaultCountry() {
-  if (typeof navigator === "undefined") {
-    return "KZ";
-  }
-
-  const region = navigator.language?.split("-")?.[1]?.toUpperCase();
-  return region && region.length === 2 ? region : "KZ";
+  return "KZ";
 }
 
 function FieldError({ id, message }) {
