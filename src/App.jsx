@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { motion, useInView, useSpring, useTransform } from "framer-motion";
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import RegistrationForm from "./components/RegistrationForm";
 
 const AdminDashboard = lazy(() => import("./components/AdminDashboard"));
@@ -923,25 +923,7 @@ const reveal = {
   },
 };
 
-const staggerGrid = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.08,
-    },
-  },
-};
 
-const staggerCard = {
-  hidden: { opacity: 0, y: 28, scale: 0.98 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.55, ease: "easeOut" },
-  },
-};
 
 function LanguageSwitcher({ language, onChange }) {
   return (
@@ -973,11 +955,13 @@ function SectionHeading({ eyebrow, title, text }) {
       whileInView="show"
       viewport={{ once: true, amount: 0.35 }}
     >
-      <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-cyan-300">
+      <p className="mb-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.38em] text-cyan-400">
+        <span className="inline-block h-px w-6 bg-cyan-400/60" aria-hidden="true" />
         {eyebrow}
+        <span className="inline-block h-px w-6 bg-cyan-400/60" aria-hidden="true" />
       </p>
-      <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">{title}</h2>
-      <p className="mt-4 text-base leading-7 text-slate-300 sm:text-lg">{text}</p>
+      <h2 className="section-heading-h2">{title}</h2>
+      <p className="mt-5 text-base leading-7 text-slate-400 sm:text-[1.05rem] sm:leading-8">{text}</p>
     </motion.div>
   );
 }
@@ -1104,102 +1088,67 @@ function GallerySlider({ gallery, onOpen }) {
   );
 }
 
-function HeroShowcase({ hero, forumOverview }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+function CounterNumber({ value }) {
+  const parsed = String(value).match(/^(\d+)(.*)$/);
+  if (!parsed) return <>{value}</>;
+  const num = parseInt(parsed[1], 10);
+  const suffix = parsed[2] || '';
+
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+  const spring = useSpring(0, { stiffness: 65, damping: 22, restDelta: 0.5 });
+  const display = useTransform(spring, (v) => String(Math.round(v)));
 
   useEffect(() => {
-    if (isPaused || heroPhotos.length < 2) {
-      return undefined;
-    }
-
-    const timerId = window.setInterval(() => {
-      setActiveIndex((currentIndex) => getWrappedIndex(currentIndex + 1, heroPhotos.length));
-    }, heroAutoplayDelay);
-
-    return () => {
-      window.clearInterval(timerId);
-    };
-  }, [isPaused]);
+    if (isInView) spring.set(num);
+  }, [isInView, num, spring]);
 
   return (
-    <motion.div
-      className="hero-showcase glass-panel"
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.9, delay: 0.15, ease: "easeOut" }}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent" />
-      <div className="hero-orb hero-orb-cyan" />
-      <div className="hero-orb hero-orb-pink" />
-      <div className="hero-orb hero-orb-yellow" />
+    <span ref={ref}>
+      <motion.span>{display}</motion.span>{suffix}
+    </span>
+  );
+}
 
-      <div className="hero-showcase-media">
-        {heroPhotos.map((photo, index) => (
-          <img
-            key={photo.src}
-            src={photo.src}
-            srcSet={`${photo.thumb} 800w, ${photo.src} 1600w`}
-            sizes="(max-width: 768px) 92vw, 42vw"
-            alt={`Global EdTech highlight ${index + 1}`}
-            loading={index === 0 ? "eager" : "lazy"}
-            fetchPriority={index === 0 ? "high" : "low"}
-            decoding="async"
-            className={`hero-showcase-image ${activeIndex === index ? "hero-showcase-image-active" : ""}`}
+function HeroBgSlideshow() {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const timerId = window.setInterval(
+      () => setActiveIndex((i) => getWrappedIndex(i + 1, heroPhotos.length)),
+      heroAutoplayDelay,
+    );
+    return () => window.clearInterval(timerId);
+  }, []);
+
+  return (
+    <div className="hero-bg-slideshow" aria-hidden="true">
+      {heroPhotos.map((photo, index) => (
+        <img
+          key={photo.src}
+          src={photo.src}
+          srcSet={`${photo.thumb} 800w, ${photo.src} 1600w`}
+          sizes="100vw"
+          alt=""
+          loading={index === 0 ? "eager" : "lazy"}
+          fetchPriority={index === 0 ? "high" : "low"}
+          decoding="async"
+          className={`hero-bg-image ${activeIndex === index ? "hero-bg-image-active" : ""}`}
+        />
+      ))}
+      <div className="hero-bg-overlay" />
+      <div className="hero-bg-dots">
+        {heroPhotos.map((_, index) => (
+          <button
+            key={index}
+            type="button"
+            className={`hero-bg-dot ${activeIndex === index ? "hero-bg-dot-active" : ""}`}
+            onClick={() => setActiveIndex(index)}
+            aria-label={`Photo ${index + 1}`}
           />
         ))}
-
-        <div className="hero-showcase-overlay" />
-
-        <div className="hero-showcase-top">
-          <p className="hero-showcase-kicker">{forumOverview}</p>
-          <div className="hero-showcase-dots" aria-hidden="true">
-            {heroPhotos.map((photo, index) => (
-              <span
-                key={photo.thumb}
-                className={`hero-showcase-dot ${activeIndex === index ? "hero-showcase-dot-active" : ""}`}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="hero-showcase-controls">
-          <button
-            type="button"
-            className="hero-showcase-arrow"
-            aria-label="Previous slide"
-            onClick={() =>
-              setActiveIndex((currentIndex) => getWrappedIndex(currentIndex - 1, heroPhotos.length))
-            }
-          >
-            &#8592;
-          </button>
-          <button
-            type="button"
-            className="hero-showcase-arrow"
-            aria-label="Next slide"
-            onClick={() =>
-              setActiveIndex((currentIndex) => getWrappedIndex(currentIndex + 1, heroPhotos.length))
-            }
-          >
-            &#8594;
-          </button>
-        </div>
       </div>
-
-      <div className="hero-showcase-bottom">
-        <div className="hero-showcase-stats">
-          {hero.stats.map(([value, label], index) => (
-            <div key={label} className={`hero-stat-card hero-stat-card-${index + 1}`}>
-              <p className="hero-stat-value">{value}</p>
-              <p className="hero-stat-label">{label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -1240,6 +1189,17 @@ function App() {
       window.removeEventListener("popstate", syncRouteState);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isMenuOpen) return undefined;
+    const handleEsc = (e) => { if (e.key === "Escape") setIsMenuOpen(false); };
+    window.addEventListener("keydown", handleEsc);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
 
   useEffect(() => {
     if (selectedGalleryIndex === null) {
@@ -1338,6 +1298,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#0B0F2A] text-slate-100">
+      <a href="#main-content" className="skip-link">Перейти к содержанию</a>
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute left-[-10%] top-[-8%] h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="absolute right-[-12%] top-[12%] h-96 w-96 rounded-full bg-fuchsia-500/20 blur-3xl" />
@@ -1345,9 +1306,13 @@ function App() {
         <div className="grid-overlay absolute inset-0 opacity-30" />
       </div>
 
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#0B0F2A]/88 backdrop-blur-xl">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <a href="#hero" className="flex min-w-0 items-center">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/8 bg-[#0B0F2A]/90 backdrop-blur-xl transition-shadow duration-300">
+        <nav
+          role="navigation"
+          aria-label="Main navigation"
+          className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8"
+        >
+          <a href="#hero" className="flex min-w-0 items-center" aria-label="Global EdTech — на главную">
             <img
               src="/assets/globaledtech-logo.png"
               alt="Global EdTech"
@@ -1356,12 +1321,12 @@ function App() {
             />
           </a>
 
-          <div className="hidden flex-1 items-center justify-center gap-5 xl:flex">
+          <div className="hidden flex-1 items-center justify-center gap-6 xl:flex">
             {t.nav.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="whitespace-nowrap text-sm text-slate-300 transition hover:text-cyan-300"
+                className="nav-link"
               >
                 {item.label}
               </a>
@@ -1384,7 +1349,7 @@ function App() {
                 decoding="async"
               />
             </a>
-            <a href="#register" className="button-primary">
+            <a href="#register" className="button-primary text-sm">
               {t.ui.register}
             </a>
           </div>
@@ -1393,8 +1358,9 @@ function App() {
             <LanguageSwitcher language={language} onChange={setLanguage} />
             <button
               type="button"
-              className="button-secondary px-4 py-3"
+              className="button-secondary px-4 py-2.5 text-sm"
               aria-expanded={isMenuOpen}
+              aria-controls="mobile-nav"
               aria-label={t.ui.openMenu}
               onClick={() => setIsMenuOpen((value) => !value)}
             >
@@ -1403,147 +1369,250 @@ function App() {
           </div>
         </nav>
 
-        {isMenuOpen && (
-          <div className="border-t border-white/10 px-4 py-4 sm:px-6 xl:hidden">
-            <div className="mx-auto grid max-w-7xl gap-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <a
-                  href="#register"
-                  className="button-primary justify-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {t.ui.registerNow}
-                </a>
-                <a
-                  href="#events"
-                  className="button-secondary justify-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {t.ui.internalEvents}
-                </a>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                {t.nav
-                  .filter((item) => item.href !== "#events")
-                  .map((item) => (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      className="rounded-[16px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200 transition hover:border-cyan-400/40 hover:text-cyan-300"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.label}
-                    </a>
-                  ))}
-                <div className="menu-footer">
-                  <a
-                    href="https://az-group.kz/"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="AZ Group official website"
-                  >
-                    <img
-                      src="/assets/azgroup-logo.png"
-                      alt="AZ Group"
-                      className="header-logo header-logo-partner"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </a>
-                  <a
-                    href="#contacts"
-                    className="text-sm font-medium text-cyan-300 transition hover:text-cyan-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {t.ui.contactsInfo}
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </header>
 
-      <main className="pt-[88px] sm:pt-[100px]">
-        <section
-          id="hero"
-          className="relative overflow-hidden px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-24 lg:px-8 lg:pb-28 lg:pt-28"
+      {/* Mobile navigation overlay — full-screen, professional */}
+      {isMenuOpen && (
+        <div
+          id="mobile-nav"
+          className="mobile-nav-overlay xl:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t.ui.menu}
         >
-          <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16">
-            <motion.div
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: "easeOut" }}
-            >
-              <div className="glass-panel inline-flex items-center gap-3 px-4 py-2 text-sm text-slate-200">
-                <span className="pulse-dot" />
-                {t.hero.badge}
-              </div>
-              <h1 className="mt-8 max-w-4xl text-4xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
-                <span className="tech-title">Global EdTech</span>
-              </h1>
-              <p className="mt-6 max-w-2xl text-xl leading-8 text-slate-300">{t.hero.subtitle}</p>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg">
-                {t.hero.description}
-              </p>
+          <div className="mobile-nav-inner">
+            <div className="mobile-nav-header">
+              <a href="#hero" onClick={() => setIsMenuOpen(false)} aria-label="Global EdTech — на главную">
+                <img
+                  src="/assets/globaledtech-logo.png"
+                  alt="Global EdTech"
+                  className="header-logo"
+                  style={{ height: '3rem' }}
+                  decoding="async"
+                />
+              </a>
+              <button
+                type="button"
+                className="mobile-nav-close"
+                aria-label="Закрыть меню"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                ×
+              </button>
+            </div>
 
-              <div className="mt-8 grid max-w-3xl gap-4 sm:grid-cols-2">
-                <div className="stat-card p-4">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">
-                    {t.hero.cityLabel}
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-white">{t.hero.cityValue}</p>
-                </div>
-                <div className="stat-card p-4">
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">
-                    {t.hero.datesLabel}
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-white">{t.hero.datesValue}</p>
-                </div>
-              </div>
+            <div className="mobile-nav-ctas">
+              <a
+                href="#register"
+                className="button-primary justify-center text-sm"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {t.ui.registerNow}
+              </a>
+              <a
+                href="#events"
+                className="button-secondary justify-center text-sm"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {t.ui.internalEvents}
+              </a>
+            </div>
 
-              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <a href="#register" className="button-primary justify-center">
-                  {t.ui.registerNow}
+            <nav className="mobile-nav-links" aria-label="Mobile navigation">
+              {t.nav.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="mobile-nav-link"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                  <span className="mobile-nav-link-arrow" aria-hidden="true">›</span>
                 </a>
-              </div>
-            </motion.div>
+              ))}
+            </nav>
 
-            <div className="relative mx-auto w-full max-w-xl">
-              <HeroShowcase hero={t.hero} forumOverview={t.ui.forumOverview} />
+            <div className="mobile-nav-footer">
+              <a
+                href="https://az-group.kz/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="AZ Group official website"
+              >
+                <img
+                  src="/assets/azgroup-logo.png"
+                  alt="AZ Group"
+                  className="header-logo header-logo-partner"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </a>
+              <a
+                href="#contacts"
+                className="text-sm font-medium text-cyan-300 transition hover:text-cyan-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {t.ui.contactsInfo}
+              </a>
             </div>
           </div>
+        </div>
+      )}
+
+      <main id="main-content">
+        {/* ── HERO: full-viewport, photo background, text overlay ── */}
+        <section id="hero" className="relative overflow-hidden">
+          {/* Background photo slideshow */}
+          <HeroBgSlideshow />
+
+          {/* Content layer */}
+          <div className="hero-fullbg relative z-10 w-full">
+            <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-[118px] sm:px-6 sm:pb-16 sm:pt-[136px] lg:px-8 lg:pb-20 lg:pt-[140px]">
+
+              <motion.div
+                className="hero-text-col"
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, ease: "easeOut" }}
+              >
+                {/* Badge */}
+                <div className="hero-badge">
+                  <span className="pulse-dot" aria-hidden="true" />
+                  {t.hero.badge}
+                </div>
+
+                {/* Main headline — very large */}
+                <h1 className="mt-7 text-[3rem] font-extrabold leading-[0.92] tracking-tight sm:text-[5rem] lg:text-[6.5rem] xl:text-[8rem]">
+                  <span className="tech-title">Global<br />EdTech</span>
+                </h1>
+
+                <p className="mt-6 max-w-lg text-xl font-medium leading-snug text-white/90 sm:text-2xl">
+                  {t.hero.subtitle}
+                </p>
+                <p className="mt-4 max-w-lg text-base leading-relaxed text-white/55 sm:text-[1.05rem]">
+                  {t.hero.description}
+                </p>
+
+                {/* City + Dates */}
+                <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2">
+                  <span className="inline-flex items-center gap-2 text-sm text-white/65">
+                    <svg className="h-4 w-4 text-cyan-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    <span className="font-semibold text-white">{t.hero.cityValue}</span>
+                    <span className="text-white/25">·</span>
+                    {t.hero.cityLabel}
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-sm text-white/65">
+                    <svg className="h-4 w-4 text-fuchsia-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
+                    <span className="font-semibold text-white">{t.hero.datesValue}</span>
+                    <span className="text-white/25">·</span>
+                    {t.hero.datesLabel}
+                  </span>
+                </div>
+
+                {/* CTAs */}
+                <div className="mt-9 flex flex-wrap items-center gap-4">
+                  <a href="#register" className="button-primary px-7 py-4 text-sm font-semibold">
+                    {t.ui.registerNow}
+                  </a>
+                  <a href="#about" className="hero-secondary-cta">
+                    {t.about.eyebrow}
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
+
+              {/* Stats strip — full width */}
+              <motion.div
+                className="mt-12 hero-stats-strip lg:mt-16"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+              >
+                {t.hero.stats.map(([value, label]) => (
+                  <div key={label} className="hero-stats-strip-item">
+                    <p className="hero-stats-strip-value">
+                      <CounterNumber value={value} />
+                    </p>
+                    <p className="hero-stats-strip-label">{label}</p>
+                  </div>
+                ))}
+              </motion.div>
+
+            </div>
+          </div>
+
+          {/* Scroll cue */}
+          <motion.div
+            className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1 }}
+            aria-hidden="true"
+          >
+            <div className="scroll-cue">
+              <div className="scroll-cue-arrow">
+                <div className="scroll-cue-line" />
+                <div className="scroll-cue-chevron" />
+              </div>
+            </div>
+          </motion.div>
         </section>
 
-        <section id="about" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        {/* Event formats ticker — communicates scope immediately */}
+        <div className="event-ticker-strip" aria-hidden="true">
+          <div className="event-ticker-track">
+            {[...t.program.items, ...t.program.items, ...t.program.items, ...t.program.items].map((item, i) => (
+              <span
+                key={i}
+                className="event-ticker-item"
+              >
+                <span className={`event-ticker-item-dot ${
+                  i % 3 === 0 ? 'event-ticker-item-dot-cyan' :
+                  i % 3 === 1 ? 'event-ticker-item-dot-pink' :
+                  'event-ticker-item-dot-yellow'
+                }`} />
+                {item.title}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <section id="about" className="section-deferred px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.about.eyebrow}
               title={t.about.title}
               text={t.about.text}
             />
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               {t.about.cards.map((card, index) => (
                 <motion.article
                   key={card.title}
-                  className="glass-panel card-hover p-6"
+                  className="glass-panel card-hover p-6 sm:p-7"
                   variants={reveal}
                   initial="hidden"
                   whileInView="show"
                   viewport={{ once: true, amount: 0.3 }}
                   transition={{ delay: index * 0.08 }}
                 >
-                  <div className="mb-5 h-2 w-16 rounded-full bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-yellow-400" />
-                  <h3 className="text-2xl font-semibold text-white">{card.title}</h3>
-                  <p className="mt-4 text-sm leading-7 text-slate-300">{card.description}</p>
+                  <div className="about-card-number" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                  </div>
+                  <h3 className="mt-1 text-xl font-semibold leading-snug text-white">{card.title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-slate-400">{card.description}</p>
                 </motion.article>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="events" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="events" className="section-deferred px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.events.eyebrow}
@@ -1551,11 +1620,11 @@ function App() {
               text={t.events.text}
             />
 
-            <div className="grid gap-6 xl:grid-cols-3">
+            <div className="grid gap-5 xl:grid-cols-3">
               {t.events.cards.map((event, index) => (
                 <motion.article
                   key={event.title}
-                  className="glass-panel card-hover overflow-hidden p-6"
+                  className="glass-panel card-hover overflow-hidden p-6 sm:p-7"
                   variants={reveal}
                   initial="hidden"
                   whileInView="show"
@@ -1571,68 +1640,59 @@ function App() {
                       decoding="async"
                     />
                   </div>
-                  <h3 className="mt-6 text-2xl font-semibold text-white">{event.title}</h3>
-                  <p className="mt-4 text-sm leading-7 text-slate-300">{event.subtitle}</p>
+                  <h3 className="text-xl font-bold text-white sm:text-2xl">{event.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-400">{event.subtitle}</p>
                 </motion.article>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="gallery" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="gallery" className="section-deferred px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-7xl">
-            <div className="grid gap-8 lg:grid-cols-[0.44fr_0.56fr] lg:items-start">
-              <motion.div
-                className="glass-panel relative overflow-hidden p-6 sm:p-8"
-                variants={reveal}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.25 }}
-              >
-                <div className="absolute inset-x-[-10%] top-[-18%] h-44 rounded-full bg-cyan-400/12 blur-3xl" />
-                <div className="absolute bottom-[-28%] right-[-10%] h-48 w-48 rounded-full bg-fuchsia-500/16 blur-3xl" />
-                <div className="relative">
-                  <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-300">
-                    {gallery.eyebrow}
-                  </p>
-                  <h2 className="mt-4 max-w-xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                    {gallery.title}
-                  </h2>
-                  <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">{gallery.text}</p>
+            <SectionHeading
+              eyebrow={gallery.eyebrow}
+              title={gallery.title}
+              text={gallery.text}
+            />
 
-                  <div className="mt-8 grid gap-3">
-                    {gallery.highlights.map((item) => (
-                      <div
-                        key={item}
-                        className="rounded-[16px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100"
-                      >
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
+            {/* Highlight chips */}
+            <motion.div
+              className="gallery-highlights-row mb-8"
+              variants={reveal}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.3 }}
+            >
+              {gallery.highlights.map((item) => (
+                <span key={item} className="gallery-highlight-chip">
+                  <span className="gallery-highlight-chip-dot" aria-hidden="true" />
+                  {item}
+                </span>
+              ))}
+            </motion.div>
 
-              <GallerySlider gallery={gallery} onOpen={setSelectedGalleryIndex} />
-            </div>
+            {/* Full-width slider */}
+            <GallerySlider gallery={gallery} onOpen={setSelectedGalleryIndex} />
           </div>
         </section>
 
-        <section id="audience" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <section id="audience" className="section-deferred px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <motion.div
               variants={reveal}
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, amount: 0.35 }}
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-fuchsia-300">
+              <p className="mb-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.38em] text-fuchsia-400">
+                <span className="inline-block h-px w-6 bg-fuchsia-400/60" aria-hidden="true" />
                 {t.audience.eyebrow}
               </p>
-              <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                {t.audience.title}
-              </h2>
-              <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">{t.audience.text}</p>
+              <h2 className="section-heading-h2">{t.audience.title}</h2>
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-400 sm:text-[1.05rem]">
+                {t.audience.text}
+              </p>
             </motion.div>
 
             <motion.div
@@ -1642,14 +1702,11 @@ function App() {
               whileInView="show"
               viewport={{ once: true, amount: 0.25 }}
             >
-              <ul className="grid gap-4 sm:grid-cols-2">
+              <ul className="grid gap-3 sm:grid-cols-2">
                 {t.audience.items.map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-4 rounded-[16px] border border-white/10 bg-white/5 p-4"
-                  >
-                    <span className="mt-1 inline-flex h-3 w-3 rounded-full bg-cyan-400 shadow-[0_0_18px_rgba(0,194,255,0.8)]" />
-                    <span className="text-sm leading-7 text-slate-200">{item}</span>
+                  <li key={item} className="audience-item">
+                    <span className="audience-item-dot" aria-hidden="true" />
+                    <span className="audience-item-text">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -1657,25 +1714,23 @@ function App() {
           </div>
         </section>
 
-        <section id="benefits" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="benefits" className="section-deferred px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.benefits.eyebrow}
               title={t.benefits.title}
               text={t.benefits.text}
             />
-            <motion.div
-              className="benefits-grid"
-              variants={staggerGrid}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.2 }}
-            >
+            <div className="benefits-grid">
               {t.benefits.cards.map((card, index) => (
                 <motion.article
                   key={card.title}
                   className={`benefit-card benefit-card-${index + 1} glass-panel`}
-                  variants={staggerCard}
+                  variants={reveal}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ delay: index * 0.07 }}
                 >
                   <div className="benefit-card-glow" aria-hidden="true" />
                   <div className="benefit-card-content">
@@ -1689,11 +1744,11 @@ function App() {
                   </div>
                 </motion.article>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
 
-        <section id="program" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="program" className="section-deferred px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.program.eyebrow}
@@ -1726,21 +1781,22 @@ function App() {
           </div>
         </section>
 
-        <section id="register" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+        <section id="register" className="section-deferred px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr]">
             <motion.div
               variants={reveal}
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, amount: 0.35 }}
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-yellow-300">
+              <p className="mb-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.38em] text-yellow-400">
+                <span className="inline-block h-px w-6 bg-yellow-400/60" aria-hidden="true" />
                 {t.register.eyebrow}
               </p>
-              <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                {t.register.title}
-              </h2>
-              <p className="mt-5 max-w-xl text-base leading-7 text-slate-300">{t.register.text}</p>
+              <h2 className="section-heading-h2">{t.register.title}</h2>
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-400 sm:text-[1.05rem]">
+                {t.register.text}
+              </p>
             </motion.div>
 
             <motion.div
@@ -1755,26 +1811,26 @@ function App() {
           </div>
         </section>
 
-        <section id="contacts" className="section-deferred px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section id="contacts" className="section-deferred px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow={t.contacts.eyebrow}
               title={t.contacts.title}
               text={`${t.contacts.text1} ${t.contacts.text2}`}
             />
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               {t.contacts.items.map((item, index) => (
                 <motion.div
                   key={item.label}
-                  className="glass-panel p-6 text-center"
+                  className="glass-panel card-hover p-6 text-center"
                   variants={reveal}
                   initial="hidden"
                   whileInView="show"
                   viewport={{ once: true, amount: 0.3 }}
                   transition={{ delay: index * 0.08 }}
                 >
-                  <p className="text-sm uppercase tracking-[0.3em] text-slate-400">{item.label}</p>
-                  <p className="mt-4 text-xl font-semibold text-white">{item.value}</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">{item.label}</p>
+                  <p className="mt-4 text-lg font-semibold leading-snug text-white sm:text-xl">{item.value}</p>
                 </motion.div>
               ))}
             </div>
@@ -1782,14 +1838,56 @@ function App() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-          <p>{t.footer.copyright}</p>
+      <footer className="footer-enhanced" role="contentinfo">
+        <div className="footer-grid px-4 sm:px-6 lg:px-8">
+          {/* Brand column */}
+          <div>
+            <img
+              src="/assets/globaledtech-logo.png"
+              alt="Global EdTech"
+              className="header-logo mb-4"
+              style={{ height: '3.2rem' }}
+              loading="lazy"
+              decoding="async"
+            />
+            <p className="footer-brand-sub">
+              {t.footer.copyright.replace('© 2027 Global EdTech. ', '')}
+            </p>
+          </div>
+
+          {/* Navigation */}
+          <div>
+            <p className="footer-col-title">{t.about.eyebrow}</p>
+            <div className="footer-col-links">
+              {t.nav.slice(0, 4).map((item) => (
+                <a key={item.href} href={item.href} className="footer-col-link">
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Contacts */}
+          <div>
+            <p className="footer-col-title">{t.contacts.eyebrow}</p>
+            <div className="footer-col-links">
+              {t.contacts.items.map((item) => (
+                <span key={item.label} className="footer-col-link">
+                  <span className="text-slate-600">{item.label}:</span>{' '}
+                  <span className="text-slate-500">{item.value}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="footer-bottom px-4 sm:px-6 lg:px-8">
+          <p className="footer-copyright">{t.footer.copyright}</p>
           <div className="flex gap-5">
-            <a href="#hero" className="transition hover:text-cyan-300">
+            <a href="#hero" className="footer-col-link text-xs uppercase tracking-[0.2em]">
               {t.ui.top}
             </a>
-            <a href="#register" className="transition hover:text-cyan-300">
+            <a href="#register" className="footer-col-link text-xs uppercase tracking-[0.2em]">
               {t.ui.register}
             </a>
           </div>
