@@ -91,10 +91,16 @@ export function createRegistrationSchema(validationMessages = defaultValidationM
       .string()
       .transform(sanitizeText)
       .pipe(
-        z
-          .string()
-          .min(2, messages.companyMin)
-          .regex(companyPattern, messages.companyPattern),
+        z.string().superRefine((val, ctx) => {
+          if (val === "") return;
+          if (val.length < 2) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.companyMin });
+            return;
+          }
+          if (!companyPattern.test(val)) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: messages.companyPattern });
+          }
+        }),
       ),
     participationType: z.enum(participationTypeOrder, {
       errorMap: () => ({ message: messages.participationRequired }),

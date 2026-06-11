@@ -243,6 +243,9 @@ const translations = {
         submitSuccess:
           "Спасибо за регистрацию. Наша команда свяжется с вами в ближайшее время.",
         submitError: "Не удалось отправить заявку. Пожалуйста, попробуйте еще раз.",
+        companyOptional: "необязательно",
+        companyHint:
+          "Поле необязательно, но мы рекомендуем его заполнить — так другим участникам форума будет проще вас найти. Нажмите «Зарегистрироваться» ещё раз, чтобы продолжить без него.",
       },
       countryPicker: {
         countryAria: "Выбор страны телефона",
@@ -495,6 +498,9 @@ const translations = {
         submitSuccess:
           "Тіркелгеніңізге рақмет. Біздің команда жақын арада сізбен байланысады.",
         submitError: "Өтінімді жіберу мүмкін болмады. Қайтадан көріңіз.",
+        companyOptional: "міндетті емес",
+        companyHint:
+          "Бұл өріс міндетті емес, бірақ толтыруды ұсынамыз — ұйым атауы қатысушыларға сізді оңай табуға көмектеседі. Жалғастыру үшін «Тіркелу» түймесін қайта басыңыз.",
       },
       countryPicker: {
         countryAria: "Телефон елін таңдау",
@@ -748,6 +754,9 @@ const translations = {
         submitSuccess:
           "Thank you for registering. Our team will contact you shortly.",
         submitError: "We could not submit your registration. Please try again.",
+        companyOptional: "optional",
+        companyHint:
+          "This field is optional, but we recommend filling it in — your organization helps other attendees find you at the forum. Click Register again to continue without it.",
       },
       countryPicker: {
         countryAria: "Select phone country",

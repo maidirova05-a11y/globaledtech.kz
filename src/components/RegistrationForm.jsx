@@ -267,6 +267,7 @@ export default function RegistrationForm({ language, translations }) {
   const defaultCountry = useMemo(inferDefaultCountry, []);
   const [submitState, setSubmitState] = useState("idle");
   const [submitError, setSubmitError] = useState("");
+  const [companyHintShown, setCompanyHintShown] = useState(false);
 
   const registrationSchema = useMemo(
     () => createRegistrationSchema(translations.validation),
@@ -336,6 +337,13 @@ export default function RegistrationForm({ language, translations }) {
   };
 
   const onValidSubmit = async (values) => {
+    // First attempt with empty company — show soft hint, don't block
+    if (!values.company && !companyHintShown) {
+      setCompanyHintShown(true);
+      scrollToField("company");
+      return;
+    }
+
     setSubmitState("idle");
     setSubmitError("");
 
@@ -470,6 +478,9 @@ export default function RegistrationForm({ language, translations }) {
         <div className="field-group" data-field="company">
           <label className="field-label" htmlFor="company">
             {translations.fields.company.label}
+            <span className="field-optional-tag">
+              ({translations.messages.companyOptional})
+            </span>
           </label>
           <input
             id="company"
@@ -477,11 +488,33 @@ export default function RegistrationForm({ language, translations }) {
             placeholder={translations.fields.company.placeholder}
             autoComplete="organization"
             aria-invalid={Boolean(errors.company)}
-            aria-describedby={errors.company ? "company-error" : undefined}
+            aria-describedby={
+              errors.company
+                ? "company-error"
+                : companyHintShown && !watchedValues[fieldNames.indexOf("company")]
+                ? "company-hint"
+                : undefined
+            }
             className={getFieldClass(Boolean(errors.company), isFieldValidated("company"))}
-            {...register("company")}
+            {...register("company", {
+              onChange: () => setCompanyHintShown(false),
+            })}
           />
           <FieldError id="company-error" message={errors.company?.message} />
+          <AnimatePresence>
+            {companyHintShown && !watchedValues[fieldNames.indexOf("company")] ? (
+              <motion.p
+                key="company-hint"
+                id="company-hint"
+                className="field-hint"
+                role="status"
+                aria-live="polite"
+                {...messageMotion}
+              >
+                {translations.messages.companyHint}
+              </motion.p>
+            ) : null}
+          </AnimatePresence>
         </div>
 
         <div className="field-group" data-field="participationType">
