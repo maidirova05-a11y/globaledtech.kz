@@ -1345,7 +1345,7 @@ function App() {
           <div className="hidden items-center gap-4 xl:flex">
             <LanguageSwitcher language={language} onChange={setLanguage} />
             <a
-              href="https://global-coin-mvp.vercel.app"
+              href="https://coin.globaledtech-kz.com"
               target="_blank"
               rel="noreferrer"
               aria-label="Global Coin — внутренняя валюта Global EdTech"
@@ -1438,7 +1438,7 @@ function App() {
                 {t.ui.internalEvents}
               </a>
               <a
-                href="https://global-coin-mvp.vercel.app"
+                href="https://coin.globaledtech-kz.com"
                 target="_blank"
                 rel="noreferrer"
                 className="justify-center text-sm"
