@@ -1345,6 +1345,18 @@ function App() {
           <div className="hidden items-center gap-4 xl:flex">
             <LanguageSwitcher language={language} onChange={setLanguage} />
             <a
+              href="http://localhost:3000"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Global Coin — внутренняя валюта Global EdTech"
+              style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 12, background: 'rgba(255,199,0,0.07)', border: '1px solid rgba(255,199,0,0.28)', textDecoration: 'none', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,199,0,0.14)'; e.currentTarget.style.borderColor = 'rgba(255,199,0,0.5)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,199,0,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,199,0,0.28)'; }}
+            >
+              <span style={{ fontSize: '1.1rem', color: '#ffc700', lineHeight: 1 }}>◈</span>
+              <span style={{ background: 'linear-gradient(135deg, #00c2ff, #ff2e7e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 700, fontSize: '0.82rem' }}>Global Coin</span>
+            </a>
+            <a
               href="https://az-group.kz/"
               target="_blank"
               rel="noreferrer"
@@ -1424,6 +1436,17 @@ function App() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t.ui.internalEvents}
+              </a>
+              <a
+                href="http://localhost:3000"
+                target="_blank"
+                rel="noreferrer"
+                className="justify-center text-sm"
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 20px', borderRadius: 12, background: 'rgba(255,199,0,0.08)', border: '1px solid rgba(255,199,0,0.3)', textDecoration: 'none', fontWeight: 700 }}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span style={{ fontSize: '1.1rem', color: '#ffc700' }}>◈</span>
+                <span style={{ background: 'linear-gradient(135deg, #00c2ff, #ff2e7e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Global Coin</span>
               </a>
             </div>
 
